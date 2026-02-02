@@ -1,0 +1,246 @@
+body{background-color: #eaeaea;
+font-family: 'Montserrat' sans-serif;
+}
+
+
+.fullscreen-image {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Remove scrollbars */
+    scroll-snap-type: x mandatory;
+    position: relative;
+}
+
+.image_card {
+    flex: 1 0 100%;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+}
+
+.image_card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.image_card::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: linear-gradient(to bottom, transparent, rgba(248, 212, 83, 0.9), rgba(255, 93, 91, 1.0));
+    content: '';
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: 0.5s all linear;
+}
+.nav-dots {
+    position: absolute;
+    bottom: 20px; /* Adjust position as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px; /* Space between dots */
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5); /* Transparent */
+    transition: background-color 0.3s ease;
+}
+
+.dot:hover {
+    background-color: white; /* White on hover */
+}
+
+.dot:focus {
+    outline: none;
+}
+
+.dot:active {
+    background-color: white;
+}
+/* Button animation */
+.read-more-button {
+    position: absolute;
+    bottom: 20%; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f5a623;
+    padding: 10px 20px;
+    color: white;
+    text-transform: uppercase;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.read-more-button.hidden {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+
+.card_box{display:flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+position: relative;
+}
+
+.content {
+    position: absolute;
+    bottom: 10%; /* Place near the bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    opacity: 1; /* Make it visible */
+    text-align: center;
+}
+
+.content p {
+    font-size: 20px;
+    color: white;
+}
+
+.content a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color:#FF1493;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.content a:hover {
+    background-color: rgba(248, 212, 83, 1.0);
+}
+
+.card_inner{width: 300px;
+height: 400px;
+margin: 0 20px;
+position: relative;
+transition: 0.5s all linear;
+cursor: pointer;
+}
+
+.card_inner img{width: 100%;
+height: 100%;
+}
+
+.card_inner::after{position:absolute;
+top: 0;
+left: 0;
+
+width: 100%;
+height: 100%;
+opacity: 1;
+transition: 0.5s all linear;
+}
+
+.contents{position:absolute;
+    bottom: 0%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    opacity: 0;
+}
+
+.contents p{text-align: center;
+    font-size: 20px;
+    z-index: 2;
+}
+
+.contents a{display:flex;
+justify-content: center;
+align-items: center;
+text-decoration: none;
+padding: 10px;
+background-color: rgba(255,93,91,1.0);
+color : white;
+}
+/* FAB-specific styles */
+.fab-container {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    z-index: 999;
+    cursor: pointer;
+}
+
+.fab-icon-holder {
+    width: 50px;
+    height: 50px;
+    border-radius: 100%;
+    background: #FF1493;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.fab-icon-holder:hover {
+    opacity: 0.8;
+}
+
+.fab-icon-holder i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 25px;
+    color: #fff;
+}
+
+.fab {
+    width: 60px;
+    height: 60px;
+    background: #FF1493;
+}
+
+.fab-options {
+    list-style-type: none;
+    margin: 0;
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    opacity: 0;
+    transition: all 0.3s ease;
+    transform: scale(0);
+    transform-origin: 85% bottom;
+}
+
+.fab:hover + .fab-options,
+.fab-options:hover {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.fab-options li {
+    display: flex;
+    justify-content: flex-end;
+    padding: 5px;
+}
+
+.fab-label {
+    padding: 2px 5px;
+    align-self: center;
+    user-select: none;
+    white-space: nowrap;
+    border-radius: 3px;
+    font-size: 16px;
+    background: #666;
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    margin-right: 10px;
+}
+
+
+video {
+
+}

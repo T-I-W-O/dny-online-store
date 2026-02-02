@@ -1,0 +1,680 @@
+ {% load static %}
+
+ <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.c-score').forEach(container => {
+      const commentId = container.getAttribute('data-comment-id');
+      const likeBtn = container.querySelector('.score-plus');
+      const dislikeBtn = container.querySelector('.score-minus');
+      const likeCountSpan = container.querySelector('.like-count');
+      const dislikeCountSpan = container.querySelector('.dislike-count');
+
+      likeBtn.addEventListener('click', () => handleVote('up'));
+      dislikeBtn.addEventListener('click', () => handleVote('down'));
+
+      function handleVote(voteType) {
+        fetch('/toggle-vote/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({
+            comment_id: commentId,
+            vote_type: voteType,
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) return alert(data.error);
+
+            likeCountSpan.textContent = data.thumb_up_count;
+            dislikeCountSpan.textContent = data.thumb_down_count;
+
+            // Remove existing classes
+            likeBtn.classList.remove('liked');
+            dislikeBtn.classList.remove('disliked');
+
+            // Apply new vote class
+            if (data.thumb_up) {
+              likeBtn.classList.add('liked');
+            } else if (data.thumb_down) {
+              dislikeBtn.classList.add('disliked');
+            }
+            // If user unvoted both, no class applied
+          })
+          .catch(err => console.error('Vote error:', err));
+      }
+
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+    });
+  });
+</script>
+
+
+<script>
+  const allStar = document.querySelectorAll('.rating .star')
+  const ratingValue = document.querySelector('.rating input')
+
+  allStar.forEach((item, idx) => {
+    item.addEventListener('click', function () {
+      let click = 0
+      ratingValue.value = idx + 1
+
+      allStar.forEach(i => {
+        i.classList.replace('bxs-star', 'bx-star')
+        i.classList.remove('active')
+      })
+      for (let i = 0; i < allStar.length; i++) {
+        if (i <= idx) {
+          allStar[i].classList.replace('bx-star', 'bxs-star')
+          allStar[i].classList.add('active')
+        } else {
+          // This part handles the initial coloring/styling based on --i
+          // It might need to be adjusted or supplemented by CSS if you have specific color for unselected stars
+          allStar[i].style.setProperty('--i', click)
+          click++
+        }
+      }
+    })
+  })
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const stars = document.querySelectorAll(".star");
+    const ratingInput = document.querySelector("input[name='rating']");
+    const sendButton = document.getElementById("send-comment");
+    const commentInput = document.querySelector(".cmnt-input");
+    const productId = document.querySelector(".reply-input").getAttribute("data-product-id");
+    const commentWrapper = document.querySelector(".comments-wrp");
+
+    let selectedRating = 0;
+
+    // STAR RATING SELECTION
+    stars.forEach(star => {
+      star.addEventListener("click", () => {
+        selectedRating = star.getAttribute("data-value");
+        ratingInput.value = selectedRating;
+
+        // Ensure both sets of classes are handled for consistent display
+        stars.forEach(s => {
+          s.classList.remove("selected");
+          s.classList.replace('bxs-star', 'bx-star'); // Ensure all are blank first
+          s.style.color = ''; // Clear any inline color
+        });
+
+        for (let i = 0; i < selectedRating; i++) {
+          stars[i].classList.add("selected");
+          stars[i].classList.replace('bx-star', 'bxs-star'); // Apply filled star icon
+          // If you have specific active star color, apply it here
+          // Example: stars[i].style.color = 'gold';
+        }
+      });
+    });
+
+    // COMMENT SUBMIT
+    sendButton.addEventListener("click", function () {
+      const commentText = commentInput.value.trim();
+      const rating = ratingInput.value;
+
+      if (!commentText) {
+        alert("Please write a comment.");
+        return;
+      }
+
+      fetch("{% url 'create_comment' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          comment: commentText,
+          rating: rating,
+          product_id: productId,
+        }),
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("Network error");
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            insertNewComment({
+              id: data.comment_id,
+              comment: data.comment,
+              rating: data.rating,
+              time: data.time,
+              username: data.username,
+              image: data.image,
+              is_admin: data.is_admin,
+            });
+
+            // Reset input
+            commentInput.value = "";
+            ratingInput.value = ""; // Clears the hidden input value
+            selectedRating = 0; // Reset your tracking variable
+
+            // --- START: MODIFIED/ADDED LINES TO CLEAR STAR VISUALS ---
+            stars.forEach(s => {
+              s.classList.remove("selected"); // Remove the 'selected' class
+              s.classList.replace('bxs-star', 'bx-star'); // Ensure it's the blank star icon
+              s.classList.remove('active'); // Remove 'active' if it's used for styling
+              s.style.color = ''; // Clear any inline color styles
+            });
+            // --- END: MODIFIED/ADDED LINES ---
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Failed to post comment.");
+        });
+    });
+
+    // INSERT COMMENT TO DOM
+    function insertNewComment(comment) {
+      // ✅ Remove "No comments yet" message if it exists
+      const noCommentsMsg = document.getElementById("no-comments-msg");
+      if (noCommentsMsg) {
+        noCommentsMsg.remove();
+      }
+
+      const starHTML = comment.rating
+        ? '<div class="c-rating">' +
+        '<i class="bx bxs-star small-star"></i>'.repeat(comment.rating) +
+        '</div>'
+        : '';
+
+      const commentHTML = `
+        <div class="comment container this-user" data-comment-id="${comment.id}" data-is-reply="false">
+          <div class="c-score" data-comment-id="${comment.id}">
+            <div class="score-like">
+              <i class="bx bxs-like score-control score-plus" role="button" tabindex="0"></i>
+              <span class="like-count">0</span>
+            </div>
+            <div class="score-dislike">
+              <i class="bx bxs-dislike score-control score-minus" role="button" tabindex="0"></i>
+              <span class="dislike-count">0</span>
+            </div>
+          </div>
+
+          <div class="c-controls">
+            <a class="delete"><i class="bx bx-trash control-icon"></i>Delete</a>
+            <a class="reply"><i class="bx bx-reply control-icon"></i>Reply</a>
+          </div>
+
+          <div class="c-user">
+            <img src="${comment.image}" alt="" class="usr-img">
+            <p class="usr-name">${comment.username}${comment.is_admin ? '<span class="admin-tag">(Admin)</span>' : ''}</p>
+            <p class="cmnt-at">${comment.time}</p>
+          </div>
+
+          ${starHTML}
+
+          <p class="c-text">
+            <span class="reply-to"></span>
+            <span class="c-body">${comment.comment}</span>
+          </p>
+        </div>
+      `;
+
+      // ✅ Append at the end of the list
+      commentWrapper.insertAdjacentHTML("beforeend", commentHTML);
+
+      // 🎯 Get the newly inserted comment element
+      const newCommentEl = commentWrapper.lastElementChild;
+      const commentId = newCommentEl.getAttribute("data-comment-id");
+
+      const likeBtn = newCommentEl.querySelector(".score-plus");
+      const dislikeBtn = newCommentEl.querySelector(".score-minus");
+      const likeCountSpan = newCommentEl.querySelector(".like-count");
+      const dislikeCountSpan = newCommentEl.querySelector(".dislike-count");
+
+      likeBtn.addEventListener("click", () => handleVote("up"));
+      dislikeBtn.addEventListener("click", () => handleVote("down"));
+
+      function handleVote(voteType) {
+        fetch("/toggle-vote/", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            comment_id: commentId,
+            vote_type: voteType
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) return;
+
+            likeCountSpan.textContent = data.thumb_up_count;
+            dislikeCountSpan.textContent = data.thumb_down_count;
+
+            likeBtn.classList.remove("liked");
+            dislikeBtn.classList.remove("disliked");
+
+            if (data.thumb_up) likeBtn.classList.add("liked");
+            if (data.thumb_down) dislikeBtn.classList.add("disliked");
+          })
+          .catch(err => console.error("Voting failed:", err));
+      }
+    }
+
+    // GET CSRF TOKEN FROM COOKIE
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === name + "=") {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+</script>
+
+
+
+
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const commentBlocks = document.querySelectorAll(".comment.container[data-is-reply='false']");
+
+  commentBlocks.forEach(comment => {
+    const commentId = comment.dataset.commentId;
+    const replyBtnsContainer = document.querySelector(`.reply-buttons[data-comment-id="${commentId}"]`);
+
+    if (!replyBtnsContainer) return;
+
+    const replies = [];
+    let currentElement = comment.nextElementSibling;
+
+    while (currentElement && currentElement !== replyBtnsContainer) {
+      if (
+        currentElement.classList.contains("replies") &&
+        !currentElement.querySelector('.admin-tag') &&
+        !currentElement.querySelector('.temp-reply-box') // 👈 Skip reply input boxes
+      ) {
+        currentElement.style.display = "none";
+        replies.push(currentElement);
+      }
+      currentElement = currentElement.nextElementSibling;
+    }
+
+    if (replies.length === 0) return;
+
+    let shownCount = 0;
+
+    const viewMoreBtn = document.createElement("button");
+    viewMoreBtn.textContent = "View Replies";
+    viewMoreBtn.className = "view-replies-btn";
+
+    const hideBtn = document.createElement("button");
+    hideBtn.textContent = "Hide Replies";
+    hideBtn.className = "hide-replies-btn";
+    hideBtn.style.display = "none";
+
+    replyBtnsContainer.appendChild(viewMoreBtn);
+    replyBtnsContainer.appendChild(hideBtn);
+
+    const showNextReplies = () => {
+      const nextBatch = replies.slice(shownCount, shownCount + 5);
+      nextBatch.forEach(r => r.style.display = "block");
+      shownCount += nextBatch.length;
+
+      hideBtn.style.display = "inline-block";
+
+      if (shownCount >= replies.length) {
+        viewMoreBtn.style.display = "none";
+      } else {
+        viewMoreBtn.textContent = "View More Replies";
+      }
+    };
+
+    viewMoreBtn.addEventListener("click", showNextReplies);
+
+    hideBtn.addEventListener("click", () => {
+      replies.forEach(r => r.style.display = "none");
+      shownCount = 0;
+      viewMoreBtn.textContent = "View Replies";
+      viewMoreBtn.style.display = "inline-block";
+      hideBtn.style.display = "none";
+    });
+  });
+});
+</script>
+
+ <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Delegate click for delete buttons
+      document.body.addEventListener('click', function (e) {
+        if (e.target.closest('.delete')) {
+          const deleteBtn = e.target.closest('.delete');
+          const commentDiv = deleteBtn.closest('.comment.container');
+          if (!commentDiv) return;
+
+          const itemId = commentDiv.dataset.commentId;
+          const isReply = commentDiv.closest('.replies') !== null;
+          const itemType = isReply ? 'reply' : 'comment';
+
+          if (!itemId) return;
+
+          if (!confirm("Are you sure you want to delete this?")) return;
+
+          function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+          const csrftoken = getCookie('csrftoken');
+
+          fetch('/delete_comment_or_reply/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrftoken
+            },
+            body: new URLSearchParams({
+              id: itemId,
+              type: itemType,
+            })
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+              return response.json();
+            })
+            .then(data => {
+              if (data.success) {
+                // If the deleted item was a main comment, also remove its replies
+                if (itemType === 'comment') {
+                  // Find the parent of the replies. In your HTML structure, replies are
+                  // directly after the main comment but within a separate .replies container.
+                  // You need to find the next sibling that contains replies.
+                  let nextSibling = commentDiv.nextElementSibling;
+                  while (nextSibling && nextSibling.classList.contains('replies')) {
+                    nextSibling.remove();
+                    nextSibling = commentDiv.nextElementSibling; // Get the next sibling after removal
+                  }
+                }
+                // Remove the comment or reply element itself
+                commentDiv.remove();
+                console.log(`Deleted ${itemType} ${itemId} successfully.`);
+              } else {
+                alert('Failed to delete: ' + (data.error || 'Unknown error'));
+              }
+            })
+            .catch(error => {
+              alert('Error deleting: ' + error.message);
+            });
+        }
+      });
+    });
+  </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function createReplyNode(replyData, isCurrentUser) {
+    const wrapperDiv = document.createElement("div");
+    wrapperDiv.classList.add("replies", "comments-wrp");
+
+    const commentDiv = document.createElement("div");
+    commentDiv.classList.add("comment", "container");
+    commentDiv.dataset.commentId = replyData.id;
+    commentDiv.dataset.isReply = "true";
+
+    if (isCurrentUser) {
+      commentDiv.classList.add("this-user");
+    }
+
+    if (isCurrentUser) {
+      const cControlsDiv = document.createElement("div");
+      cControlsDiv.classList.add("c-controls");
+
+      const deleteLink = document.createElement("a");
+      deleteLink.classList.add("delete");
+      deleteLink.href = "javascript:void(0);";
+
+      const deleteIcon = document.createElement("i");
+      deleteIcon.classList.add("bx", "bx-trash", "control-icon");
+      deleteLink.appendChild(deleteIcon);
+      deleteLink.appendChild(document.createTextNode("Delete"));
+      cControlsDiv.appendChild(deleteLink);
+      commentDiv.appendChild(cControlsDiv);
+    }
+
+    const cUserDiv = document.createElement("div");
+    cUserDiv.classList.add("c-user");
+
+    const userImg = document.createElement("img");
+    userImg.classList.add("usr-img");
+    userImg.src = replyData.customer_image_url || "/static/images/profilepic.png";
+    userImg.alt = replyData.customer_username;
+
+    const userNameP = document.createElement("p");
+    userNameP.classList.add("usr-name");
+    userNameP.textContent = replyData.customer_username;
+
+    const timeP = document.createElement("p");
+    timeP.classList.add("cmnt-at");
+    timeP.textContent = replyData.time;
+
+    cUserDiv.appendChild(userImg);
+    cUserDiv.appendChild(userNameP);
+    cUserDiv.appendChild(timeP);
+
+    const cTextP = document.createElement("p");
+    cTextP.classList.add("c-text");
+
+    if (replyData.replying_to_username) {
+      const replyToSpan = document.createElement("span");
+      replyToSpan.classList.add("reply-to");
+      replyToSpan.textContent = "@" + replyData.replying_to_username;
+      cTextP.appendChild(replyToSpan);
+      cTextP.appendChild(document.createTextNode(" "));
+    }
+
+    const cBodySpan = document.createElement("span");
+    cBodySpan.classList.add("c-body");
+    cBodySpan.textContent = replyData.reply;
+
+    cTextP.appendChild(cBodySpan);
+
+    commentDiv.appendChild(cUserDiv);
+    commentDiv.appendChild(cTextP);
+
+    wrapperDiv.appendChild(commentDiv);
+
+    return wrapperDiv;
+  }
+
+  const replyButtons = document.querySelectorAll(".reply");
+
+  replyButtons.forEach(button => {
+    button.addEventListener("click", function () {
+      // Remove existing reply inputs
+      document.querySelectorAll(".reply-input.temp-reply-box").forEach(el => el.remove());
+
+      const commentContainer = button.closest(".comment.container");
+      const commentId = commentContainer.dataset.commentId;
+      const replyingToUsername = commentContainer.querySelector(".usr-name").textContent;
+
+      // Clone reply input template
+      const template = document.querySelector(".reply-input-template");
+      const clone = template.content.cloneNode(true);
+      const inputBox = clone.querySelector(".reply-input");
+
+      inputBox.classList.add("temp-reply-box");
+      commentContainer.insertAdjacentElement("afterend", inputBox);
+
+      // Handle SEND
+      inputBox.querySelector("button").addEventListener("click", () => {
+        const text = inputBox.querySelector("textarea").value.trim();
+        if (!text) return alert("Write a reply!");
+
+        inputBox.querySelector("button").disabled = true;
+
+        fetch("/add-reply/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({
+            comment_id: commentId,
+            reply: text,
+            replying_to: replyingToUsername,
+          }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === "success") {
+              const newReplyNode = createReplyNode(
+                {
+                  id: data.reply_id,
+                  customer_username: data.reply_user,
+                  customer_image_url: data.reply_user_image_url,
+                  time: data.reply_time,
+                  reply: data.reply_content,
+                  replying_to_username: replyingToUsername,
+                },
+                true
+              );
+
+              inputBox.remove();
+
+              commentContainer.insertAdjacentElement("afterend", newReplyNode);
+            } else {
+              alert("Error: " + data.message);
+              inputBox.querySelector("button").disabled = false;
+            }
+          })
+          .catch(error => {
+            console.error("Fetch error:", error);
+            alert("Failed to send reply.");
+            inputBox.querySelector("button").disabled = false;
+          });
+      });
+    });
+  });
+});
+</script>
+  <script>
+    const modalContainer = document.getElementById('modal-container');
+    const closeButtons = document.querySelectorAll('.close-modal');
+    const isUserAuthenticated = {{ request.user.is_authenticated|lower }}; // Django context variable for authentication status
+
+    function showLoginModal() {
+      modalContainer.classList.add('show-modal');
+    }
+
+    function closeLoginModal() {
+      modalContainer.classList.remove('show-modal');
+    }
+
+    closeButtons.forEach(btn => btn.addEventListener('click', closeLoginModal));
+
+    // Trigger modal for comment/reply attempts
+    document.addEventListener('DOMContentLoaded', () => {
+      // For the main comment input
+      const sendCommentButton = document.getElementById('send-comment');
+      if (sendCommentButton) {
+        sendCommentButton.addEventListener('click', (event) => {
+          if (!isUserAuthenticated) {
+            event.preventDefault(); // Prevent default form submission
+            showLoginModal();
+          }
+        });
+      }
+
+      // For reply buttons
+      document.querySelectorAll('.reply').forEach(button => {
+        button.addEventListener('click', (event) => {
+          if (!isUserAuthenticated) {
+            event.preventDefault();
+            showLoginModal();
+          } else {
+            // Your existing reply logic here if user is authenticated
+          }
+        });
+      });
+
+      // For thumb up/down buttons
+      document.querySelectorAll('.score-control').forEach(button => {
+        button.addEventListener('click', (event) => {
+          if (!isUserAuthenticated) {
+            event.preventDefault();
+            showLoginModal();
+          } else {
+            // Your existing like/dislike logic here if user is authenticated
+          }
+        });
+      });
+
+      // Intercept clicks on the textarea for the main comment input
+      const mainCommentInput = document.querySelector('.reply-input .cmnt-input');
+      if (mainCommentInput) {
+          mainCommentInput.addEventListener('focus', (event) => {
+              if (!isUserAuthenticated) {
+                  event.preventDefault();
+                  mainCommentInput.blur(); // Remove focus from the textarea
+                  showLoginModal();
+              }
+          });
+      }
+
+       // Intercept clicks on the 'SEND' button for temporary reply boxes
+       document.addEventListener('click', (event) => {
+        if (event.target.matches('.temp-reply-box .bu-primary')) {
+          if (!isUserAuthenticated) {
+            event.preventDefault();
+            showLoginModal();
+          }
+        }
+      });
+
+    });
+  </script>

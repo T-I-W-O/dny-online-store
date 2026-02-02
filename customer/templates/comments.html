@@ -1,0 +1,484 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Review and Ratings</title>
+  <link rel="stylesheet" href="{% static 'css/comments.css' %}" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" />
+
+  <style>
+
+.hidden-comment {
+  display: none !important;
+}
+
+.view-replies-btn,
+.hide-replies-btn {
+  all: unset; /* Remove default button styles */
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #FF1493 !important; /* Force Deep Pink */
+  color: #ffffff !important;           /* Force white text */
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 4px 4px 0 0;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover effect */
+.view-replies-btn:hover,
+.hide-replies-btn:hover {
+  background-color: pink !important;
+}
+
+
+    .score-control {
+      color: black;
+      transition: 0.3s ease;
+    }
+
+    .score-control.liked {
+      color: hotpink;
+    }
+
+    .score-control.disliked {
+      color: hotpink;
+    }
+
+    .c-score {
+      align-self: start;
+    }
+
+    .rating .star.selected {
+      color: #FFBD13;
+    }
+
+    .admin-tag {
+      color: blue;
+      font-weight: bold;
+      font-size: 0.85em;
+      margin-left: 5px;
+    }
+
+    .view-replies-btn,
+    .hide-replies-btn {
+      margin: 5px 5px 10px 0;
+      padding: 4px 10px;
+      background-color: #eee;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* Modal specific styles */
+    .modal {
+      --hue: 240;
+      --first-color: #FF1493;
+      --first-color-alt: pink;
+      --title-color: hsl(var(--hue), 8%, 15%);
+      --text-color: hsl(var(--hue), 8%, 35%);
+      --body-color: hsl(var(--hue), 100%, 99%);
+      --container-color: #FFF;
+      --body-font: 'Poppins', sans-serif;
+      --big-font-size: 1.5rem;
+      --normal-font-size: .938rem;
+      --z-modal: 1000;
+    }
+
+    @media screen and (min-width: 968px) {
+      .modal {
+        --big-font-size: 1.75rem;
+        --normal-font-size: 1rem;
+      }
+    }
+
+    .modal * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+      font-family: var(--body-font);
+      font-size: var(--normal-font-size);
+    }
+
+    .modal-body {
+      background-color: var(--body-color);
+      color: var(--text-color);
+      position: relative;
+    }
+
+    .modal img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .modal .container {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    .modal .container.section {
+      height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .modal__button {
+      display: inline-block;
+      background-color: var(--first-color);
+      color: #FFF;
+      padding: 1rem 1.25rem;
+      border-radius: .5rem;
+      transition: .3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal__button:hover {
+      background-color: var(--first-color-alt);
+    }
+
+    .modal__container {
+      position: fixed; /* Changed to fixed to cover entire viewport */
+      top: 0;
+      left: 0;
+      background-color: hsla(var(--hue), 18%, 75%, .8);
+      width: 100%;
+      height: 100%;
+      display: grid;
+      align-items: flex-end;
+      overflow: hidden;
+      transition: all .3s;
+      z-index: var(--z-modal);
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .modal__content {
+      position: relative;
+      background-color: var(--container-color);
+      text-align: center;
+      padding: 3rem 2rem 2rem;
+      border-radius: 1rem 1rem 0 0;
+      transition: all .3s;
+      transform: translateY(10%);
+    }
+
+    .modal__img {
+      width: 150px;
+      margin-bottom: .75rem;
+    }
+
+    .modal__close {
+      display: inline-flex;
+      background-color: var(--first-color);
+      border-radius: .25rem;
+      color: #FFF;
+      font-size: 1.5rem;
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      cursor: pointer;
+    }
+
+    .modal__title {
+      font-size: var(--big-font-size);
+      color: var(--title-color);
+      font-weight: 500;
+    }
+
+    .modal__description {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal__button-width {
+      width: 90%;
+    }
+
+    .modal__button-link {
+      display: block;
+      margin: 1rem auto 0;
+      background-color: transparent;
+      color: var(--first-color);
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal .show-modal {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal .show-modal .modal__content {
+      transform: translateY(0);
+    }
+
+    @media screen and (min-width: 576px) {
+      .modal__content {
+        margin: auto;
+        width: 380px;
+        border-radius: 1.25rem;
+      }
+
+      .modal__img {
+        width: 170px;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+  <template class="reply-input-template">
+    <div class="reply-input container temp-reply-box">
+      {% if request.user.is_authenticated %}
+      <img src="{{ request.user.customer.image.url }}" alt="User image" class="usr-img">
+      {% else %}
+      <img src="{% static 'images/profilepic.png' %}" alt="Default image" class="usr-img">
+      {% endif %}
+      <textarea class="cmnt-input" placeholder="Add a comment..."></textarea>
+      <button class="bu-primary">SEND</button>
+    </div>
+  </template>
+
+  <main>
+    <h1 class="page-title">Product Review and Ratings</h1>
+
+    <div class="comment-section">
+      <div class="comments-wrp">
+        {% if comments %}
+        {% for comment in comments %}
+        <div class="comment container {% if comment.customer.user == request.user %}this-user{% endif %}"
+          data-comment-id="{{ comment.id }}" data-is-reply="false">
+
+          <div class="c-score" data-comment-id="{{ comment.id }}">
+            <div class="score-like">
+              <i class="bx bxs-like score-control score-plus
+    {% if comment.vote_status == 'up' %}liked{% endif %}" role="button" tabindex="0"></i>
+              <span class="like-count">{{ comment.thumb_up_count|default:0 }}</span>
+            </div>
+            <div class="score-dislike">
+              <i class="bx bxs-dislike score-control score-minus
+    {% if comment.vote_status == 'down' %}disliked{% endif %}" role="button" tabindex="0"></i>
+              <span class="dislike-count">{{ comment.thumb_down_count|default:0 }}</span>
+            </div>
+
+          </div>
+
+
+          <div class="c-controls">
+            {% if comment.customer.user == request.user %}
+            <a class="delete"><i class="bx bx-trash control-icon"></i>Delete</a>
+            {% endif %}
+            <a class="reply"><i class="bx bx-reply control-icon"></i>Reply</a>
+          </div>
+
+          <div class="c-user">
+            <img src="{{ comment.customer.image.url }}" alt="" class="usr-img">
+            {% if comment.customer.user.groups.all.0.name == 'admin' %}
+            <p class="usr-name">{{ comment.customer.username }}<span class="admin-tag">(Admin)</span></p>
+            {% else %}
+            <p class="usr-name">{{ comment.customer.username }}</p>
+            {% endif %}
+            <p class="cmnt-at">{{ comment.time }}</p>
+          </div>
+
+          {% if comment.rating %}
+          <div class="c-rating">
+            {% for i in ""|center:comment.rating %}
+            <i class="bx bxs-star small-star"></i>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <p class="c-text">
+            <span class="reply-to"></span>
+            <span class="c-body">{{ comment.comment }}</span>
+          </p>
+        </div>
+
+        {% for reply in comment.replies.all %}
+        {% if reply.customer.user.groups.all.0.name == "admin" %}
+        <div class="replies comments-wrp">
+          <div class="comment container {% if reply.customer.user == request.user %}this-user{% endif %}"
+            data-comment-id="{{ reply.id }}" data-is-reply="true">
+            <div class="c-controls">
+              {% if reply.customer.user == request.user %}
+              <a class="delete"><i class="bx bx-trash control-icon"></i>Delete</a>
+              {% endif %}
+            </div>
+            <div class="c-user">
+              <img src="{{ reply.customer.image.url }}" alt="" class="usr-img">
+              <p class="usr-name">{{ reply.customer.username }}<span class="admin-tag">(Admin)</span></p>
+              <p class="cmnt-at">{{ reply.time }}</p>
+            </div>
+            <p class="c-text">
+              {% if reply.replying_to %}
+              <span class="reply-to">@{{ reply.replying_to.username }}</span>
+              {% endif %}
+              <span class="c-body">{{ reply.reply }}</span>
+            </p>
+          </div>
+        </div>
+        {% else %}
+        <div class="replies comments-wrp">
+          <div class="comment container {% if reply.customer.user == request.user %}this-user{% endif %}"
+            data-comment-id="{{ reply.id }}" data-is-reply="true">
+            <div class="c-controls">
+              {% if reply.customer.user == request.user %}
+              <a class="delete"><i class="bx bx-trash control-icon"></i>Delete</a>
+              {% endif %}
+            </div>
+            <div class="c-user">
+              <img src="{{ reply.customer.image.url }}" alt="" class="usr-img">
+              <p class="usr-name">{{ reply.customer.username }}</p>
+              <p class="cmnt-at">{{ reply.time }}</p>
+            </div>
+            <p class="c-text">
+              {% if reply.replying_to %}
+              <span class="reply-to">@{{ reply.replying_to.username }}</span>
+              {% endif %}
+              <span class="c-body">{{ reply.reply }}</span>
+            </p>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        <div class="reply-buttons" data-comment-id="{{ comment.id }}"></div>
+        {% endfor %}
+
+       {% else %}
+<p id="no-comments-msg" style="text-align: center;">No comments yet</p>
+{% endif %}
+
+        </div>
+
+
+        <div class="reply-input container" data-product-id="{{ product.id }}">
+          {% if request.user.is_authenticated %}
+          <img src="{{ request.user.customer.image.url }}" alt="User image" class="usr-img">
+          {% else %}
+          <img src="{% static 'images/profilepic.png' %}" alt="Default image" class="usr-img">
+          {% endif %}
+
+          <div class="rating">
+            <input type="number" name="rating" hidden>
+            <i class='bx bx-star star' style="--i: 0;" data-value="1"></i>
+            <i class='bx bx-star star' style="--i: 1;" data-value="2"></i>
+            <i class='bx bx-star star' style="--i: 2;" data-value="3"></i>
+            <i class='bx bx-star star' style="--i: 3;" data-value="4"></i>
+            <i class='bx bx-star star' style="--i: 4;" data-value="5"></i>
+          </div>
+          <textarea class="cmnt-input" placeholder="Add a comment..."></textarea>
+          <button class="bu-primary" id="send-comment">SEND</button>
+        </div>
+      </div>
+    
+  </main>
+
+  <div class="modal">
+    <div class="modal__container" id="modal-container">
+      <div class="modal__content">
+        <div class="modal__close close-modal" title="Close">
+          <i class='bx bx-x'></i>
+        </div>
+
+        <img src="{% static 'images/x.jpeg' %}" alt="" class="modal__img" />
+
+        <h1 class="modal__title">Oops, you have to login!</h1>
+        <p class="modal__description">Please login to perform this action.</p>
+
+ <button class="modal__button modal__button-width" onclick="window.location.href='{% url 'login' %}';">Login</button>
+        <button class="modal__button-link close-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  {% include 'scripts.html' %}
+
+ 
+  <script>
+    const allStar = document.querySelectorAll('.rating .star')
+    const ratingValue = document.querySelector('.rating input')
+
+    allStar.forEach((item, idx) => {
+      item.addEventListener('click', function () {
+        let click = 0
+        ratingValue.value = idx + 1
+
+        allStar.forEach(i => {
+          i.classList.replace('bxs-star', 'bx-star')
+          i.classList.remove('active')
+        })
+        for (let i = 0; i < allStar.length; i++) {
+          if (i <= idx) {
+            allStar[i].classList.replace('bx-star', 'bxs-star')
+            allStar[i].classList.add('active')
+          } else {
+            allStar[i].style.setProperty('--i', click)
+            click++
+          }
+        }
+      })
+    })
+  </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const comments = document.querySelectorAll(".comment.container[data-is-reply='false']");
+    const commentsWrp = document.querySelector(".comments-wrp");
+    const commentsPerPage = 10;
+    let currentIndex = 0;
+
+    function showNextComments() {
+      const nextIndex = currentIndex + commentsPerPage;
+      for (let i = currentIndex; i < nextIndex && i < comments.length; i++) {
+        comments[i].classList.remove("hidden-comment");
+      }
+      currentIndex = nextIndex;
+
+      if (currentIndex >= comments.length) {
+        document.getElementById("see-more-btn")?.remove();
+      }
+    }
+
+    // Initially hide all comments
+    comments.forEach(comment => {
+      comment.classList.add("hidden-comment");
+    });
+
+    // Show first batch
+    showNextComments();
+
+    // Only add button if more than 10 comments
+    if (comments.length > commentsPerPage) {
+      const btn = document.createElement("button");
+      btn.id = "see-more-btn";
+      btn.textContent = "See more comments";
+      btn.style.display = "block";
+      btn.style.margin = "20px auto";
+      btn.style.padding = "10px 20px";
+      btn.style.backgroundColor = "#FF1493";
+      btn.style.color = "white";
+      btn.style.border = "none";
+      btn.style.borderRadius = "8px";
+      btn.style.cursor = "pointer";
+      btn.style.fontSize = "16px";
+
+      btn.addEventListener("click", showNextComments);
+      commentsWrp.appendChild(btn);
+    }
+  });
+</script>
+
+
+</body>
+
+</html>

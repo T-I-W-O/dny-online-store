@@ -1,0 +1,140 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Order Summary email</title>
+</head>
+
+<body style="font-family: 'Arial', sans-serif; background-color: #fff0f5; margin: 0; padding: 0;">
+    <div
+        style="max-width: 700px; margin: auto; background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #FF1493;">⏳ Order Summary</h2>
+            <p style="font-size: 16px; color: #555;">
+                Hello
+                <strong>
+                    {% if customer %}
+                        {{ customer.user.username }}
+                    {% elif guest_customer %}
+                        {{ guest_customer.first_name|default:'Guest' }}
+                    {% endif %}
+                </strong>,<br>
+                Thank you for your order! Your request for order <strong>{{ orders.0.transaction_id }}</strong> has been received.
+                We're getting your items ready for you!
+                
+            </p>
+        </div>
+
+
+        <h3 style="border-bottom: 2px solid #ffe6f2; padding-bottom: 8px; color: #333;">🛍 Order Summary</h3>
+        <table width="100%" cellpadding="10" cellspacing="0"
+                       style="font-size: 14px; color: #333; border-collapse: collapse; margin-bottom: 24px;">
+            <thead>
+                <tr style="background-color: #fff0f5;">
+                    <th align="left">Product</th>
+                    <th align="right">Price (Unit)</th>
+                    <th align="left">Size/Color</th>
+                    <th align="right">Qty</th>
+                    <th align="right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_item in orders %}
+                <tr>
+                    <td>{{ order_item.product.name }}</td>
+                    <td align="right">₦{{ order_item.product.price }}</td>
+                    <td>
+                        {% for detail in order_item.details.all %}
+                            {% if detail.colors.all %}
+                                {% for color in detail.colors.all %}
+                                    {% if detail.size %}Size: {{ detail.size.size }}, {% endif %}
+                                    Color: {{ color.color_name }}<br>
+                                {% endfor %}
+                            {% else %}
+                                {% if detail.size %}Size: {{ detail.size.size }}<br>{% endif %}
+                            {% endif %}
+                        {% empty %}
+                            N/A
+                        {% endfor %}
+                    </td>
+                    <td align="right">{{ order_item.quantity }}</td>
+                    <td align="right">₦{{ order_item.total_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table width="100%" cellpadding="10" cellspacing="0" style="font-size: 14px; color: #333;">
+            <tr>
+                <td><strong>Total Quantity:</strong></td>
+                <td align="right">{{ total_quantity }}</td>
+            </tr>
+            {% if applied_coupon %}
+            <tr>
+                <td><strong>Coupon:</strong></td>
+                <td align="right" class="text-success">
+                    {% if applied_coupon.is_percent %}
+                        -{{ applied_coupon.amount }}%
+                    {% else %}
+                        -₦{{ applied_coupon.amount}}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Grand Total:</strong></td>
+                <td align="right"><strong>₦{{ total_price }}</strong></td>
+            </tr>
+        </table>
+
+        <h3 style="margin-top: 32px; border-bottom: 2px solid #ffe6f2; padding-bottom: 8px; color: #333;">📦 Delivery Information</h3>
+        <table width="100%" cellpadding="10" cellspacing="0" style="font-size: 14px; color: #333;">
+            <tr>
+                <td><strong>Customer:</strong></td>
+                <td>
+                    {% if customer %}
+                        {{ customer.last_name|capfirst }} {{ customer.first_name|capfirst }}
+                    {% elif guest_customer %}
+                        {{ guest_customer.last_name|default:''|capfirst }} {{ guest_customer.first_name|default:'Guest'|capfirst }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Address:</strong></td>
+                {% if shipping.mode == "Pickup" %}
+                <td>
+                    (PICKUP):<br>
+                    42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1
+                </td>
+                {% else %}
+                <td>
+                    (DELIVERY):{{ shipping.address }}<br>
+                    {{ shipping.town|capfirst }}{% if shipping.local_government %} - {{ shipping.local_government|capfirst }}{% endif %}, {{ shipping.state|capfirst }}, {{ shipping.country|capfirst }}
+                </td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td><strong>Delivery Date:</strong></td>
+                
+                <td>{{ shipping.deliverydate|format_date_range }}</td>
+            </tr>
+            <tr>
+                <td><strong>Email:</strong></td>
+                <td>{{ shipping.email }}</td>
+            </tr>
+            <tr>
+                <td><strong>Phone:</strong></td>
+                <td>{{ shipping.whatsapp_number }}</td>
+            </tr>
+        </table>
+
+        <div
+            style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eaeaea; text-align: center; font-size: 12px; color: #777;">
+           
+            <p>© {{now}} DNY. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

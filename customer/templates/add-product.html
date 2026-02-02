@@ -1,0 +1,855 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Product</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <style>
+        /* All necessary variables and base styles are duplicated here */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            --clr-danger: #ff7782;
+            --clr-success: #41f1b6;
+            --clr-white: #fff;
+            --clr-info-dark: #7d8da1;
+            --clr-info-light: #dce1eb;
+            --clr-dark: #363949;
+            /* Keeping this as the default text color */
+            --clr-warnig: #ff4edc;
+            --clr-light: rgba(132, 139, 200, 0.18);
+            --clr-primary-variant: #111e88;
+            --clr-dark-variant: #677483;
+            --clr-color-background: #f6f6f9;
+            /* Keeping this as the default background */
+
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 2rem 3rem var(--clr-light);
+            --clr-primary-rgb: 255, 20, 147;
+            /* Helper for primary color in rgba for box-shadow */
+        }
+
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            font-size: .7rem;
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* Container for product page - similar to dashboard-container but centered */
+        .product-page-container {
+            width: 96%;
+            max-width: 900px;
+            margin: 1.4rem auto;
+        }
+
+        /* Common Typography and Utility Classes */
+        h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            /* Adjusted for a page title */
+            color: var(--clr-dark);
+            margin-bottom: 1.4rem;
+            /* Spacing for the title */
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--clr-dark);
+            margin-bottom: 0.8rem;
+        }
+
+        h3 {
+            font-size: 0.87;
+            color: var(--clr-dark);
+        }
+
+        h4 {
+            font-weight: 0.8rem;
+        }
+
+        h5 {
+            font-size: 0.77rem;
+        }
+
+        small {
+            font-size: 0.75rem;
+        }
+
+        p {
+            color: var(--clr-dark-variant);
+        }
+
+        b {
+            color: var(--clr-dark);
+        }
+
+        .text-muted {
+            color: var(--clr-info-dark);
+        }
+
+        .primary {
+            color: var(--clr-primary);
+        }
+
+        .success {
+            color: var(--clr-success);
+        }
+
+        .danger {
+            color: var(--clr-danger);
+        }
+
+        .warning {
+            color: var(--clr-warnig);
+        }
+
+        /* Form Section Styles */
+        .form-section {
+            background-color: var(--clr-white);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--card-padding);
+            margin-bottom: 1.5rem;
+            /* Consistent with dashboard spacing */
+            transition: all .3s ease;
+        }
+
+        .form-section:hover {
+            box-shadow: none;
+            /* Interactive hover effect */
+        }
+
+        /* Form Element Styles */
+        .form-group {
+            margin-bottom: 1rem;
+            /* Spacing between form fields */
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--clr-dark);
+            /* Using dashboard text color */
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--clr-info-light);
+            /* Using dashboard light border color */
+            border-radius: var(--border-radius-1);
+            /* Small border radius for inputs */
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--clr-dark);
+            /* Using dashboard text color */
+            background-color: var(--clr-white);
+            transition: all 0.3s ease;
+            /* Smooth transition for focus */
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            border-color: var(--clr-primary);
+            /* Primary color on focus */
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(var(--clr-primary-rgb), 0.25);
+            /* Light primary shadow */
+        }
+
+        /* Error Message Styles */
+        .error-message {
+            background-color: var(--clr-danger);
+            /* Use danger color for background */
+            color: var(--clr-white);
+            /* White text for better contrast */
+            padding: 1rem;
+            border-radius: var(--border-radius-1);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .error-message.success-message {
+            background-color: var(--clr-success);
+        }
+
+        .error-list {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 0.5rem;
+        }
+
+        .error-list li {
+            margin-bottom: 0.25rem;
+            color: var(--clr-white);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-1);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            /* For better alignment with icons */
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            /* Space between text and icon */
+        }
+
+        .btn-primary {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--clr-primary-variant);
+            /* Darker primary on hover */
+        }
+
+        .btn-secondary {
+            background-color: var(--clr-info-dark);
+            color: var(--clr-white);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--clr-dark-variant);
+        }
+
+        .btn-danger {
+            background-color: var(--clr-danger);
+            color: var(--clr-white);
+        }
+
+        .btn-danger:hover {
+            background-color: #e03e4d;
+            /* Slightly darker red */
+        }
+
+        /* Image Upload and Preview Styles */
+        .image-upload-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            /* Add some space below the image upload */
+        }
+
+        .image-upload-item {
+            display: flex;
+            flex-direction: column;
+            /* Stack label, input, preview */
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+            /* Align elements to the start */
+        }
+
+        .image-upload-item label {
+            font-weight: 600;
+        }
+
+        .image-upload-item input[type="file"] {
+            width: 100%;
+            /* Take full width */
+            padding: 0.5rem;
+            /* Adjust padding for file input */
+            border: 1px solid var(--clr-info-light);
+            border-radius: var(--border-radius-1);
+        }
+
+        .image-preview-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            /* Align preview left */
+        }
+
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border: 1px solid var(--clr-info-light);
+            border-radius: var(--border-radius-1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: var(--clr-info-light);
+            /* Light background for empty preview */
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        /* General Color Input Styles */
+        .general-color-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .general-color-item .form-input {
+            flex-grow: 1;
+        }
+
+        /* Product Size Section Styles */
+        .product-size-item {
+            background-color: var(--clr-info-light);
+            /* Light background for each size group */
+            border-radius: var(--border-radius-1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .product-size-item .form-group {
+            margin-bottom: 0;
+            /* Remove extra margin within the size item */
+        }
+
+        .product-size-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+        }
+
+        .size-colors-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-left: 1rem; /* Indent colors for visual hierarchy */
+            border-left: 2px solid var(--clr-info-dark); /* Visual separation */
+        }
+
+        .size-color-entry {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .size-color-entry .form-input {
+            flex-grow: 1;
+        }
+
+
+        /* Grid for form layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            /* Equivalent to gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 768px) {
+            .product-page-container {
+                width: 100%;
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="product-page-container">
+        <h1>Create New Product</h1>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div
+            class="error-message {% if message.tags == 'success' %}success-message{% elif message.tags == 'error' %}danger{% endif %}">
+            <h4>{{ message.tags|capfirst }}!</h4>
+            <ul class="error-list">
+                <li>{{ message }}</li>
+            </ul>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if product_form.errors or image_form.errors %}
+        <div class="error-message danger">
+            <h4>Please correct the following errors:</h4>
+            <ul class="error-list">
+                {% for field in product_form %}
+                {% for error in field.errors %}
+                <li><small>{{ field.label }}: {{ error }}</small></li>
+                {% endfor %}
+                {% endfor %}
+                {% for error in product_form.non_field_errors %}
+                <li><small>{{ error }}</small></li>
+                {% endfor %}
+
+                {% for field in image_form %}
+                {% for error in field.errors %}
+                <li><small>{{ field.label }}: {{ error }}</small></li>
+                {% endfor %}
+                {% endfor %}
+                {% for error in image_form.non_field_errors %}
+                <li><small>{{ error }}</small></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form action="{% url 'add_product' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h2>Basic Product Information</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_name" class="form-label">Product Name</label>
+                        <input type="text" id="id_name" name="name" class="form-input"
+                            value="{{ form.name.value|default:'' }}" required>
+                        {% if form.name.errors %}
+                        <ul class="error-list">{% for error in form.name.errors %}
+                                <li><small class="danger">{{ error }}</small></li>{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_price" class="form-label">Price (₦)</label>
+                        <input type="number" id="id_price" name="price" class="form-input"
+                            value="{{ form.price.value|default:'' }}" step="0.01" required>
+                        {% if form.price.errors %}
+                        <ul class="error-list">{% for error in form.price.errors %}
+                                <li><small class="danger">{{ error }}</small></li>{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_limit" class="form-label">Stock Quantity</label>
+                        <input type="number" id="id_limit" name="limit" class="form-input"
+                            value="{{ form.limit.value|default:'' }}" required>
+                        {% if form.limit.errors %}
+                        <ul class="error-list">
+                            {% for error in form.limit.errors %}
+                            <li><small class="danger">{{ error }}</small></li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="id_discounted_price" class="form-label">Discounted Price (₦) (Optional)</label>
+                        <input type="number" id="id_discounted_price" name="discounted_price" class="form-input"
+                            value="{{ form.discounted_price.value|default:'' }}" step="0.01">
+                        {% if form.discounted_price.errors %}
+                        <ul class="error-list">{% for error in form.discounted_price.errors %}
+                                <li><small class="danger">{{ error }}</small></li>{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_category" class="form-label">Category</label>
+                        <select id="id_category" name="category" class="form-select" required>
+                            <option value="">Select a category</option>
+                            {% for key, label in categories %}
+                            <option value="{{ key }}"
+                                {% if form.category.value|stringformat:"s" == key|stringformat:"s" %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.category.errors %}
+                        <ul class="error-list">
+                            {% for error in form.category.errors %}
+                            <li><small class="danger">{{ error }}</small></li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label for="id_description" class="form-label">Description</label>
+                    <textarea id="id_description" name="description" class="form-textarea" rows="5"
+                        required>{{ form.description.value|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                    <ul class="error-list">{% for error in form.description.errors %}
+                            <li><small class="danger">{{ error }}</small></li>{% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Product Images</h2>
+                <p class="text-muted" style="margin-bottom: 1rem;">Upload up to 5 images. At least one image (Image 1)
+                    is required.</p>
+
+                <div class="form-grid">
+                    {# Image 1 #}
+                    <div class="image-upload-item">
+                        <label for="{{ image_form.image_1.id_for_label }}" class="form-label">{{ image_form.image_1.label }}</label>
+                        {{ image_form.image_1 }}
+                        <div class="image-preview" id="image-preview-1">
+                            {% if image_form.image_1.value and image_form.image_1.value.url %}
+                            <img src="{{ image_form.image_1.value.url }}" alt="Product Image 1">
+                            {% else %}
+                            <span class="material-symbols-sharp text-muted">image</span>
+                            {% endif %}
+                        </div>
+                        {% if image_form.image_1.errors %}
+                        <ul class="error-list">{% for error in image_form.image_1.errors %}<li><small class="danger">{{ error }}</small></li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    {# Image 2 #}
+                    <div class="image-upload-item">
+                        <label for="{{ image_form.image_2.id_for_label }}" class="form-label">{{ image_form.image_2.label }}</label>
+                        {{ image_form.image_2 }}
+                        <div class="image-preview" id="image-preview-2">
+                            {% if image_form.image_2.value and image_form.image_2.value.url %}
+                            <img src="{{ image_form.image_2.value.url }}" alt="Product Image 2">
+                            {% else %}
+                            <span class="material-symbols-sharp text-muted">image</span>
+                            {% endif %}
+                        </div>
+                        {% if image_form.image_2.errors %}
+                        <ul class="error-list">{% for error in image_form.image_2.errors %}<li><small class="danger">{{ error }}</small></li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    {# Image 3 #}
+                    <div class="image-upload-item">
+                        <label for="{{ image_form.image_3.id_for_label }}" class="form-label">{{ image_form.image_3.label }}</label>
+                        {{ image_form.image_3 }}
+                        <div class="image-preview" id="image-preview-3">
+                            {% if image_form.image_3.value and image_form.image_3.value.url %}
+                            <img src="{{ image_form.image_3.value.url }}" alt="Product Image 3">
+                            {% else %}
+                            <span class="material-symbols-sharp text-muted">image</span>
+                            {% endif %}
+                        </div>
+                        {% if image_form.image_3.errors %}
+                        <ul class="error-list">{% for error in image_form.image_3.errors %}<li><small class="danger">{{ error }}</small></li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    {# Image 4 #}
+                    <div class="image-upload-item">
+                        <label for="{{ image_form.image_4.id_for_label }}" class="form-label">{{ image_form.image_4.label }}</label>
+                        {{ image_form.image_4 }}
+                        <div class="image-preview" id="image-preview-4">
+                            {% if image_form.image_4.value and image_form.image_4.value.url %}
+                            <img src="{{ image_form.image_4.value.url }}" alt="Product Image 4">
+                            {% else %}
+                            <span class="material-symbols-sharp text-muted">image</span>
+                            {% endif %}
+                        </div>
+                        {% if image_form.image_4.errors %}
+                        <ul class="error-list">{% for error in image_form.image_4.errors %}<li><small class="danger">{{ error }}</small></li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    {# Image 5 #}
+                    <div class="image-upload-item">
+                        <label for="{{ image_form.image_5.id_for_label }}" class="form-label">{{image_form.image_5.label }}</label>
+                        {{ image_form.image_5 }}
+                        <div class="image-preview" id="image-preview-5">
+                            {% if image_form.image_5.value and image_form.image_5.value.url %}
+                            <img src="{{ image_form.image_5.value.url }}" alt="Product Image 5">
+                            {% else %}
+                            <span class="material-symbols-sharp text-muted">image</span>
+                            {% endif %}
+                        </div>
+                        {% if image_form.image_5.errors %}
+                        <ul class="error-list">{% for error in image_form.image_5.errors %}<li><small class="danger">{{error }}</small></li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label for="{{ image_form.main_image.id_for_label }}" class="form-label">
+                        {{ image_form.main_image.label }}
+                    </label>
+
+                    <select id="{{ image_form.main_image.id_for_label }}" name="{{ image_form.main_image.name }}"
+                        class="form-select" required>
+
+                        {% for choice in image_form.main_image.field.choices %}
+                            <option value="{{ choice.0 }}"
+                                {% if image_form.main_image.value|stringformat:"s" == choice.0|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ choice.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.8rem;">
+                        Choose which of the uploaded images will be the main display image for your product.
+                    </p>
+
+                    {% if image_form.main_image.errors %}
+                        <ul class="error-list">
+                            {% for error in image_form.main_image.errors %}
+                                <li><small class="danger">{{ error }}</small></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+            </div>
+
+
+            <div class="form-section">
+                <h2>General Product Colors (Optional)</h2>
+                <p class="text-muted" style="margin-bottom: 1rem;">Add colors if the product has no specific sizes, but
+                    comes in different colors.</p>
+                <div id="general-color-wrapper">
+                    {# Example initial input, will be cloned by JS #}
+                    <div class="form-group general-color-item">
+                        <input type="text" name="general_colors[]" class="form-input" placeholder="e.g., Red, Blue">
+                        <button type="button" class="btn btn-danger remove-general-color">
+                            <span class="material-symbols-sharp">close</span>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" id="add-general-color" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <span class="material-symbols-sharp">add</span> Add Another Color
+                </button>
+            </div>
+
+
+
+            <div class="form-section">
+                <h2>Product Sizes (Optional)</h2>
+                <p class="text-muted" style="margin-bottom: 1rem;">Define product sizes and their available colors.
+                    Each size can have multiple colors.</p>
+                <div id="product-sizes-wrapper">
+                    {# This is a template for a single size entry, to be cloned by JavaScript #}
+                    <div class="product-size-item" id="size-template" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Size Name</label>
+                            <input type="text" name="sizes[][name]" class="form-input size-name-input"
+                                placeholder="e.g., Small, M, UK 10">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Available Colors for this Size</label>
+                            <div class="size-colors-wrapper">
+                                {# Template for a single color input within a size, to be cloned #}
+                                <div class="size-color-entry" id="size-color-template" style="display: none;">
+                                    <input type="text" name="sizes[][colors][]" class="form-input size-color-input"
+                                        placeholder="e.g., Red, Blue">
+                                    <button type="button" class="btn btn-danger remove-size-color">
+                                        <span class="material-symbols-sharp">close</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary add-color-to-size" style="margin-top: 0.5rem;">
+                                <span class="material-symbols-sharp">add</span> Add Color to this Size
+                            </button>
+                        </div>
+                        <div class="product-size-actions">
+                            <button type="button" class="btn btn-danger remove-size-item">
+                                <span class="material-symbols-sharp">close</span> Remove Size
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="add-product-size" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <span class="material-symbols-sharp">add</span> Add Another Size
+                </button>
+            </div>
+
+            <div class="form-group" style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-symbols-sharp">add</span> Create Product
+                </button>
+                <a href="{% url 'admin-products' %}" class="btn btn-secondary">
+                    <span class="material-symbols-sharp">cancel</span> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Update the previewImage function to work with direct field IDs
+        function previewImage(event, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = ''; // Clear previous preview
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-sharp text-muted';
+                icon.textContent = 'image';
+                preview.appendChild(icon);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Attach onchange listeners for each image input
+            document.getElementById('id_image_1').addEventListener('change', (event) => previewImage(event, 'image-preview-1'));
+            document.getElementById('id_image_2').addEventListener('change', (event) => previewImage(event, 'image-preview-2'));
+            document.getElementById('id_image_3').addEventListener('change', (event) => previewImage(event, 'image-preview-3'));
+            document.getElementById('id_image_4').addEventListener('change', (event) => previewImage(event, 'image-preview-4'));
+            document.getElementById('id_image_5').addEventListener('change', (event) => previewImage(event, 'image-preview-5'));
+
+
+            const addGeneralColorBtn = document.getElementById('add-general-color');
+            const generalColorWrapper = document.getElementById('general-color-wrapper');
+
+            // Add new general color input field
+            addGeneralColorBtn.addEventListener('click', function () {
+                const newColorItem = document.createElement('div');
+                newColorItem.className = 'form-group general-color-item';
+                newColorItem.innerHTML = `
+                    <input type="text" name="general_colors[]" class="form-input" placeholder="e.g., Green, Yellow">
+                    <button type="button" class="btn btn-danger remove-general-color">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                `;
+                generalColorWrapper.appendChild(newColorItem);
+            });
+
+            // Remove general color input field
+            generalColorWrapper.addEventListener('click', function (event) {
+                if (event.target.closest('.remove-general-color')) {
+                    event.target.closest('.general-color-item').remove();
+                }
+            });
+
+            // --- Product Sizes Logic ---
+            const addProductSizeBtn = document.getElementById('add-product-size');
+            const productSizesWrapper = document.getElementById('product-sizes-wrapper');
+            const sizeTemplate = document.getElementById('size-template');
+            const sizeColorTemplate = document.getElementById('size-color-template');
+
+            let sizeIndex = 0; // To keep track of unique size indices
+
+            // Function to add a new product size item
+            function addProductSizeItem() {
+                const newSizeItem = sizeTemplate.cloneNode(true);
+                newSizeItem.style.display = 'flex'; // Make it visible
+                newSizeItem.removeAttribute('id'); // Remove template ID
+
+                const currentSizeIndex = sizeIndex++; // Get current index and increment
+
+                // Update names to ensure unique indexing for backend processing
+                const sizeNameInput = newSizeItem.querySelector('.size-name-input');
+                sizeNameInput.name = `sizes[${currentSizeIndex}][name]`;
+
+                // Clone an initial color input for the new size
+                const newColorEntry = sizeColorTemplate.cloneNode(true);
+                newColorEntry.style.display = 'flex';
+                newColorEntry.removeAttribute('id');
+                newColorEntry.querySelector('.size-color-input').name = `sizes[${currentSizeIndex}][colors][]`;
+                newSizeItem.querySelector('.size-colors-wrapper').appendChild(newColorEntry);
+
+                productSizesWrapper.appendChild(newSizeItem);
+            }
+
+            // Add an initial size item when the page loads
+            addProductSizeItem();
+
+            addProductSizeBtn.addEventListener('click', addProductSizeItem);
+
+            // Event delegation for removing product size items
+            productSizesWrapper.addEventListener('click', function (event) {
+                if (event.target.closest('.remove-size-item')) {
+                    event.target.closest('.product-size-item').remove();
+                }
+
+                // Event delegation for adding a color to a specific size
+                if (event.target.closest('.add-color-to-size')) {
+                    const addButton = event.target.closest('.add-color-to-size');
+                    const sizeItem = addButton.closest('.product-size-item');
+                    const sizeColorsWrapper = sizeItem.querySelector('.size-colors-wrapper');
+
+                    // Extract the size index from an existing input name
+                    const sizeNameInput = sizeItem.querySelector('.size-name-input');
+                    const match = sizeNameInput.name.match(/sizes\[(\d+)\]\[name\]/);
+                    if (match && match[1]) {
+                        const currentSizeIndex = match[1];
+
+                        const newColorEntry = sizeColorTemplate.cloneNode(true);
+                        newColorEntry.style.display = 'flex';
+                        newColorEntry.removeAttribute('id');
+                        newColorEntry.querySelector('.size-color-input').name = `sizes[${currentSizeIndex}][colors][]`;
+                        sizeColorsWrapper.appendChild(newColorEntry);
+                    }
+                }
+
+                // Event delegation for removing a color from a specific size
+                if (event.target.closest('.remove-size-color')) {
+                    event.target.closest('.size-color-entry').remove();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
+{% endblock %}

@@ -1,0 +1,473 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories|{{ category_name }}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff; /* Light grey background */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Container for the product grid */
+        .products-container {
+            padding: 1rem; /* px-4 */
+        }
+        @media (min-width: 640px) { /* sm:px-6 */
+            .products-container {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        @media (min-width: 768px) { /* md:px-8 */
+            .products-container {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr)); /* grid-cols-2 */
+            gap: 1rem; /* gap-4 */
+        }
+        @media (min-width: 640px) { /* sm:grid-cols-2 */
+            .product-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 768px) { /* md:grid-cols-3 */
+            .product-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) { /* lg:grid-cols-4 */
+            .product-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        /* Product Card */
+        .product-card {
+            background-color: #ffffff; /* bg-white */
+            border-radius: 0.5rem; /* rounded-lg */
+           
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* Image Container */
+        .img-container {
+            position: relative;
+            height: 12rem; /* h-48 (12 * 16px = 192px) */
+            overflow: hidden;
+        }
+
+        .img-container .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Status Tag */
+        .status-tag {
+            position: absolute;
+            top: 0.625rem; /* 10px */
+            left: 0.625rem; /* 10px */
+            background-color: #FF1493; /* bg-pink-500 */
+            color: white;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 0.3rem;
+            z-index: 3;
+            text-transform: uppercase;
+        }
+
+        /* Slideshow Arrows */
+        .img-container .arrow-left,
+        .img-container .arrow-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            z-index: 2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .img-container .arrow-left:hover,
+        .img-container .arrow-right:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .img-container .arrow-left {
+            left: 10px;
+        }
+
+        .img-container .arrow-right {
+            right: 10px;
+        }
+
+        /* Product Info Section */
+        .product-info {
+            padding: 1rem; /* p-4 */
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* flex-grow */
+        }
+
+        .product-info h3 {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 500; /* font-medium */
+            color: #1a202c; /* text-gray-800 */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        /* Price Display */
+        .price-display {
+            display: flex;
+            flex-wrap: wrap; /* flex-wrap */
+            align-items: baseline; /* items-baseline */
+            gap: 0.5rem; /* gap-x-2 */
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+
+        .current-price {
+            color: #1f2937; /* text-gray-900 */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+        }
+
+        .discounted-price {
+            color: #6b7280; /* text-gray-500 */
+            font-size: 0.875rem; /* text-sm */
+            text-decoration: line-through;
+        }
+
+        .discounted-price.invisible {
+            visibility: hidden;
+        }
+
+        /* Color Variants */
+        .color-variants {
+            display: flex;
+            flex-wrap: wrap; /* flex-wrap */
+            gap: 0.5rem; /* gap-2 */
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+
+        .color-circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 1px solid black;
+        }
+
+        /* Size Variants */
+        .size-variants {
+            display: flex;
+            flex-wrap: wrap; /* flex-wrap */
+            gap: 0.5rem; /* gap-2 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .size-box {
+            border: 1px solid #ccc;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        /* View Button */
+        .view-button {
+            margin-top: auto; /* mt-auto */
+            width: 100%; /* w-full */
+            background-color: #FF1493; /* bg-pink-500 */
+            color: white;
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.375rem; /* rounded-md */
+            transition: background-color 0.3s ease; /* transition duration-300 */
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .view-button:hover {
+            background-color: #db0a7e; /* hover:bg-pink-600 */
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 8px;
+            column-gap: 12px;
+            background: #fff;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px; /* Add some margin to separate from the product grid */
+        }
+
+        .pagination-button {
+            border: none;
+            height: 45px;
+            width: 45px;
+            font-size: 20px;
+            color: #666666;
+            background-color: #f2f2f2;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none; /* For the <a> elements acting as buttons */
+        }
+
+        .pagination-button i {
+            pointer-events: none;
+        }
+
+        .pagination-button:disabled,
+        .pagination-button.disabled {
+            color: #b3b3b3;
+            pointer-events: none;
+            opacity: 0.5; /* Visually dims */
+        }
+
+        .pagination-button:hover {
+            color: #fff;
+            background: #FF1493;
+        }
+
+        .current-page-box {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: #f8f8f8;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 120px;
+            display: inline-block;
+            border-radius: 6px; /* Match button border-radius */
+        }
+
+    </style>
+</head>
+
+<body>
+    {% include 'notify.html' %}
+        <div class="bg-black text-white py-4 text-center">
+            <h1 class="text-2xl font-bold">{{ category_name }} Product</h1>
+            </div>
+    <div class="products-container">
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="img-container">
+                    {# Status tag on top of the image #}
+                                        {% if product.limit == 0 %}
+                    <div class="status-tag">Sold</div>
+                    {% elif product.discounted_price and product.discounted_price > 0 %}
+                    <div class="status-tag">Discount</div>
+                    {% elif product.is_new %}
+                    <div class="status-tag">New</div>
+                    {% endif %}
+
+                    {# Display the main image based on type, as in the first code #}
+                    {% for image in product.images.all %}
+                        {% if image.type == 'Main' %}
+                            <img src="{{ image.image.url }}" alt="{{ product.name }} Image" class="product-img" id="img{{ product.id }}" />
+                        {% endif %}
+                    {% endfor %}
+                    {# Fallback if no 'Main' image found or product has no images #}
+                    {% if not product.images.all %}
+                        <img src="https://placehold.co/600x400/E5E7EB/1F2937?text=No+Image" alt="No Image" class="product-img" id="img{{ product.id }}" />
+                    {% endif %}
+
+                    {% if product.images.count > 1 %}
+                    <button class="arrow-left" onclick="manualChangeImage('img{{ product.id }}', -1, {{ product.id }})">&#10094;</button>
+                    <button class="arrow-right" onclick="manualChangeImage('img{{ product.id }}', 1, {{ product.id }})">&#10095;</button>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3>{{ product.name|capfirst }}</h3>
+                     <div class="price-display">
+                        {% if product.discounted_price %}
+                        <span class="current-price">{{ product.discounted_price|format_k }}</span>
+                        <span class="discounted-price">
+                            {% if product.discounted_price %}{{ product.price|format_k }}{% else %}&nbsp;{% endif %}
+                        </span>
+                        {% else %}
+                         <div class="price-display">
+                        <span class="current-price">{{ product.price|format_k }}</span>
+                    </div>
+                        {% endif %}
+                    </div>
+
+                    {# ADDED: Color Variants Section #}
+                    <div class="color-variants">
+                        {% for color_variant in product.color_variants.all %}
+                            {% for color in color_variant.colors.all %}
+                                <div class="color-circle" style="background-color: {{ color.color_name|lower }};"></div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+
+                    {# ADDED: Size Variants Section #}
+                    {% if product.size_variants.exists %}
+                    <div class="size-variants">
+                        {% for variant in product.size_variants.all %}
+                            <div class="size-box">{{ variant.size }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'product' pk=product.id %}" class="view-button">
+                        View
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+{% include 'searchbar.html' %}
+    {% endif %}
+</div>
+<div class="pagination-container">
+    <a href="?page=1" class="pagination-button" id="startBtn"><i class="fa-solid fa-angles-left"></i>
+    </a>
+    {% if products.has_previous %}
+    <a href="?page={{ products.previous_page_number }}" class="pagination-button" id="prev">
+        <i class="fa-solid fa-angle-left"></i>
+    </a>
+    {% else %}
+    <a class="pagination-button disabled" id="prev">
+        <i class="fa-solid fa-angle-left"></i>
+    </a>
+    {% endif %}
+
+    <span class="current-page-box" id="currentPageBox">Page {{ products.number }} of {{ products.paginator.num_pages}}
+        </span>
+
+    {% if products.has_next %}
+    <a href="?page={{ products.next_page_number }}" class="pagination-button"><i class="fa-solid fa-angle-right"></i>
+    </a>
+    {% else %}
+    <a class="pagination-button disabled" id="prev">
+        <i class="fa-solid fa-angle-right"></i>
+    </a>
+    {% endif %}
+    <a href="?page={{ products.paginator.num_pages }}" class="pagination-button"><i class="fa-solid fa-angles-right"></i></a>
+</div>
+    {% include 'pricerange.html' %}
+    {% include 'whatsapp_icon.html' %}
+</body>
+<script>
+    // Store product images globally accessible by their product ID
+    const allProductImagesData = {};
+
+    window.onload = () => {
+        {% for product in products %}
+        // Populate allProductImagesData
+        allProductImagesData[{{ product.id }}] = [
+            {% for image in product.images.all %}
+            "{{ image.image.url }}"{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        // Start auto slideshow only if there are images available
+        if (allProductImagesData[{{ product.id }}].length > 0) {
+            startAutoSlideshow('img{{ product.id }}', allProductImagesData[{{ product.id }}], {{ product.id }});
+        }
+        {% endfor %}
+    };
+
+    // Automatic slideshow settings
+    var autoSlideshowInterval = 3000; // Time between image changes (ms)
+    var autoSlideshowTimers = {};
+
+    // Function to change the image
+    function changeImage(id, direction, productImages) {
+        var currentImage = document.getElementById(id);
+        if (!currentImage || productImages.length === 0) return;
+
+        var currentSrc = currentImage.src;
+
+        // Find the current index of the image in the array
+        var currentIndex = productImages.findIndex(imgUrl => currentSrc.endsWith(imgUrl));
+
+        // Fallback if current image not found in array (e.g., first load of a dynamic image)
+        if (currentIndex === -1) {
+            currentIndex = 0; // Default to the first image in the list
+        }
+
+        // Calculate the next index in a circular manner
+        var nextIndex = (currentIndex + direction + productImages.length) % productImages.length;
+
+        // Update the image source
+        currentImage.src = productImages[nextIndex];
+    }
+
+    // Start automatic slideshow
+    function startAutoSlideshow(id, productImages, cardNumber) {
+        stopAutoSlideshow(cardNumber); // Clear any existing timers
+        if (productImages.length > 1) { // Only start slideshow if more than one image
+            autoSlideshowTimers[cardNumber] = setInterval(() => {
+                changeImage(id, 1, productImages);
+            }, autoSlideshowInterval);
+        }
+    }
+
+    // Stop automatic slideshow
+    function stopAutoSlideshow(cardNumber) {
+        if (autoSlideshowTimers[cardNumber]) {
+            clearInterval(autoSlideshowTimers[cardNumber]);
+            delete autoSlideshowTimers[cardNumber];
+        }
+    }
+
+    // Manual change (stops auto slideshow temporarily)
+    function manualChangeImage(id, direction, cardNumber) {
+        const productImages = allProductImagesData[cardNumber]; // Get the correct array using the cardNumber
+        if (!productImages) return; // Safeguard if array not found
+
+        stopAutoSlideshow(cardNumber); // Stop auto slideshow
+        changeImage(id, direction, productImages); // Change image manually
+        // Restart auto slideshow after a short delay to allow user to see manual change
+        setTimeout(() => {
+            startAutoSlideshow(id, productImages, cardNumber);
+        }, 1000); // Restart after 1 second, adjust as needed
+    }
+</script>
+</html>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Page</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            --clr-danger: #EF4444;
+            --clr-success: #10B981;
+            --clr-white: #fff;
+            --clr-info-dark: #4B5563;
+            --clr-info-light: #D1D5DB;
+            --clr-dark: #1F2937;
+            --clr-warning: #F59E0B;
+            --clr-light: rgba(209, 213, 219, 0.3);
+            --clr-primary-variant: #5A3A9F;
+            --clr-dark-variant: #6B7280;
+            --clr-color-background: #F9FAFB;
+
+            --card-border-radius: 1.5rem;
+            --border-radius-2: 0.8rem;
+
+            --card-padding: 1.5rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 1rem 2rem var(--clr-light);
+
+            /* Custom color for unread notifications */
+            --clr-unread-pink: rgba(255, 105, 180, 0.2);
+            --clr-read-background: #f0f2f5;
+        }
+
+        body {
+            background-color: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            padding: 2rem;
+        }
+
+        .notification-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        .notification-section {
+            background-color: var(--clr-white);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--card-padding);
+            margin-bottom: 2rem;
+        }
+
+        .notification-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        /* New styles for the filter buttons */
+        .filter-buttons {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--clr-info-dark);
+            background-color: var(--clr-white);
+            color: var(--clr-info-dark);
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border-color: var(--clr-primary);
+        }
+
+        .profile-photo img {
+            width: 2.8rem;
+            height: 2.8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .notification {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: var(--padding-1);
+            border-radius: var(--border-radius-2);
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            background-color: var(--clr-white);
+        }
+
+        /* This rule will override the above one for unread notifications */
+        .notification.unread {
+            background-color: var(--clr-unread-pink);
+        }
+
+        /* This is a good hover effect for read notifications */
+        .notification:not(.unread):hover {
+            background-color: #f0f2f5;
+        }
+
+        .notification .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification .message {
+            flex-grow: 1;
+        }
+
+        .notification .message .title {
+            font-weight: 600;
+            color: var(--clr-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .notification .message .time {
+            font-size: 0.7rem;
+            color: var(--clr-dark-variant);
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            border: 2px solid #ddd;
+        }
+        
+        .notification-link.hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="notification-container">
+
+        {% if general_notifications %}
+        <div class="notification-section">
+            <div class="notification-header">
+                <h2>General Notices</h2>
+            </div>
+            <div class="notification-list">
+                {% for notice in general_notifications %}
+                <div class="notification" data-notice-id="{{ notice.id }}" data-url="{{ notice.url }}">
+                    <div class="icon">
+                        <span class="material-symbols-sharp">campaign</span>
+                    </div>
+                    <div class="message">
+                        <div class="title">{{ notice.notice }}</div>
+                        <div class="time">{{ notice.created_at|date:"F d, Y P" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="notification-section">
+            <div class="notification-header">
+                <h2>Your Notifications</h2>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="unread">Unread</button>
+                <button class="filter-btn" data-filter="read">Read</button>
+            </div>
+            <div class="notification-list">
+                {% if normal_notifications %}
+                {% for notice in normal_notifications %}
+                <div class="notification-link" data-id="{{ notice.id }}" data-url="{{ notice.url|default:'#' }}">
+                    <div class="notification {% if not notice.read %}unread{% endif %}">
+                        <div class="icon">
+                            {% if notice.from_customer and notice.from_customer.image %}
+                            <img src="{{ notice.from_customer.image.url }}" alt="Customer" class="profile-pic" />
+                            {% elif notice.from_guest_customer %}
+                            <span class="material-symbols-sharp text-blue-600 text-xl mr-2">person</span>
+                            {% elif notice.is_system %}
+                            <span class="material-symbols-sharp icon">notifications</span>
+                            {% endif %}
+                        </div>
+                        <div class="message">
+                            <div class="title">{{ notice.notice }}</div>
+                            <div class="time">{{ notice.created_at|date:"F d, Y P" }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="no-notifications">
+                    <p>You have no new notifications.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const notificationLinks = document.querySelectorAll('.notification-link');
+            
+            // Initial state: Hide "no notifications" message if there are any notifications
+            const noNotificationsMessage = document.querySelector('.no-notifications');
+            if (noNotificationsMessage) {
+                noNotificationsMessage.style.display = notificationLinks.length > 0 ? 'none' : 'block';
+            }
+
+            // --- Notification Filtering Logic ---
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove 'active' class from all buttons and add to the clicked one
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const filter = this.getAttribute('data-filter');
+                    let visibleCount = 0;
+
+                    notificationLinks.forEach(link => {
+                        const notification = link.querySelector('.notification');
+                        const isUnread = notification.classList.contains('unread');
+
+                        if (filter === 'all' || (filter === 'unread' && isUnread) || (filter === 'read' && !isUnread)) {
+                            link.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            link.style.display = 'none';
+                        }
+                    });
+
+                    // Handle the "no notifications" message
+                    if (noNotificationsMessage) {
+                        if (visibleCount > 0) {
+                            noNotificationsMessage.style.display = 'none';
+                        } else {
+                            noNotificationsMessage.style.display = 'block';
+                        }
+                    }
+                });
+            });
+
+            // --- Existing "Mark as Read" Logic ---
+            document.querySelectorAll('.notification-link').forEach(el => {
+                el.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const noticeId = this.getAttribute('data-id');
+                    const redirectUrl = this.getAttribute('data-url');
+                    const notificationDiv = this.querySelector('.notification');
+
+                    fetch(`/mark-notice-read/${noticeId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ notice_id: noticeId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Visually mark as read immediately
+                            if (notificationDiv) {
+                                notificationDiv.classList.remove('unread');
+                            }
+                        }
+                    })
+                    .finally(() => {
+                        // Always redirect after AJAX completes
+                        window.location.href = redirectUrl;
+                    });
+                });
+            });
+
+            // Helper function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+        <script>
+        const notifications = document.querySelectorAll('.notification');
+        const markAllReadBtn = document.querySelector('.mark-all-read');
+
+        notifications.forEach(notification => {
+            notification.addEventListener('click', () => {
+                notification.classList.remove('unread');
+            });
+        });
+
+        markAllReadBtn.addEventListener('click', () => {
+            notifications.forEach(notification => {
+                notification.classList.remove('unread');
+            });
+        });
+    </script>
+</body>
+
+</html>
+{% endblock %}

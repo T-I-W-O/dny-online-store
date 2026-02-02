@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Import Google Font - Poppins */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        /* Universal Reset and Global Styles */
+        .price-range * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Poppins', sans-serif;
+        }
+
+        .price-range html, .price-range body {
+          height: 100%;
+        }
+
+        .price-range body {
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          margin: 0;
+        }
+
+        /* Price Range Box Styling */
+        .price-range {
+          width: 100%;
+          max-width: 1200px;
+          padding: 20px 25px 40px;
+          
+          margin: 0 auto;
+        }
+
+        .price-range header h2 {
+          font-size: 24px;
+          font-weight: 600;
+        }
+
+        .price-range header p {
+          margin-top: 5px;
+          font-size: 16px;
+        }
+
+        .price-range .price-input {
+          width: 100%;
+          display: flex;
+          margin: 30px 0 35px;
+        }
+
+        .price-range .price-input .field {
+          display: flex;
+          width: 100%;
+          height: 45px;
+          align-items: center;
+        }
+
+        .price-range .field input {
+          width: 100%;
+          height: 100%;
+          outline: none;
+          font-size: 19px;
+          margin-left: 12px;
+          border-radius: 5px;
+          text-align: center;
+          border: 1px solid #999;
+          -moz-appearance: textfield;
+        }
+
+        .price-range input[type="number"]::-webkit-outer-spin-button,
+        .price-range input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+        }
+
+        .price-range .price-input .separator {
+          width: 130px;
+          display: flex;
+          font-size: 19px;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .price-range .slider {
+          height: 5px;
+          position: relative;
+          background: #ddd;
+          border-radius: 5px;
+        }
+
+        .price-range .slider .progress {
+          height: 100%;
+          left: 0%;
+          right: 0%;
+          position: absolute;
+          border-radius: 5px;
+          background: #FF1493;
+        }
+
+        .price-range .range-input {
+          position: relative;
+        }
+
+        .price-range .range-input input {
+          position: absolute;
+          width: 100%;
+          height: 5px;
+          top: -5px;
+          background: none;
+          pointer-events: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+        }
+
+        .price-range input[type="range"]::-webkit-slider-thumb {
+          height: 17px;
+          width: 17px;
+          border-radius: 50%;
+          background: #FF1493;
+          pointer-events: auto;
+          -webkit-appearance: none;
+          box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .price-range input[type="range"]::-moz-range-thumb {
+          height: 17px;
+          width: 17px;
+          border: none;
+          border-radius: 50%;
+          background: #FF1493;
+          pointer-events: auto;
+          -moz-appearance: none;
+          box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .button-container {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          margin-top: 20px;
+        }
+
+        .apply-btn, .reset-btn {
+          width: 100%;
+          max-width: 200px;
+          padding: 10px 20px;
+          text-align: center;
+          font-size: 16px;
+          font-weight: 600;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background 0.3s ease;
+          background: #FF1493;
+        }
+
+
+        .apply-btn:hover {
+          background: #e01384;
+        }
+
+        .reset-btn:hover {
+          background: #e01384;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="price-range">
+      <header>
+        <h2>Price Range</h2>
+        <p>Use slider or enter min and max price</p>
+      </header>
+      <form method="get" action="{% url 'home' %}">
+        <div class="price-input">
+          <div class="field">
+            <span>Min</span>
+            <input type="number" name="min_price" class="input-min" value="{{ min_price }}">
+          </div>
+          <div class="separator">-</div>
+          <div class="field">
+            <span>Max</span>
+            <input type="number" name="max_price" class="input-max" value="{{ max_price }}">
+          </div>
+        </div>
+        <div class="slider">
+          <div class="progress"></div>
+        </div>
+        <div class="range-input">
+          <input type="range" class="range-min" name="range-min" min="0" max="5000000" value="{{ min_price }}" step="100">
+          <input type="range" class="range-max" name="range-max" min="0" max="5000000" value="{{ max_price }}" step="100">
+        </div>
+      <!-- Button Container -->
+      <div class="button-container">
+        <button type="submit" class="apply-btn">Apply</button>
+        <button type="button" class="reset-btn" id="resetBtn">Reset</button>
+      </div>
+      </form>
+    </div>      
+    <script>
+      const rangeInput = document.querySelectorAll(".price-range .range-input input"),
+      priceInput = document.querySelectorAll(".price-range .price-input input"),
+      range = document.querySelector(".price-range .slider .progress"),
+      resetBtn = document.getElementById("resetBtn");
+      let priceGap = 1000;
+
+      priceInput.forEach(input => {
+        input.addEventListener("input", e => {
+          let minPrice = parseInt(priceInput[0].value),
+          maxPrice = parseInt(priceInput[1].value);
+
+          if((maxPrice - minPrice >= priceGap) && maxPrice <= rangeInput[1].max){
+            if(e.target.className === "input-min"){
+              rangeInput[0].value = minPrice;
+              range.style.left = ((minPrice / rangeInput[0].max) * 100) + "%";
+            } else {
+              rangeInput[1].value = maxPrice;
+              range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
+            }
+          }
+        });
+      });
+
+      rangeInput.forEach(input => {
+        input.addEventListener("input", e => {
+          let minVal = parseInt(rangeInput[0].value),
+          maxVal = parseInt(rangeInput[1].value);
+
+          if((maxVal - minVal) < priceGap){
+            if(e.target.className === "range-min"){
+              rangeInput[0].value = maxVal - priceGap;
+            } else {
+              rangeInput[1].value = minVal + priceGap;
+            }
+          } else {
+            priceInput[0].value = minVal;
+            priceInput[1].value = maxVal;
+            range.style.left = ((minVal / rangeInput[0].max) * 100) + "%";
+            range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
+          }
+        });
+      });
+
+      // Show reset button if values are not 0 and 5000000
+      function toggleResetButton() {
+        const minPrice = parseInt(priceInput[0].value);
+        const maxPrice = parseInt(priceInput[1].value);
+        if (minPrice !== 0 || maxPrice !== 5000000) {
+          resetBtn.style.display = 'block';
+        } else {
+          resetBtn.style.display = 'none';
+        }
+      }
+
+      // Call toggleResetButton on page load and when input values change
+      window.addEventListener('load', toggleResetButton);
+      priceInput.forEach(input => {
+        input.addEventListener('input', toggleResetButton);
+      });
+
+      // Reset button functionality
+      resetBtn.addEventListener('click', () => {
+        priceInput[0].value = 0;
+        priceInput[1].value = 5000000;
+        toggleResetButton();
+      });
+      document.getElementById("resetBtn").addEventListener("click", function() {
+    window.location.href = "{% url 'home' %}";
+  });
+    </script>
+  </body>
+</html>

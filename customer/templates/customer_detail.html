@@ -1,0 +1,510 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Profile - Zenith Marketplace</title>
+    <!-- Poppins Font for a modern, clean look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Material Symbols Sharp for icons -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <style>
+        /* CSS Variables for consistent theming */
+        :root {
+            --clr-primary: #FF1493;
+            /* Deep Pink */
+            --clr-danger: #ff7782;
+            /* Light Red */
+            --clr-success: #41f1b6;
+            /* Bright Green */
+            --clr-white: #fff;
+            --clr-info-dark: #7d8da1;
+            /* Dark Gray for muted text */
+            --clr-info-light: #dce1eb;
+            /* Light Gray for info backgrounds */
+            --clr-dark: #363949;
+            /* Dark text/elements */
+            --clr-warning: #ff4edc;
+            /* Bright Pink/Purple for warning */
+            --clr-light: rgba(132, 139, 200, 0.18);
+            /* Light transparent color for shadows */
+            --clr-primary-variant: #111e88;
+            /* Darker Blue (unused in this specific context but from your snippet) */
+            --clr-dark-variant: #677483;
+            /* Muted Dark (for paragraphs) */
+            --clr-color-background: #f6f6f9;
+            /* Default background */
+
+            --clr-shipped-bg: #e0f2fe;
+            /* Light Blue for Shipped status */
+            --clr-shipped-text: #0284c7;
+            /* Darker Blue for Shipped status text */
+
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 2rem 3rem var(--clr-light);
+        }
+
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        /* Body Styles */
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-size: .87rem;
+            /* Adjusted base font size for better readability */
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+        }
+
+        /* Main Container for the profile page content */
+        .profile-main-container {
+            width: 96%;
+            max-width: 1200px;
+            margin: 1.4rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        /* Common Typography and Utility Classes */
+        h1 {
+            font-weight: 800;
+            font-size: 2.8rem;
+            line-height: 1.2;
+            color: var(--clr-dark);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            /* Adjusted for section titles */
+            font-weight: 700;
+            color: var(--clr-dark);
+            text-align: center;
+            margin-bottom: var(--padding-1);
+        }
+
+        p {
+            color: var(--clr-dark-variant);
+            font-size: 0.95rem;
+        }
+
+        b {
+            color: var(--clr-dark);
+        }
+
+        .text-primary {
+            color: var(--clr-primary);
+        }
+
+        /* Card Styling for Profile and Order History sections */
+        .card {
+            background: var(--clr-white);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            padding: var(--card-padding);
+            overflow: hidden;
+            /* Ensures content stays within rounded corners */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: scale(1.005);
+        }
+
+        /* Customer Profile Card Specifics */
+        .profile-card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.8rem;
+        }
+
+        @media (min-width: 640px) {
+
+            /* Equivalent to sm: breakpoint in Tailwind */
+            .profile-card-content {
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 2.5rem;
+            }
+
+            .profile-details {
+                text-align: left;
+            }
+
+            h2 {
+                text-align: left;
+            }
+        }
+
+        .profile-image-container {
+            flex-shrink: 0;
+        }
+
+        .profile-image {
+            height: 8rem;
+            /* Adjusted height */
+            width: 8rem;
+            /* Adjusted width */
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--clr-white);
+            box-shadow: 0 0 0 4px var(--clr-primary);
+            /* Ring effect */
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        @media (min-width: 640px) {
+            .profile-image {
+                height: 10rem;
+                width: 10rem;
+            }
+        }
+
+        .profile-details {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .profile-username {
+            font-size: 1.1rem;
+            color: var(--clr-info-dark);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .profile-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            /* Fully rounded pill */
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s;
+        }
+
+        .profile-status-icon {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .status-active-member {
+            background-color: var(--clr-success);
+            color: var(--clr-white);
+            /* White text for contrast */
+        }
+
+        .status-active-member:hover {
+            background-color: #3bbd90;
+            /* Slightly darker green on hover */
+        }
+
+        .status-inactive-member {
+            background-color: var(--clr-danger);
+            color: var(--clr-white);
+            /* White text for contrast */
+        }
+
+        .status-inactive-member:hover {
+            background-color: #ff7782;
+            /* Slightly darker green on hover */
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1.5rem;
+            color: var(--clr-dark);
+            font-size: 1rem;
+        }
+
+        .contact-info-item:first-of-type {
+            margin-top: 2rem;
+            /* More space for the first item */
+        }
+
+        @media (min-width: 640px) {
+            .contact-info-item {
+                justify-content: flex-start;
+            }
+        }
+
+        .contact-info-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+            color: var(--clr-primary);
+            /* Use primary color for icons */
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        /* Order History Table Styling */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--border-radius-2);
+            border: 1px solid var(--clr-info-light);
+            box-shadow: 0 1rem 1.5rem rgba(0, 0, 0, 0.05);
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+            /* Ensure table doesn't get too narrow */
+        }
+
+        .order-table thead {
+            background-color: var(--clr-info-light);
+        }
+
+        .order-table th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--clr-dark-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--clr-info-light);
+        }
+
+        .order-table tbody tr {
+            background-color: var(--clr-white);
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .order-table tbody tr:nth-child(even) {
+            background-color: var(--clr-color-background);
+            /* Slightly different background for even rows */
+        }
+
+        .order-table tbody tr:hover {
+            background-color: var(--clr-info-light);
+            /* Light hover effect */
+        }
+
+        .order-table td {
+            padding: 1rem 1.5rem;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            color: var(--clr-dark);
+            border-bottom: 1px solid var(--clr-info-light);
+        }
+
+        .order-table td.order-id {
+            font-weight: 600;
+        }
+
+        /* Status Badges within the table */
+        .order-status-badge {
+            padding: 0.3rem 0.75rem;
+            display: inline-flex;
+            font-size: 0.75rem;
+            line-height: 1;
+            font-weight: 600;
+            border-radius: var(--border-radius-3);
+            /* More rounded */
+            text-transform: capitalize;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-delivered {
+            background-color: var(--clr-success);
+            color: var(--clr-white);
+        }
+
+        .status-ongoing {
+            background-color: var(--clr-primary);
+            color: var(--clr-dark);
+            /* Dark text for better contrast on yellow */
+        }
+
+        .status-inactive {
+            background-color: var(--clr-danger);
+            color: var(--clr-white);
+        }
+
+        .status-shipped {
+            background-color: var(--clr-shipped-bg);
+            color: var(--clr-shipped-text);
+        }
+
+        /* Custom Scrollbar for the table */
+        .table-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="profile-main-container">
+
+        <!-- Customer Profile Card -->
+        <section class="card">
+            <div class="profile-card-content">
+                <!-- Profile Image -->
+                <div class="profile-image-container">
+                    <img class="profile-image"
+                        src="{% if person.image %}{{ person.image.url }} {% else %}https://placehold.co/120x120/cccccc/ffffff?text=User{% endif %}"
+                        alt="Customer Profile Picture">
+                </div>
+
+                <!-- Profile Details -->
+                <div class="profile-details">
+                    <h1>
+                        {{ person.last_name }} <span class="text-primary">{{ person.last_name }}</span>
+                    </h1>
+                    <p class="profile-username">
+                        {% if type == "Customer" %}
+                        @{{ person.username }}
+                        {% else %}
+                        #{{ person.session_key }}
+                        {% endif %}
+                    </p>
+                    {% if type == 'Customer' %}
+                    <span class="profile-status status-active-member">
+                        <svg class="profile-status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Status: Registered User
+                    </span>
+                    {% elif type == 'Guest' %}
+                    <span class="profile-status status-inactive-member">
+                        <svg class="profile-status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Status: Unregstered User
+                    </span>
+                    {% endif %}
+                    <p class="contact-info-item">
+                        <svg class="contact-info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        {% if type == 'Customer' %}{{ person.email }}{% elif type == 'Guest' %}{{ person.email }}(Based
+                        on last order-variable.){% endif %}
+                    </p>
+                    <p class="contact-info-item">
+                        <svg class="contact-info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                            </path>
+                        </svg>
+                        {% if type == 'Customer' %} {{ person.number }}{% elif type == 'Guest' %}{{ person.number}}(Based on last order-variable.){% endif %}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order History Table -->
+        <section class="card">
+            <h2>
+                Order <span class="text-primary">History</span>
+            </h2>
+            <div class="table-wrapper">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Item Count</th>
+                            <th>Total Amount</th>
+                            <th>Quantity</th>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s_order in shipping_orders %}
+                        <tr onclick="window.location.href='{% url 'edit_order' s_order.id %}'" style="cursor:pointer;">
+                            <td class="order-id">{{ s_order.transaction_id }}</td>
+                            <td>{{ s_order.item_count }} Product{{ s_order.item_count|pluralize }}</td>
+                            <td>₦{{ s_order.total_amount|floatformat:2 }}</td>
+                            <td>{{ s_order.total_quantity }}</td>
+                            <td>{{ s_order.order_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="order-status-badge status-{{ s_order.status|lower }}">
+                                    {{ s_order.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">No shipping orders found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </div>
+
+</body>
+
+</html>
+
+{% endblock %}

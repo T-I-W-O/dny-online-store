@@ -1,0 +1,610 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Shopping Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Your existing CSS styles */
+        .scrollable-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scrollable-content::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .product-item {
+            transition: all 0.3s ease-in-out;
+        }
+        .product-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #FF1493, #E00070);
+            color: white;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(to right, #E00070, #C00050);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e0;
+            color: #2d3748;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+        }
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 1.5rem 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            border: 1px solid #ef4444;
+            font-weight: 600;
+            text-align: center;
+            max-width: 90%;
+        }
+        .custom-alert button {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.375rem;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+        }
+        .custom-alert button:hover {
+            background-color: #dc2626;
+        }
+
+        /* New Loading Overlay Styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 192, 203, 0.7); /* Pink with 70% opacity */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Ensure it's on top of everything */
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #FF1493; /* Pink loader */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .glow-highlight {
+            background-color: rgba(255, 192, 203, 0.3); /* light pink */
+            box-shadow: 0 0 12px 4px rgba(255, 105, 180, 0.6);
+            transition: background-color 0.5s ease, box-shadow 0.5s ease;
+            }
+    </style>
+</head>
+<body class="antialiased bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div class="bg-white shadow-2xl rounded-2xl p-6 sm:p-8 lg:p-10 w-full max-w-5xl border border-gray-100">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-pink-700 mb-8 text-center tracking-tight">Your Shopping Cart</h1>
+
+            <div id="full-cart-content" {% if not activities %}style="display: none;"{% endif %}>
+                <div class="flex items-center mb-6">
+                    <input type="checkbox" id="select-all" class="mr-3 w-5 h-5 text-pink-600 rounded focus:ring-pink-500">
+                    <label for="select-all" class="text-gray-700 text-base font-semibold select-none">Select All Items</label>
+                </div>
+
+                <div id="cart-items" class="space-y-6 max-h-[60vh] overflow-y-auto scrollable-content pr-2">
+                    {% for item in activities %}
+                        <div id="activity-{{ item.id }}" class="product-item flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-4 sm:p-5 rounded-xl shadow-lg border border-gray-100" data-id="{{ item.id }}">
+                            <div class="flex items-center space-x-4 w-full sm:w-auto mb-4 sm:mb-0">
+                                <input type="checkbox" class="product-checkbox w-5 h-5 text-pink-600 rounded focus:ring-pink-500 flex-shrink-0" data-id="{{ item.id }}">
+                                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="w-24 h-24 object-cover rounded-lg shadow-md flex-shrink-0">
+                                <div class="flex-grow">
+                                    <h2 class="text-lg sm:text-xl font-semibold text-gray-800">{{ item.product.name }}</h2>
+                                    <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ item.details }}</p>
+                                    <div class="mt-2 flex items-baseline space-x-2">
+                                        <p class="text-gray-900 font-bold text-md sm:text-lg">{{ item.price|format_k }}</p>
+                                    </div>
+                                    <span class="text-gray-700 font-medium text-sm sm:text-base mt-2 block">Qty: {{ item.quantity }}</span>
+                                </div>
+                            </div>
+                            <button class="text-gray-500 hover:text-red-600 p-2 sm:p-3 rounded-full hover:bg-gray-50 transition duration-200 remove-item self-end sm:self-center" data-id="{{ item.id }}" aria-label="Remove item">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-8 mb-6 flex items-center space-x-4">
+                    <input type="text" placeholder="Input coupon code (optional)" class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-gray-700 shadow-sm min-w-0" id="coupon-input" name="coupon_code">
+                    <button type="button" id="coupon-action-btn" class="btn-primary py-3 px-6 rounded-lg font-semibold whitespace-nowrap">
+                        Apply
+                    </button>
+                </div>
+                <p id="coupon-message" class="text-sm mt-2 text-center text-red-500 hidden"></p>
+
+
+                <div class="border-t border-gray-200 pt-6 space-y-4">
+                    <div class="flex justify-between text-xl font-medium text-gray-700">
+                        <span>Subtotal:</span>
+                        <span id="subtotal" class="font-semibold text-gray-800">₦0.00</span>
+                    </div>
+                    <div class="flex justify-between text-xl font-medium text-gray-700">
+                        <span>Total Quantity:</span>
+                        <span id="total-quantity" class="font-semibold text-gray-800">0</span>
+                    </div>
+                    <div class="flex justify-between text-2xl font-extrabold text-pink-700 mt-4">
+                        <span>Total Price:</span>
+                        <span id="total-price">₦0.00</span>
+                    </div>
+                </div>
+
+                <div class="mt-10 flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="{% url 'home' %}" class="btn-secondary py-3 px-8 rounded-lg font-semibold inline-block text-center w-full sm:w-auto">
+                        Continue Shopping
+                    </a>
+                    <button type="button" id="proceed-to-checkout-btn" class="btn-primary py-3 px-8 rounded-lg font-semibold text-center w-full sm:w-auto">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+
+            <div id="empty-cart-message" class="text-center text-gray-500 py-12" {% if activities %}style="display: none;"{% endif %}>
+                <p class="mb-6 text-lg">🛒 Your cart is currently empty.</p>
+                <a href="{% url 'home' %}" class="inline-block bg-pink-600 text-white px-8 py-3 rounded-lg hover:bg-pink-700 transition font-semibold shadow-md">
+                    Start Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-alert-box" class="custom-alert" role="alert" aria-live="assertive">
+        <p id="custom-alert-message"></p>
+        <button id="custom-alert-ok-btn" type="button">OK</button>
+    </div>
+
+    {# New Loading Overlay HTML #}
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+    </div>
+
+    <script>
+        const CHECKOUT_URL = "{% url 'checkout' %}";
+        const APPLY_COUPON_URL = "{% url 'apply_coupon' %}";
+        const REMOVE_COUPON_URL = "{% url 'remove_coupon' %}";
+        const CSRF_TOKEN = '{{ csrf_token }}';
+
+        const initialCartItems = [
+            {% for item in activities %}
+            {
+                id: {{ item.id }},
+                name: "{{ item.product.name|escapejs }}",
+                price: {{ item.price }},
+                quantity: {{ item.quantity }},
+                originalPrice: {% if item.original_price %}{{ item.original_price }}{% else %}null{% endif %}
+            },
+            {% endfor %}
+        ];
+
+        let products = initialCartItems;
+        // Initialize appliedCoupon from Django context
+        let appliedCoupon = {{ applied_coupon|safe }}; // This will be null or an object
+
+        const couponInputField = document.getElementById('coupon-input');
+        const couponActionButton = document.getElementById('coupon-action-btn');
+        const couponMessageElement = document.getElementById('coupon-message');
+        const loadingOverlay = document.getElementById('loading-overlay'); // Get the loading overlay element
+
+        // Function to show the loading overlay
+        function showLoadingOverlay() {
+            loadingOverlay.classList.add('show');
+        }
+
+        // Function to hide the loading overlay (will only be called if AJAX fails or after reload)
+        function hideLoadingOverlay() {
+            loadingOverlay.classList.remove('show');
+        }
+
+        // Custom alert
+        function showAlert(message, isSuccess = false) {
+            const alertBox = document.getElementById('custom-alert-box');
+            const alertMessage = document.getElementById('custom-alert-message');
+            const alertOkBtn = document.getElementById('custom-alert-ok-btn');
+
+            alertMessage.textContent = message;
+            // Optionally change alert style based on success/error
+            if (isSuccess) {
+                alertBox.style.backgroundColor = '#d4edda'; // Greenish for success
+                alertBox.style.color = '#155724';
+                alertBox.style.borderColor = '#28a745';
+                alertOkBtn.style.backgroundColor = '#28a745';
+                alertOkBtn.style.borderColor = '#28a745';
+            } else {
+                alertBox.style.backgroundColor = '#fee2e2'; // Reddish for error
+                alertBox.style.color = '#b91c1c';
+                alertBox.style.borderColor = '#ef4444';
+                alertOkBtn.style.backgroundColor = '#ef4444';
+                alertOkBtn.style.borderColor = '#ef4444';
+            }
+            alertBox.style.display = 'block';
+
+            const newBtn = alertOkBtn.cloneNode(true);
+            alertOkBtn.parentNode.replaceChild(newBtn, alertOkBtn);
+            newBtn.addEventListener('click', () => alertBox.style.display = 'none');
+        }
+
+        function showCouponMessage(message, isError = false) {
+            couponMessageElement.textContent = message;
+            couponMessageElement.classList.remove('hidden', 'text-red-500', 'text-green-500');
+            if (isError) {
+                couponMessageElement.classList.add('text-red-500');
+            } else {
+                couponMessageElement.classList.add('text-green-500');
+            }
+            couponMessageElement.style.display = 'block';
+            // Hide after a few seconds
+            setTimeout(() => {
+                couponMessageElement.style.display = 'none';
+            }, 3000);
+        }
+
+        // Apply coupon discount to subtotal
+        function updateTotalWithCoupon(subtotal) {
+            if (!appliedCoupon) return subtotal;
+
+            let discount = appliedCoupon.is_percent
+                ? (appliedCoupon.amount / 100) * subtotal
+                : appliedCoupon.amount;
+
+            let final = subtotal - discount;
+            return final < 0 ? 0 : final;
+        }
+
+        // Display coupon line in summary
+        function updateCouponDisplay() {
+            let couponLine = document.getElementById("coupon-line");
+
+            if (!appliedCoupon) {
+                if (couponLine) couponLine.remove();
+                return;
+            }
+
+            const container = document.querySelector(".border-t.border-gray-200.pt-6");
+
+            if (!couponLine) {
+                couponLine = document.createElement("div");
+                couponLine.id = "coupon-line";
+                couponLine.className = "flex justify-between text-xl font-medium text-gray-700";
+                const totalPriceDiv = document.querySelector('.flex.justify-between.text-2xl.font-extrabold.text-pink-700.mt-4');
+                if (totalPriceDiv) {
+                    container.insertBefore(couponLine, totalPriceDiv);
+                } else {
+                    container.appendChild(couponLine);
+                }
+            }
+
+            const label = "Coupon:";
+            const discountText = appliedCoupon.is_percent
+                ? `-${appliedCoupon.amount}%`
+                : `-₦${appliedCoupon.amount.toLocaleString()}`;
+
+            couponLine.innerHTML = `
+                <span>${label} (${appliedCoupon.code}):</span>
+                <span class="text-green-700 font-semibold">${discountText}</span>
+            `;
+        }
+
+        // Update subtotal, total quantity and total price
+        function updateCartTotals() {
+            let subtotal = 0;
+            let quantity = 0;
+
+            document.querySelectorAll('.product-checkbox:checked').forEach(cb => {
+                const id = parseInt(cb.dataset.id);
+                const product = products.find(p => p.id === id);
+                if (product) {
+                    subtotal += product.price * product.quantity;
+                    quantity += product.quantity;
+                }
+            });
+
+            const discountedTotal = updateTotalWithCoupon(subtotal);
+
+            document.getElementById('subtotal').textContent = `₦${subtotal.toLocaleString()}`;
+            document.getElementById('total-quantity').textContent = quantity;
+            document.getElementById('total-price').textContent = `₦${discountedTotal.toLocaleString()}`;
+
+            updateCouponDisplay();
+        }
+
+        // Sync master checkbox with individual checkboxes
+        function setupCheckboxLogic() {
+            const master = document.getElementById('select-all');
+            const boxes = document.querySelectorAll('.product-checkbox');
+
+            if (master) {
+                master.addEventListener('change', () => {
+                    boxes.forEach(cb => cb.checked = master.checked);
+                    updateCartTotals();
+                });
+            }
+
+            boxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = Array.from(boxes).every(c => c.checked);
+                    if (master) master.checked = allChecked;
+                    updateCartTotals();
+                });
+            });
+        }
+
+        // Toggle cart visibility if empty
+        function updateCartDisplay() {
+            const full = document.getElementById('full-cart-content');
+            const empty = document.getElementById('empty-cart-message');
+
+            if (products.length === 0) {
+                full.style.display = 'none';
+                empty.style.display = 'block';
+            } else {
+                full.style.display = 'block';
+                empty.style.display = 'none';
+            }
+        }
+
+        // Function to update the coupon input field and button
+        function updateCouponUI() {
+            if (appliedCoupon) {
+                couponInputField.value = appliedCoupon.code;
+                couponActionButton.textContent = 'Remove';
+                couponActionButton.classList.remove('btn-primary');
+                couponActionButton.classList.add('btn-secondary', 'bg-red-500', 'hover:bg-red-600', 'text-white');
+                couponInputField.readOnly = true; // Make input read-only when coupon is applied
+            } else {
+                couponInputField.value = '';
+                couponActionButton.textContent = 'Apply';
+                couponActionButton.classList.remove('btn-secondary', 'bg-red-500', 'hover:bg-red-600', 'text-white');
+                couponActionButton.classList.add('btn-primary');
+                couponInputField.readOnly = false; // Make input editable when no coupon is applied
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initial setup for coupon UI and calculations
+            updateCouponUI();
+            setupCheckboxLogic();
+            updateCartTotals(); // Initial calculation on page load
+            updateCartDisplay();
+
+            // Remove item from cart
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', function () {
+                    const id = this.dataset.id;
+
+                    fetch(`/remove-from-cart/${id}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": CSRF_TOKEN,
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            products = products.filter(p => p.id !== parseInt(id));
+                            this.closest(".product-item").remove();
+                            setupCheckboxLogic();
+                            updateCartTotals();
+                            updateCartDisplay();
+                            showAlert(data.message || "Removed!", true); // Pass true for success
+                        } else {
+                            showAlert(data.message || "Failed to remove.", false); // Pass false for error
+                        }
+                    })
+                    .catch(() => showAlert("Error removing item.", false));
+                });
+            });
+
+            // Checkout
+            const checkoutBtn = document.getElementById('proceed-to-checkout-btn');
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener('click', function (e) {
+                    const selected = document.querySelectorAll('.product-checkbox:checked');
+                    const ids = Array.from(selected).map(cb => parseInt(cb.dataset.id));
+
+                    if (ids.length === 0) {
+                        e.preventDefault();
+                        showAlert("Please select at least one item to checkout.", false);
+                        return;
+                    }
+
+                    // Show the loading overlay BEFORE the fetch request
+                    showLoadingOverlay();
+
+                    fetch(CHECKOUT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': CSRF_TOKEN,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ activity_ids: ids })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.redirect_url) {
+                            // The page will reload, so no need to hide the overlay here.
+                            window.location.href = data.redirect_url;
+                        } else {
+                            // Hide overlay if AJAX call fails and doesn't redirect
+                            hideLoadingOverlay();
+                            showAlert(data.message || "Checkout failed.", false);
+                        }
+                    })
+                    .catch(() => {
+                        // Hide overlay if there's a network error
+                        hideLoadingOverlay();
+                        showAlert("Error during checkout.", false);
+                    });
+                });
+            }
+
+            // Coupon apply/remove logic
+            if (couponActionButton && couponInputField) {
+                couponActionButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const code = couponInputField.value.trim();
+
+                    if (couponActionButton.textContent === 'Remove') {
+                        // Logic to remove coupon
+                        fetch(REMOVE_COUPON_URL, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': CSRF_TOKEN,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                appliedCoupon = null;
+                                updateCartTotals();
+                                updateCouponUI();
+                                showCouponMessage("Coupon removed successfully!", false); // Green for success
+                            } else {
+                                showCouponMessage("Failed to remove coupon. Please try again.", true); // Red for error
+                            }
+                        })
+                        .catch(() => {
+                            showCouponMessage("Error removing coupon. Please try again.", true);
+                        });
+
+                    } else { // 'Apply' button is visible
+                        if (!code) {
+                            showCouponMessage("Please enter a coupon code.", true); // Red for error
+                            appliedCoupon = null; // Ensure appliedCoupon is null if input is empty
+                            updateCartTotals();
+                            updateCouponUI();
+                            return;
+                        }
+
+                        fetch(APPLY_COUPON_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': CSRF_TOKEN
+                            },
+                            body: JSON.stringify({ coupon_code: code })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const parsedAmount = parseFloat(data.amount);
+                                if (isNaN(parsedAmount)) {
+                                    appliedCoupon = null;
+                                    updateCartTotals();
+                                    updateCouponUI();
+                                    showCouponMessage("Invalid coupon amount received from server.", true);
+                                    return;
+                                }
+
+                                appliedCoupon = {
+                                    code: data.code,
+                                    amount: parsedAmount,
+                                    is_percent: data.is_percent === true || data.is_percent === "true"
+                                };
+
+                                updateCartTotals();
+                                updateCouponUI(); // Update UI after applying coupon
+                                showCouponMessage("Coupon applied successfully!", false); // Green for success
+                            } else {
+                                appliedCoupon = null; // Clear coupon on failure
+                                updateCartTotals();
+                                updateCouponUI(); // Update UI to reflect no applied coupon
+                                showCouponMessage(data.message || "Invalid coupon.", true); // Red for error
+                            }
+                        })
+                        .catch(() => {
+                            appliedCoupon = null; // Clear coupon on fetch error
+                            updateCartTotals();
+                            updateCouponUI();
+                            showCouponMessage("Error while applying coupon. Please try again.", true); // Red for error
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const hash = window.location.hash;
+
+    if (hash.startsWith("#activity-")) {
+        const activityElement = document.querySelector(hash);
+        if (activityElement) {
+            activityElement.classList.add("glow-highlight");
+            activityElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            // Remove the glow after 3 seconds
+            setTimeout(() => {
+                activityElement.classList.remove("glow-highlight");
+            }, 60000);
+        }
+    }
+});
+</script>
+
+</body>
+</html>
+{% endblock %}

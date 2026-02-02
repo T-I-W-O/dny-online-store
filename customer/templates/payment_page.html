@@ -1,0 +1,106 @@
+<div id="ajax-error-messages"></div>
+
+<form id="shipping-form" method="POST" class="form" enctype="multipart/form-data">
+    {% csrf_token %}
+     <div class="form-content">
+                <div class="column"> {# This div will help in aligning First and Last Name horizontally #}
+                     <div class="input-box">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Enter your first name" 
+                               value="{% if request.user.is_authenticated and request.user.customer %}{{ request.user.customer.first_name }}{% endif %}" required />
+                    </div>
+                    <div class="input-box">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Enter your last name" 
+                               value="{% if request.user.is_authenticated and request.user.customer %}{{ request.user.customer.last_name }}{% endif %}" required />
+                    </div>
+                </div>
+                <div class="input-box">
+                    <label for="email_address">Email Address</label>
+                    <input type="email" id="email_address" name="gmail" placeholder="Enter email address" value="{% if request.user.is_authenticated and request.user.customer %}{{ request.user.customer.email }}{% endif %}" required />
+                </div>
+
+                <div class="column">
+                    <div class="input-box">
+                        <label for="whatsapp_number">Whatsapp Number</label>
+                        <input type="tel" id="whatsapp_number" name="whatsapp_number" placeholder="Enter WhatsApp number" required />
+                    </div>
+                </div>
+            </div>
+        </div>
+    <button type="button" onclick="payWithPaystack()">Pay </button>
+</form>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+    async function payWithPaystack() {
+        const form = document.getElementById('shipping-form');
+        const formData = new FormData(form);
+        const errorContainer = document.getElementById('ajax-error-messages');
+        errorContainer.innerHTML = ''; // Clear previous errors
+
+        // Define the common headers for your AJAX requests
+        const headers = {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            'X-Requested-With': 'XMLHttpRequest' // <--- This is the key line
+        };
+
+        try {
+            // Step 1: Validate the order
+            const validateResponse = await fetch('{% url "validate_shipping_order" %}', {
+                method: 'POST',
+                headers: headers,
+                body: formData,
+            });
+            const validateData = await validateResponse.json();
+            if (!validateData.success) {
+                errorContainer.innerHTML = `<p style="color: red; margin-top: 5px;">${validateData.message}</p>`;
+                return;
+            }
+
+            // Step 2: Save the shipping info
+            const saveResponse = await fetch('{% url "collect_shipping_info" %}', {
+                method: 'POST',
+                headers: headers,
+                body: formData,
+            });
+            const saveData = await saveResponse.json();
+            if (!saveData.success) {
+                errorContainer.innerHTML = `<p style="color: red; margin-top: 5px;">${saveData.message}</p>`;
+                return;
+            }
+
+            // Step 3: Get payment details from a new AJAX endpoint
+            // Note: This is a GET request, so no body is needed.
+            const paymentDetailsResponse = await fetch('{% url "prepare_payment_ajax" %}', {
+                method: 'GET',
+                headers: headers,
+            });
+            const paymentDetailsData = await paymentDetailsResponse.json();
+            if (!paymentDetailsData.success) {
+                errorContainer.innerHTML = `<p style="color: red; margin-top: 5px;">${paymentDetailsData.message}</p>`;
+                return;
+            }
+            
+            // Step 4: Open the Paystack modal with the data from the AJAX call
+            var handler = PaystackPop.setup({
+                key: paymentDetailsData.paystack_public_key,
+                email: paymentDetailsData.email,
+                amount: paymentDetailsData.amount,
+                currency: 'NGN',
+                ref: paymentDetailsData.reference,
+                callback: function(response) {
+                    window.location.href = "{% url 'payment_success' %}?reference=" + response.reference;
+                },
+                onClose: function() {
+                    window.location.href = "{% url 'view_cart' %}";
+                }
+            });
+            handler.openIframe();
+
+        } catch (error) {
+            errorContainer.innerHTML = `<p style="color: red; margin-top: 5px;">An unexpected error occurred. Please try again.</p>`;
+            console.error('Error:', error);
+        }
+    }
+</script>

@@ -1,0 +1,240 @@
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="{% static 'images/logo.jpg' %}" type="image/gif/jpg">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYw81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,400&family=Roboto:ital,wght@0,300;0,400;0,700;1,500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/demo.css' %}">
+</head>
+<style>
+    .fab-link {
+        color: inherit;
+        text-decoration: none;
+    }
+</style>
+
+<body>
+    <div>
+        <!-- Fullscreen Image Section -->
+        <div class="fullscreen-image">
+            <div class="image_card">
+                <img id="image1" src="{% static 'images/dny1.jpg' %}" alt="Fullscreen Image">
+                <div class="content">
+                    <p>DNY Wigs</p>
+                    <p>Welcome to hair-ven,your haven for luxurious locks!we sell premium human hair extensions,wigs and
+                        more to help you slay your hair game!</p>
+                    <a href="{% url 'home' %}">Shop now</a>
+                </div>
+            </div>
+            <div class="image_card">
+                <img id="image2" src="{% static 'images/dny2.jpg' %}" alt="Fullscreen Image">
+                <div class="content">
+                    <p>DNY Fashion-items</p>
+                    <p>step into DNY fashion items where fashion meet passion!we offer a wide range of stylish and
+                        affordable clothings,shoes,bags,and accessories to help you stay on-trend and looking fabulous
+                    </p>
+                    <a href="{% url 'home' %}">Shop now</a>
+                </div>
+            </div>
+            <div class="image_card">
+                <img id="image3" src="{% static 'images/dny3.jpg' %}" alt="Fullscreen Image">
+                <div class="content">
+                    <p>Eleven25 Images</p>
+                    <p>Capturing life's precious moments,one frame at a time</p>
+                    <a href="#">View Gallery</a>
+                </div>
+            </div>
+        </div>
+        <!-- Navigation Circles -->
+        <div class="nav-dots">
+            <a href="#image1" class="dot"></a>
+            <a href="#image2" class="dot"></a>
+            <a href="#image3" class="dot"></a>
+        </div>
+    </div>
+    <div style="
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 20px;">
+        <div style="
+        text-align: center; 
+        max-width: 150px;">
+            <img src="{% static 'images/verify.jpg' %}" alt="Verify" style="
+            width: 100%; 
+            height: 150px; 
+            object-fit: contain; 
+            mix-blend-mode: multiply;">
+            <p style="margin-top: 8px; font-size: 14px; color: pink;">Verified</p>
+        </div>
+        <div style="
+        text-align: center; 
+        max-width: 150px;">
+            <img src="{% static 'images/wig-experts.jpg' %}" alt="Wig Experts" style="
+            width: 100%; 
+            height: 150px; 
+            object-fit: contain; 
+            mix-blend-mode: multiply;">
+            <p style="margin-top: 8px; font-size: 14px; color: pink;">Wig Experts</p>
+        </div>
+        <div style="
+        text-align: center; 
+        max-width: 150px;">
+            <img src="{% static 'images/delivery.png' %}" alt="Delivery" style="
+            width: 100%; 
+            height: 150px; 
+            object-fit: contain; 
+            mix-blend-mode: multiply;">
+            <p style="margin-top: 8px; font-size: 14px; color: pink;">Fast Delivery</p>
+        </div>
+    </div>
+
+    <!-- Add FAB HTML before closing </body> -->
+    <div class="fab-container">
+        <div class="fab fab-icon-holder">
+            <i class="fa fa-plus"></i>
+        </div>
+
+        <ul class="fab-options">
+            <li>
+                <a href="#" class="fab-link" target="_blank">
+                    <span class="fab-label">Facebook</span>
+                    <div class="fab-icon-holder">
+                        <i class="fab fa-facebook-f"></i>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.instagram.com/dnyhair" class="fab-link" target="_blank">
+                    <span class="fab-label">Instagram</span>
+                    <div class="fab-icon-holder">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.tiktok.com/@ydnyhair" class="fab-link" target="_blank">
+                    <span class="fab-label">Tiktok-soc</span>
+                    <div class="fab-icon-holder">
+                        <i class="fab fa-tiktok"></i>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="https://wa.me/2347030572996" class="fab-link" target="_blank">
+                    <span class="fab-label">Whatsapp</span>
+                    <div class="fab-icon-holder">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% include 'slide.html' %}
+    <h3 class="text-center section-subheading" style="
+        margin-bottom: 10px; /* Reduce bottom margin */
+    ">
+        - Location -
+    </h3>
+
+    <div class="video-wrapper" style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: auto; /* Remove fixed height */
+        background-color: #f8f8f8; /* Optional background color */
+        margin-bottom: 10px; /* Reduce bottom margin */
+        padding: 10px; /* Optional padding */
+    ">
+        <div class="video-container" style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 500px; /* Adjust the size */
+            height: 300px; /* Adjust the size */
+            border: 5px solid #FF1493;
+            border-radius: 20px; /* Adjust the curve of the corners */
+            overflow: hidden;
+        ">
+            <video controls style="
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            ">
+                <source src="{% static 'images/location.mp4' %}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <center>
+        <p style="
+        margin: 5px 0; /* Reduce top and bottom margins */
+        font-size: 14px; 
+        color: pink;">
+            Press zoom to watch clearly
+        </p>
+    </center>
+
+    <h3 class="text-center section-subheading" style="
+        margin-top: 10px; /* Reduce top margin */
+    ">
+        42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1
+    </h3>
+
+    {% include 'footer.html' %}
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.querySelector(".fullscreen-image");
+        const cards = document.querySelectorAll(".image_card");
+        const dots = document.querySelectorAll(".dot");
+
+        let currentIndex = 0;
+        const totalCards = cards.length;
+
+        // Automatic scrolling
+        const scrollToNext = () => {
+            currentIndex = (currentIndex + 1) % totalCards; // Loop to first after last
+            container.scrollTo({
+                left: container.offsetWidth * currentIndex,
+                behavior: "smooth",
+            });
+
+            updateDots();
+        };
+
+        // Update dots active state
+        const updateDots = () => {
+            dots.forEach((dot, index) => {
+                dot.style.backgroundColor = index === currentIndex ? "white" : "rgba(255, 255, 255, 0.5)";
+            });
+        };
+
+        // Manual navigation via dots
+        dots.forEach((dot, index) => {
+            dot.addEventListener("click", () => {
+                currentIndex = index;
+                container.scrollTo({
+                    left: container.offsetWidth * currentIndex,
+                    behavior: "smooth",
+                });
+
+                updateDots();
+            });
+        });
+
+        // Start the automatic scrolling
+        setInterval(scrollToNext, 5000); // Change image every 5 seconds
+    });
+
+</script>
+
+</html>

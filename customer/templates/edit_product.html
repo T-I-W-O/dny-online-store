@@ -1,0 +1,1032 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product: {{ product.name }}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493; /* Pink */
+            --clr-danger: #ff7782;
+            --clr-success: #41f1b6;
+            --clr-white: #fff;
+            --clr-info-dark: #7d8da1;
+            --clr-info-light: #dce1eb;
+            --clr-dark: #363949;
+            --clr-warning: #ff4edc;
+            --clr-light: rgba(132, 139, 200, 0.18);
+            --clr-primary-variant: #C2007B; /* Darker pink for hover */
+            --clr-dark-variant: #677483;
+            --clr-color-background: #f6f6f9;
+            --clr-danger-rgb: 255,119,130; /* For rgba usage */
+
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 2rem 3rem var(--clr-light);
+
+            /* New: Colors inspired by your previous Tailwind/Inter setup, adapted to variables */
+            --clr-heading: #1a202c; /* Darker heading */
+            --clr-subheading: #2d3748; /* Slightly lighter heading */
+            --clr-text-gray: #4a5568; /* Grayish blue for labels */
+            --clr-border-light: #cbd5e0; /* Light border */
+            --clr-bg-formitem: #f7fafc; /* Very light gray for formset items */
+            --clr-border-formitem: #e2e8f0; /* Light border for formset items */
+            --clr-focus-border: #FF1493; /* Pink on focus */
+            --clr-focus-shadow: rgba(255, 20, 147, 0.25); /* Pink focus ring */
+            --clr-btn-primary: #FF1493; /* Pink for primary buttons */
+            --clr-btn-primary-hover: #C2007B; /* Darker pink for primary button hover */
+            --clr-btn-secondary-bg: #a0aec0; /* Gray for secondary buttons */
+            --clr-btn-secondary-hover-bg: #718096; /* Darker gray for secondary button hover */
+            --clr-btn-danger-bg: #ef4444; /* Red for danger buttons */
+            --clr-btn-danger-hover-bg: #dc2626; /* Darker red for danger button hover */
+        }
+
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            font-size: .85rem;
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 0;
+        }
+
+        form {
+            background-color: var(--clr-white);
+            padding: 2.5rem;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            max-width: 1000px;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        h1 {
+            color: var(--clr-heading);
+            margin-bottom: 1.5rem;
+            font-size: 2.25rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        h1 span {
+            color: var(--clr-primary);
+        }
+
+        h2 {
+            color: var(--clr-subheading);
+            margin-top: 2rem;
+            margin-bottom: 1.25rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--clr-border-formitem);
+            padding-bottom: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.375rem;
+            font-weight: 600;
+            color: var(--clr-text-gray);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select,
+        input[type="file"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--clr-border-light);
+            border-radius: var(--border-radius-1);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            background-color: var(--clr-white);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus,
+        input[type="file"]:focus {
+            border-color: var(--clr-focus-border);
+            box-shadow: 0 0 0 3px var(--clr-focus-shadow);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--clr-btn-primary);
+            color: var(--clr-white);
+            border: none;
+            border-radius: var(--border-radius-1);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--clr-btn-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:disabled {
+            background-color: #f0c0d8; /* Lighter pink for disabled */
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
+            background-color: var(--clr-btn-secondary-bg);
+            color: var(--clr-white);
+            border: none;
+            border-radius: var(--border-radius-1);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--clr-btn-secondary-hover-bg);
+        }
+
+        .btn-danger {
+            background-color: var(--clr-btn-danger-bg);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--clr-btn-danger-hover-bg);
+        }
+
+        /* Error & Help Text */
+        .error-message-box {
+            background-color: rgba(var(--clr-danger-rgb), 0.1);
+            border: 1px solid var(--clr-danger);
+            color: var(--clr-dark); /* Changed to dark for better contrast */
+            padding: var(--padding-1);
+            border-radius: var(--border-radius-1);
+            margin-bottom: 1.5rem;
+        }
+        .error-message-box strong {
+            font-weight: 700;
+            color: var(--clr-danger); /* Keep strong text red */
+        }
+        .error-message-box ul {
+            margin-top: 0.5rem;
+            list-style: disc;
+            padding-left: 1.5rem;
+        }
+
+        .errorlist {
+            color: var(--clr-danger);
+            list-style-type: none;
+            padding: 0;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .helptext {
+            font-size: 0.875rem;
+            color: var(--clr-dark-variant);
+            margin-top: 0.25rem;
+        }
+
+        .formset-item {
+            border: 1px solid var(--clr-border-formitem);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            border-radius: var(--border-radius-2);
+            background-color: var(--clr-bg-formitem);
+            position: relative;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .current-image-preview {
+            max-width: 100%; /* Ensure it fits container */
+            max-height: 100%; /* Ensure it fits container */
+            object-fit: contain;
+            border-radius: var(--border-radius-1);
+            border: 1px solid var(--clr-border-formitem);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .delete-checkbox-wrapper {
+            display: none; /* Hidden, controlled by button */
+        }
+
+        .color-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .color-input-group input {
+            flex-grow: 1;
+            padding: 0.625rem 0.875rem;
+        }
+
+        /* Specific Section Styling */
+        .form-section {
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--clr-border-formitem);
+            margin-bottom: 1.5rem;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Grid layouts */
+        .grid-2-cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .grid-3-cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted for better spacing */
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .grid-1-col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Hide elements by default if they are empty on initial load */
+        .hidden-on-load {
+            display: none;
+        }
+
+        /* Styling for items marked for deletion */
+        .formset-item.marked-for-deletion {
+            background-color: rgba(var(--clr-danger-rgb), 0.1); /* Light red background */
+            border-color: var(--clr-danger); /* Red border */
+            opacity: 0.7;
+            position: relative;
+            pointer-events: none; /* Disable interaction with contained elements */
+        }
+        .formset-item.marked-for-deletion::before {
+            content: 'MARKED FOR DELETION';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white overlay */
+            color: var(--clr-danger); /* Darker red text */
+            font-weight: 700;
+            font-size: 1.2rem;
+            border-radius: var(--border-radius-2);
+            z-index: 10;
+        }
+        .formset-item.marked-for-deletion .delete-button {
+            pointer-events: auto; /* Re-enable interaction for the button */
+            position: relative; /* Ensure it is above the overlay */
+            z-index: 11;
+        }
+        .formset-item.marked-for-deletion input:not([type="hidden"]):not([type="checkbox"]),
+        .formset-item.marked-for-deletion select,
+        .formset-item.marked-for-deletion textarea,
+        .formset-item.marked-for-deletion button:not(.delete-button) {
+            pointer-events: none !important; /* Force disable other inputs */
+            opacity: 0.3 !important; /* Visually fade other inputs */
+        }
+
+        .image-preview-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* Maintain aspect ratio (4:3) */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border-radius: var(--border-radius-1);
+            border: 1px solid var(--clr-border-formitem);
+            background-color: var(--clr-info-light); /* Light background for empty state */
+            margin-bottom: 1rem;
+        }
+        .image-preview-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure image fits within the box */
+        }
+        .image-placeholder-text {
+            color: var(--clr-info-dark);
+            font-size: 0.9rem;
+        }
+
+        /* Modal for Delete Confirmation */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+         #client-side-errors {
+            background-color: var(--clr-danger);
+            color: var(--clr-white);
+            border: 1px solid var(--clr-danger);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius-1);
+            display: none;
+            font-weight: 500;
+        }
+
+        #client-side-errors p {
+            margin: 0;
+            padding: 0;
+        }
+
+        .modal-content {
+            background-color: var(--clr-white);
+            padding: 2rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow);
+            max-width: 400px;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.5rem;
+            color: var(--clr-dark);
+            margin-bottom: 1rem;
+        }
+        .modal-content p {
+            color: var(--clr-dark-variant);
+            margin-bottom: 1.5rem;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-1);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .modal-buttons .confirm-delete {
+            background-color: var(--clr-btn-danger-bg);
+            color: var(--clr-white);
+        }
+        .modal-buttons .confirm-delete:hover {
+            background-color: var(--clr-btn-danger-hover-bg);
+        }
+        .modal-buttons .cancel-delete {
+            background-color: var(--clr-btn-secondary-bg);
+            color: var(--clr-white);
+        }
+        .modal-buttons .cancel-delete:hover {
+            background-color: var(--clr-btn-secondary-hover-bg);
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 768px) {
+            .grid-3-cols {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    
+        <form method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
+        <h1>Edit Product: <span style="color: var(--clr-primary);">{{ product.name }}</span></h1>
+
+        {% csrf_token %}
+
+        {# --- Display Non-Field Errors and Top-level Field Errors --- #}
+        {% if product_form.errors or image_formset.non_form_errors %} {# Removed size/color formset errors if not present #}
+            <div class="error-message-box">
+                <strong>Oops!</strong>
+                <span style="display: block;">There were some errors with your submission:</span>
+                <ul>
+                    {% if product_form.non_field_errors %}
+                        {% for error in product_form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
+                    {% for field in product_form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% if image_formset.non_form_errors %}
+                        {% for error in image_formset.non_form_errors %}
+                            <li>Images: {{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+        <div id="client-side-errors" role="alert"></div>
+
+        <div class="form-section">
+            <h2>Product Details</h2>
+            <div class="grid-2-cols">
+                {% for field in product_form %}
+                    <div class="form-group {% if field.field.widget.input_type == 'textarea' %}full-width{% endif %}">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="helptext">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="errorlist">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Product Images</h2>
+            {# IMPORTANT: Django's TOTAL_FORMS, INITIAL_FORMS, MAX_NUM_FORMS are hidden by default #}
+            {# They are present inside image_formset.management_form #}
+            {{ image_formset.management_form }}
+            <div id="images-formset-container" class="grid-3-cols">
+                {# Loop through existing images #}
+                {% for form in image_formset %}
+                    <div class="formset-item {% if form.DELETE.value %}marked-for-deletion{% endif %}" data-form-prefix="{{ form.prefix }}">
+                        {{ form.id }} {# Hidden input for instance ID #}
+                        <div class="image-preview-container">
+                            {% if form.instance.pk and form.instance.image %}
+                                <img src="{{ form.instance.image.url }}" alt="{{ form.instance.type }}" class="current-image-preview">
+                            {% else %}
+                                <span class="image-placeholder-text">No Image Selected</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.image.label_tag }}
+                            {{ form.image }}
+                            {% for error in form.image.errors %}
+                                <p class="errorlist">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.type.label_tag }}
+                            {{ form.type }}
+                            {% for error in form.type.errors %}
+                                <p class="errorlist">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% if form.instance.pk %} {# Only show DELETE for existing instances #}
+                            <div class="delete-checkbox-wrapper"> {# Hidden, controlled by button #}
+                                {{ form.DELETE }}
+                            </div>
+                        {% endif %}
+                        <button type="button" class="btn-danger btn-secondary delete-button" data-original-text="Delete Image">
+                            <span class="material-icons text-base mr-1">delete</span>
+                            <span class="button-text">Delete Image</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn-primary mt-6 add-form-button" id="add-image-button" data-formset-prefix="images">
+                <span class="material-icons text-base mr-1">add_a_photo</span>
+                Add New Image
+            </button>
+            <div id="empty-form-images" style="display:none;">
+                <div class="formset-item" data-form-prefix="images-__prefix__">
+                    <div class="image-preview-container">
+                        <span class="image-placeholder-text">New Image Preview</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_images-__prefix__-image">Image:</label>
+                        <input type="file" name="images-__prefix__-image" id="id_images-__prefix__-image" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_images-__prefix__-type">Type:</label>
+                        <select name="images-__prefix__-type" id="id_images-__prefix__-type">
+                            <option value="Main">Main</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    {# Hidden DELETE checkbox for new forms (it won't be used, but good to have for consistency if needed) #}
+                    <div class="delete-checkbox-wrapper">
+                        <input type="checkbox" name="images-__prefix__-DELETE" id="id_images-__prefix__-DELETE">
+                    </div>
+                    <button type="button" class="btn-danger btn-secondary delete-button" data-original-text="Delete Image">
+                        <span class="material-icons text-base mr-1">delete</span>
+                        <span class="button-text">Delete Image</span>
+                    </button>
+                    <input type="hidden" name="images-__prefix__-id" id="id_images-__prefix__-id"> {# Always include ID for new forms to handle validation errors #}
+                </div>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2>Product Sizes & Colors</h2>
+            <div id="sizes-container">
+                {% for size in product.size_variants.all %}
+                    <div class="size-group" data-size-id="{{ size.id }}">
+                        <label>Size:</label>
+                        <input type="text" class="size-value" value="{{ size.size }}">
+                        <input type="hidden" class="size-db-id" value="{{ size.id }}">
+
+                        <div class="color-list">
+                            {% for color in size.colors.all %}
+                                <div class="color-input-group" data-color-id="{{ color.id }}">
+                                    <input type="text" class="color-name" value="{{ color.color_name }}">
+                                    <input type="hidden" class="color-db-id" value="{{ color.id }}">
+                                    <button type="button" class="btn-secondary btn-danger remove-color-btn">Remove</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" class="btn-secondary add-color-btn">Add Color</button>
+                        <button type="button" class="btn-secondary btn-danger remove-size-btn">Remove Size</button>
+                    </div>
+                {% empty %}
+                    <p>No sizes currently defined. Add one below!</p>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-size-btn" class="btn-secondary">Add New Size</button>
+        </div>
+
+        <div class="form-section">
+            <h2>Product Colors (General)</h2>
+            <div id="general-colors-container">
+                {% comment %}
+                    Assuming product.color_variants.first is the correct way to get the
+                    ProductColor instance. Adjust if your logic differs (e.g., if there can be multiple).
+                {% endcomment %}
+                {% with general_color_variant=product.color_variants.first %}
+                    {% if general_color_variant %}
+                        {% for color in general_color_variant.colors.all %}
+                            <div class="color-input-group" data-color-id="{{ color.id }}">
+                                <input type="text" class="color-name" value="{{ color.color_name }}">
+                                <input type="hidden" class="color-db-id" value="{{ color.id }}">
+                                <button type="button" class="btn-secondary btn-danger remove-color-btn">Remove</button>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No general colors defined. Add one below!</p>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <button type="button" id="add-general-color-btn" class="btn-secondary">Add General Color</button>
+        </div>
+
+        <!-- Hidden input to hold the JSON data -->
+        <input type="hidden" name="product_variations_json" id="product-variations-json">
+
+
+        <button type="submit" class="btn-primary mt-8 full-width">Save Changes</button>
+        <button type="button" class="btn-danger btn-secondary remove-color-button" id="delete-product-button">
+            <span class="material-icons text-base mr-1">delete_forever</span>
+            Delete Product
+        </button>
+    </form>
+
+    {# Custom Delete Confirmation Modal #}
+    <div id="delete-confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button type="button" class="cancel-delete">Cancel</button>
+                <button type="button" class="confirm-delete">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addImageButton = document.getElementById('add-image-button');
+            const imagesFormsetContainer = document.getElementById('images-formset-container');
+            const emptyFormTemplate = document.getElementById('empty-form-images');
+
+            // Find the management form inputs
+            const totalFormsInput = document.querySelector('input[name="images-TOTAL_FORMS"]');
+            const maxNumFormsInput = document.querySelector('input[name="images-MAX_NUM_FORMS"]');
+
+            // Ensure these elements exist before proceeding
+            if (!totalFormsInput || !maxNumFormsInput) {
+                console.error("Management form inputs (TOTAL_FORMS, MAX_NUM_FORMS) not found. Dynamic formset will not work.");
+                return; // Exit if critical elements are missing
+            }
+
+            const maxForms = parseInt(maxNumFormsInput.value, 10);
+
+            // Function to update the add image button's disabled state
+            function updateAddButtonState() {
+                const currentActiveForms = imagesFormsetContainer.querySelectorAll('.formset-item:not(.marked-for-deletion)').length;
+                if (currentActiveForms >= maxForms) {
+                    addImageButton.disabled = true;
+                    addImageButton.textContent = `Limit (${maxForms}) Reached`; // Optional: inform user
+                } else {
+                    addImageButton.disabled = false;
+                    addImageButton.innerHTML = `<span class="material-icons text-base mr-1">add_a_photo</span> Add New Image`; // Reset text
+                }
+            }
+
+            // Function to handle image preview
+            function setupImagePreview(inputElement) {
+                const formsetItem = inputElement.closest('.formset-item');
+                const previewContainer = formsetItem.querySelector('.image-preview-container');
+                let imgElement = previewContainer.querySelector('img');
+                const placeholderText = previewContainer.querySelector('.image-placeholder-text');
+
+                inputElement.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            if (!imgElement) { // If no img element exists, create one
+                                imgElement = document.createElement('img');
+                                imgElement.className = 'current-image-preview';
+                                previewContainer.appendChild(imgElement);
+                            }
+                            if (placeholderText) placeholderText.style.display = 'none';
+                            imgElement.src = e.target.result;
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        // If file is cleared, revert to placeholder or remove image
+                        if (imgElement) imgElement.src = ''; // Clear src
+                        if (placeholderText) placeholderText.style.display = 'block';
+                    }
+                });
+            }
+
+            // Initial setup for existing image previews on page load
+            imagesFormsetContainer.querySelectorAll('input[type="file"]').forEach(setupImagePreview);
+
+
+            // Add new image form
+            addImageButton.addEventListener('click', function() {
+                const currentActiveForms = imagesFormsetContainer.querySelectorAll('.formset-item:not(.marked-for-deletion)').length;
+
+                if (currentActiveForms < maxForms) {
+                    const totalForms = parseInt(totalFormsInput.value);
+                    const newFormHTML = emptyFormTemplate.innerHTML.replace(/__prefix__/g, totalForms);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = newFormHTML;
+                    const newForm = tempDiv.firstElementChild; // Get the actual formset-item div
+
+                    // Update the data-form-prefix for consistency
+                    newForm.setAttribute('data-form-prefix', `images-${totalForms}`);
+
+                    imagesFormsetContainer.appendChild(newForm);
+
+                    // Increment TOTAL_FORMS
+                    totalFormsInput.value = totalForms + 1;
+
+                    // Set up image preview for the new input
+                    const newFileInput = newForm.querySelector('input[type="file"]');
+                    if (newFileInput) {
+                        setupImagePreview(newFileInput);
+                    }
+
+                    updateAddButtonState();
+                }
+            });
+
+            // Handle delete button clicks (delegated event listener on the container)
+            imagesFormsetContainer.addEventListener('click', function(event) {
+                const deleteButton = event.target.closest('.delete-button');
+                if (deleteButton) {
+                    event.preventDefault();
+                    const formsetItem = deleteButton.closest('.formset-item');
+                    const deleteCheckbox = formsetItem.querySelector('input[type="checkbox"][id$="-DELETE"]');
+                    const buttonTextSpan = deleteButton.querySelector('.button-text');
+
+                    if (formsetItem.classList.contains('marked-for-deletion')) {
+                        // Unmark for deletion
+                        formsetItem.classList.remove('marked-for-deletion');
+                        if (deleteCheckbox) {
+                            deleteCheckbox.checked = false;
+                        }
+                        deleteButton.classList.add('btn-danger');
+                        deleteButton.classList.remove('btn-secondary');
+                        if (buttonTextSpan) buttonTextSpan.textContent = deleteButton.dataset.originalText;
+                    } else {
+                        // Mark for deletion
+                        formsetItem.classList.add('marked-for-deletion');
+                        if (deleteCheckbox) {
+                            deleteCheckbox.checked = true;
+                        }
+                        deleteButton.classList.remove('btn-danger');
+                        deleteButton.classList.add('btn-secondary'); // Change color to secondary/gray
+                        if (buttonTextSpan) buttonTextSpan.textContent = 'Undo Delete';
+                    }
+                    updateAddButtonState(); // Update button state after a delete/undo
+                }
+            });
+
+            // Initial update of add button state on page load
+            updateAddButtonState();
+
+
+            // Product Delete Confirmation Modal Logic
+            const deleteProductButton = document.getElementById('delete-product-button');
+            const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+            const confirmDeleteButton = deleteConfirmModal.querySelector('.confirm-delete');
+            const cancelDeleteButton = deleteConfirmModal.querySelector('.cancel-delete');
+
+            deleteProductButton.addEventListener('click', function() {
+                deleteConfirmModal.classList.add('show');
+            });
+
+            cancelDeleteButton.addEventListener('click', function() {
+                deleteConfirmModal.classList.remove('show');
+            });
+
+            confirmDeleteButton.addEventListener('click', function() {
+                window.location.href = "{% url 'delete_product' product.pk %}";
+            });
+
+            // Close modal if clicking outside (optional)
+            deleteConfirmModal.addEventListener('click', function(event) {
+                if (event.target === deleteConfirmModal) {
+                    deleteConfirmModal.classList.remove('show');
+                }
+            });
+        });
+    </script>
+        <script>
+        // Helper function to generate a unique ID for new elements
+        function generateUniqueId() {
+            return 'new_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        }
+
+        // Function to clear client-side error messages
+        function clearClientSideErrors() {
+            const errorDiv = document.getElementById('client-side-errors');
+            errorDiv.innerHTML = '';
+            errorDiv.style.display = 'none';
+        }
+
+        // Function to display a client-side error message
+        function displayClientSideError(message) {
+            const errorDiv = document.getElementById('client-side-errors');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML += `<p>${message}</p>`;
+        }
+
+        // Client-side validation function
+        function validateForm(event) {
+            clearClientSideErrors(); // Clear previous errors
+
+            const sizeGroups = document.querySelectorAll('#sizes-container .size-group');
+            const generalColorGroups = document.querySelectorAll('#general-colors-container .color-input-group');
+
+            let hasSizes = sizeGroups.length > 0;
+            let hasGeneralColors = generalColorGroups.length > 0;
+
+            // Rule 1: Product size and product color cannot exist together
+            if (hasSizes && hasGeneralColors) {
+                displayClientSideError("A product cannot have both sizes and general colors. Please choose one or neither.");
+                event.preventDefault(); // Prevent form submission
+                return false;
+            }
+
+            let isValid = true;
+            const sizesData = [];
+
+            // Rule 2 & 3: Product size must have a size and at least one color
+            // This validation only runs if sizes are present
+            if (hasSizes) {
+                sizeGroups.forEach(sizeGroup => {
+                    const sizeDbIdInput = sizeGroup.querySelector('.size-db-id');
+                    const sizeValueInput = sizeGroup.querySelector('.size-value');
+                    const sizeValue = sizeValueInput.value.trim();
+
+                    // Validate size_value
+                    if (!sizeValue) {
+                        displayClientSideError("A product size field cannot be empty.");
+                        isValid = false;
+                    }
+
+                    const colorsData = [];
+                    const colorInputs = sizeGroup.querySelectorAll('.color-list .color-input-group');
+
+                    // Validate colors for this size
+                    if (colorInputs.length === 0) {
+                        displayClientSideError(`Size '${sizeValue || 'Unnamed Size'}' must have at least one color.`);
+                        isValid = false;
+                    } else {
+                        colorInputs.forEach(colorGroup => {
+                            const colorDbIdInput = colorGroup.querySelector('.color-db-id');
+                            const colorNameInput = colorGroup.querySelector('.color-name');
+                            const colorName = colorNameInput.value.trim();
+
+                            // Validate individual color name
+                            if (!colorName) {
+                                displayClientSideError(`A color name for size '${sizeValue || 'Unnamed Size'}' cannot be empty.`);
+                                isValid = false;
+                            }
+
+                            colorsData.push({
+                                id: colorDbIdInput.value,
+                                name: colorName
+                            });
+                        });
+                    }
+                    
+                    sizesData.push({
+                        id: sizeDbIdInput.value,
+                        value: sizeValue,
+                        colors: colorsData
+                    });
+                });
+            }
+
+            // If validation failed, prevent submission and return false
+            if (!isValid) {
+                event.preventDefault();
+                return false;
+            }
+
+            // If validation passed, proceed with JSON data collection and submission
+            const generalColorsData = [];
+            if (hasGeneralColors) { // Only collect if general colors are present and valid
+                generalColorGroups.forEach(colorGroup => {
+                    const colorDbIdInput = colorGroup.querySelector('.color-db-id');
+                    const colorNameInput = colorGroup.querySelector('.color-name');
+                    const colorName = colorNameInput.value.trim();
+
+                    // Optional: Validate individual general color name if needed
+                    if (!colorName) {
+                        displayClientSideError("A general color name cannot be empty.");
+                        isValid = false;
+                    }
+
+                    generalColorsData.push({
+                        id: colorDbIdInput.value,
+                        name: colorName
+                    });
+                });
+            }
+
+            if (!isValid) { // Check again after general color validation
+                event.preventDefault();
+                return false;
+            }
+
+            const combinedData = {
+                sizes: sizesData,
+                general_colors: generalColorsData
+            };
+
+            document.getElementById('product-variations-json').value = JSON.stringify(combinedData);
+
+            // Allow form submission
+            return true;
+        }
+
+
+        // Add new size block
+        document.getElementById('add-size-btn').addEventListener('click', () => {
+            const container = document.getElementById('sizes-container');
+            const uniqueSizeId = generateUniqueId();
+            const div = document.createElement('div');
+            div.className = 'size-group';
+            div.dataset.sizeId = uniqueSizeId;
+            div.innerHTML = `
+                <label>Size:</label>
+                <input type="text" class="size-value" value="" placeholder="e.g., Small">
+                <input type="hidden" class="size-db-id" value="new">
+                <div class="color-list"></div>
+                <button type="button" class="btn-secondary add-color-btn">Add Color</button>
+                <button type="button" class="btn-secondary btn-danger remove-size-btn">Remove Size</button>
+            `;
+            container.appendChild(div);
+        });
+
+        // Global event delegation for dynamically added elements
+        document.addEventListener('click', function(event) {
+            // Remove size block
+            if (event.target.classList.contains('remove-size-btn')) {
+                event.target.closest('.size-group').remove();
+            }
+
+            // Add color to a specific size
+            if (event.target.classList.contains('add-color-btn')) {
+                const sizeGroup = event.target.closest('.size-group');
+                const colorList = sizeGroup.querySelector('.color-list');
+                const uniqueColorId = generateUniqueId();
+
+                const div = document.createElement('div');
+                div.className = 'color-input-group';
+                div.dataset.colorId = uniqueColorId;
+                div.innerHTML = `
+                    <input type="text" class="color-name" value="" placeholder="e.g., Red">
+                    <input type="hidden" class="color-db-id" value="new">
+                    <button type="button" class="btn-secondary btn-danger remove-color-btn">Remove</button>
+                `;
+                colorList.appendChild(div);
+            }
+
+            // Remove any color field (both general and size-specific)
+            if (event.target.classList.contains('remove-color-btn')) {
+                event.target.closest('.color-input-group').remove();
+            }
+
+            // Add general color
+            if (event.target.id === 'add-general-color-btn') {
+                const container = document.getElementById('general-colors-container');
+                const uniqueGeneralColorId = generateUniqueId();
+                const div = document.createElement('div');
+                div.className = 'color-input-group';
+                div.dataset.colorId = uniqueGeneralColorId;
+                div.innerHTML = `
+                    <input type="text" class="color-name" value="" placeholder="e.g., Blue">
+                    <input type="hidden" class="color-db-id" value="new">
+                    <button type="button" class="btn-secondary btn-danger remove-color-btn">Remove</button>
+                `;
+                container.appendChild(div);
+            }
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

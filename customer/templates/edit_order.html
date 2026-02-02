@@ -1,0 +1,736 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping Order Details (Admin)</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <style>
+        /* All necessary variables and base styles */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            /* Bright pink for primary actions/emphasis */
+            --clr-danger: #ff7782;
+            /* Red for errors/important alerts */
+            --clr-success: #41f1b6;
+            /* Green for success/positive status */
+            --clr-white: #fff;
+            /* White for backgrounds */
+            --clr-info-dark: #7d8da1;
+            /* Dark grey for secondary text */
+            --clr-info-light: #dce1eb;
+            /* Light grey for subtle backgrounds */
+            --clr-dark: #363949;
+            /* Darkest grey for main text */
+            --clr-warning: #ff4edc;
+            /* Another pink/purple for warnings */
+            --clr-light: rgba(132, 139, 200, 0.18);
+            /* Light transparent color for shadows */
+            --clr-primary-variant: #111e88;
+            /* Darker blue for primary variant */
+            --clr-dark-variant: #677483;
+            /* Medium grey for less important text */
+            --clr-color-background: #f6f6f9;
+            /* Lightest grey for overall page background */
+
+            --card-border-radius: 2rem;
+            /* Large border radius for cards */
+            --border-radius-1: 0.4rem;
+            /* Smallest border radius */
+            --border-radius-2: 0.8rem;
+            /* Medium border radius */
+            --border-radius-3: 1.2rem;
+            /* Larger border radius */
+
+            --card-padding: 1.8rem;
+            /* Standard padding for cards */
+            --padding-1: 1.2rem;
+            /* Smaller padding */
+            --box-shadow: 0 2rem 3rem var(--clr-light);
+            /* Standard box shadow */
+        }
+
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            font-size: .85rem;
+            /* Slightly increased for readability */
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1.4rem;
+            /* Adjusted padding */
+        }
+
+        /* Common Typography and Utility Classes */
+        a {
+            color: var(--clr-dark);
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            /* Adjusted for better fit */
+            color: var(--clr-dark);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            /* Adjusted */
+            color: var(--clr-dark);
+        }
+
+        h3 {
+            font-size: 1rem;
+            /* Adjusted */
+            color: var(--clr-dark);
+        }
+
+        h4 {
+            font-size: 0.9rem;
+            /* Adjusted */
+            color: var(--clr-dark);
+        }
+
+        h5 {
+            font-size: 0.8rem;
+            /* Adjusted */
+            color: var(--clr-dark);
+        }
+
+        small {
+            font-size: 0.75rem;
+            color: var(--clr-info-dark);
+        }
+
+        .text-muted {
+            color: var(--clr-info-dark);
+        }
+
+        p {
+            color: var(--clr-dark-variant);
+            line-height: 1.5;
+        }
+
+        b {
+            color: var(--clr-dark);
+            font-weight: 600;
+        }
+
+        .primary {
+            color: var(--clr-primary);
+        }
+
+        .success {
+            color: var(--clr-success);
+        }
+
+        .danger {
+            color: var(--clr-danger);
+        }
+
+        .warning {
+            color: var(--clr-warning);
+        }
+
+        /* Specific styles for the shipping order details page */
+        .order-details-container {
+            max-width: 1000px;
+            /* Increased max-width for more content */
+            width: 96%;
+            background: var(--clr-white);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--card-border-radius);
+            padding: var(--card-padding);
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            /* Consistent spacing */
+        }
+
+        .section-header {
+            text-align: center;
+            padding-bottom: var(--padding-1);
+            border-bottom: 1px solid var(--clr-info-light);
+        }
+
+        .section-box {
+            background: var(--clr-info-light);
+            /* Use a light variant for sections */
+            padding: var(--padding-1);
+            border-radius: var(--border-radius-2);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            /* Subtle shadow for inner sections */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .section-box.customer-info {
+            background-color: rgba(255, 20, 147, 0.05);
+        }
+
+        /* Light primary tone */
+        .section-box.shipping-address {
+            background-color: rgba(65, 241, 182, 0.05);
+        }
+
+        /* Light success tone */
+        .section-box.products-ordered {
+            background-color: rgba(255, 78, 220, 0.05);
+        }
+
+        /* Light warning tone */
+        .section-box.admin-controls {
+            background-color: rgba(17, 30, 136, 0.05);
+        }
+
+        /* Light primary-variant tone */
+        .section-box.admin-notes,
+        .section-box.existing-notes {
+            background-color: rgba(103, 116, 131, 0.05);
+        }
+
+        /* Light dark-variant tone */
+
+
+        .section-box h2 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .section-box h2 .material-symbols-sharp,
+        .section-box h2 svg {
+            font-size: 1.5rem;
+            /* Adjust icon size */
+            margin-right: 0.5rem;
+            color: var(--clr-primary);
+            /* Default icon color */
+        }
+
+        /* Specific icon colors */
+        .customer-info h2 .material-symbols-sharp,
+        .customer-info h2 svg {
+            color: var(--clr-primary);
+        }
+
+        .shipping-address h2 .material-symbols-sharp,
+        .shipping-address h2 svg {
+            color: var(--clr-success);
+        }
+
+        .products-ordered h2 .material-symbols-sharp,
+        .products-ordered h2 svg {
+            color: var(--clr-warning);
+        }
+
+        .admin-controls h2 .material-symbols-sharp,
+        .admin-controls h2 svg {
+            color: var(--clr-primary-variant);
+        }
+
+        .admin-notes h2 .material-symbols-sharp,
+        .admin-notes h2 svg,
+        .existing-notes h2 .material-symbols-sharp,
+        .existing-notes h2 svg {
+            color: var(--clr-dark-variant);
+        }
+
+
+        .grid-2-col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-2-col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--clr-dark);
+        }
+
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--clr-info-light);
+            border-radius: var(--border-radius-1);
+            background: var(--clr-white);
+            color: var(--clr-dark);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--clr-primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            background: var(--clr-primary);
+            color: var(--clr-white);
+            font-weight: 600;
+            border-radius: var(--border-radius-1);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 0.5rem 1rem rgba(255, 20, 147, 0.2);
+            /* Shadow with primary color */
+            display: inline-flex;
+            /* For better button alignment with icons */
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--clr-primary-variant);
+            transform: translateY(-2px);
+        }
+
+        button.delete-button {
+            background-color: var(--clr-danger);
+            box-shadow: 0 0.5rem 1rem rgba(255, 119, 130, 0.2);
+            padding: 0.5rem 1rem;
+            /* Smaller padding for delete buttons */
+            font-size: 0.75rem;
+            /* Smaller font size for delete buttons */
+        }
+
+        button.delete-button:hover {
+            background-color: #d65c68;
+            /* Darker red on hover */
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--clr-white);
+            border-radius: var(--border-radius-2);
+            overflow: hidden;
+            /* Ensures rounded corners apply to content */
+        }
+
+        table thead {
+            background: var(--clr-info-light);
+        }
+
+        table th,
+        table td {
+            padding: 1rem 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid var(--clr-info-light);
+            color: var(--clr-dark);
+        }
+
+        table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: var(--clr-dark-variant);
+        }
+
+        table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        table tbody tr:hover {
+            background: rgba(132, 139, 200, 0.05);
+            /* Light hover effect */
+        }
+
+        table img {
+            width: 60px;
+            /* Larger image size */
+            height: 60px;
+            object-fit: cover;
+            border-radius: var(--border-radius-1);
+            border: 1px solid var(--clr-info-light);
+        }
+
+        table tfoot td {
+            font-weight: 700;
+            padding-top: 1.5rem;
+            font-size: 1.1rem;
+            border-top: 2px solid var(--clr-info-light);
+        }
+
+        table tfoot tr {
+            background-color: var(--clr-info-light);
+            /* Different background for total row */
+        }
+
+        table tfoot td:first-child {
+            text-align: right;
+        }
+
+        /* Styles for existing notes list */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .note-item {
+            background: var(--clr-white);
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius-1);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border: 1px solid var(--clr-info-light);
+        }
+
+        .note-content {
+            flex-grow: 1;
+        }
+
+        .note-date {
+            font-size: 0.7rem;
+            color: var(--clr-info-dark);
+            margin-top: 0.2rem;
+            display: block;
+        }
+
+        .note-text {
+            color: var(--clr-dark);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="order-details-container">
+        <!-- Order Header -->
+<div class="section-header">
+    <h1>Order Details</h1>
+
+    {% if orders %}
+        <p>Transaction ID: 
+            <b class="primary">
+                {{ orders.0.transaction_id|default:"N/A" }}
+            </b>
+        </p>
+        <p>
+            <small class="text-muted">
+                Order Date: {{ orders.0.date|date:"F d, Y" }}
+            </small>
+        </p>
+    {% else %}
+        <p><b>No orders found for this shipping order.</b></p>
+    {% endif %}
+</div>
+
+
+<div class="section-box admin-controls" data-shipping-id="{{ shipping_order.id }}">
+    <h2>
+        <span class="material-symbols-sharp">settings</span>
+        Admin Controls
+    </h2>
+    <div id="ajax-error" style="color: red; display: none;"></div>
+    <div id="ajax-success" style="color: green; display: none;"></div>
+
+    <div class="grid-2-col">
+        <div class="form-group">
+            <label for="order-status">Order Status:</label>
+            <select id="order-status">
+                <option value="Ongoing" {% if orders.first.status == "Ongoing" %}selected{% endif %}>Ongoing</option>
+                <option value="Delivered" {% if orders.first.status == "Delivered" %}selected{% endif %}>Delivered</option>
+                <option value="Inactive" {% if orders.first.status == "Inactive" %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="payment-status">Payment Status:</label>
+            <select id="payment-status">
+                <option value="Paid" {% if orders.first.payment_status == "Paid" %}selected{% endif %}>Paid</option>
+                <option value="Pending" {% if orders.first.payment_status == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="Refunded" {% if orders.first.payment_status == "Refunded" %}selected{% endif %}>Refunded</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Hidden inactive reason input -->
+    <div id="inactive-reason-box" style="display:none; margin-top:10px;" class="form-group">
+        <label for="inactive-reason">Reason for Cancellation:</label>
+        <textarea id="inactive-reason" rows="2" placeholder="Enter reason..."></textarea>
+    </div>
+
+    <button id="save-order-status">
+        <span class="material-symbols-sharp">save</span>
+        Save Changes
+    </button>
+</div>
+
+
+        <!-- Customer Information Section -->
+       <!-- Customer Information Section -->
+<div class="section-box customer-info">
+    <h2>
+        <span class="material-symbols-sharp">person</span>
+        Customer Details
+    </h2>
+    <div class="grid-2-col">
+        <div>
+            <h4>Name:</h4>
+            <p><b>
+                {% if person_type == "customer" %}
+                    {{ person.first_name }} {{ person.last_name }}
+                {% else %}
+                    {{ person.first_name|default:"Guest" }} {{ person.last_name|default:"" }}
+                {% endif %}
+            </b></p>
+        </div>
+        <div>
+            <h4>Email:</h4>
+            <p>{{ person.email|default:"-" }}</p>
+        </div>
+        <div>
+            <h4>Phone:</h4>
+            <p>{{ person.number|default:"-" }}</p>
+        </div>
+        <div>
+            <h4>Status:</h4>
+            <p>
+                {% if person_type == "customer" %}
+                    Registered Customer
+                {% else %}
+                    Guest Customer
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<!-- Shipping / Pickup Information Section -->
+<div class="section-box shipping-address">
+    <h2>
+        <span class="material-symbols-sharp">location_on</span>
+        {% if shipping_order.mode == "Delivery" %}
+            Delivery Information
+        {% else %}
+            Pickup Information
+        {% endif %}
+    </h2>
+
+    <div>
+        {% if shipping_order.mode == "Delivery" %}
+            {% if shipping_order.address %}
+                <p>{{ shipping_order.address }}</p>
+            {% endif %}
+            {% if shipping_order.local_government %}
+                <p>{{ shipping_order.local_government }}</p>
+            {% endif %}
+            {% if shipping_order.town %}
+                <p>{{ shipping_order.town }}</p>
+            {% endif %}
+            {% if shipping_order.state %}
+                <p>{{ shipping_order.state }}</p>
+            {% endif %}
+            {% if shipping_order.country %}
+                <p>{{ shipping_order.country }}</p>
+            {% endif %}
+        {% else %}
+            <p>42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1</p>
+        {% endif %}
+        <h4>Shipping email:{{ shipping_order.email }}</h4>
+        <h4>Shipping Whatsapp Number:{{ shipping_order.whatsapp_number}}</h4>
+    </div>
+
+    {% if shipping_order.order_note %}
+    <div class="order-note" style="margin-top: 15px;">
+        <h4>Customer Note:</h4>
+        <p>{{ shipping_order.order_note }}</p>
+    </div>
+    {% endif %}
+</div>
+
+
+        <!-- Products Ordered Section -->
+        <!-- Products Ordered Section -->
+        <div class="section-box products-ordered">
+            <h2>
+                <span class="material-symbols-sharp">shopping_bag</span>
+                Products Ordered
+            </h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product Name</th>
+                            <th>Size</th>
+                            <th>Colors</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in product_data %}
+                        <tr>
+                            <td>
+                                {% if item.image %}
+                                <img src="{{ item.image }}" alt="{{ item.name }}">
+                                {% else %}
+                                <img src="https://placehold.co/60x60/e2e8f0/000000?text=No+Image" alt="No Image">
+                                {% endif %}
+                            </td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.size|default:"-" }}</td>
+                            <td>
+                                {% if item.colors %}
+                                {{ item.colors|join:", " }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₦{{ item.price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <!-- Total on the left -->
+                            <td colspan="3" style="text-align:left;">
+                                <b>Total:</b> ₦{{ total_amount }}
+                            </td>
+
+                            <!-- Coupon on the right -->
+                            <td colspan="3" style="text-align:right;">
+                                {% if shipping_order.coupon %}
+                                {{ shipping_order.coupon.code }} -
+                                {% if shipping_order.coupon.is_percent %}
+                                {{ shipping_order.coupon.amount|floatformat:0 }}%
+                                {% else %}
+                                ₦{{ shipping_order.coupon.amount }}
+                                {% endif %}
+                                {% else %}
+                                No Coupon
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tfoot>
+
+
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Footer for Admin View -->
+        <div class="section-header">
+            <p><small class="text-muted">Managed via Admin Dashboard</small></p>
+        </div>
+    </div>
+
+   
+</body>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const statusSelect = document.getElementById("order-status");
+    const paymentSelect = document.getElementById("payment-status");
+    const inactiveReasonBox = document.getElementById("inactive-reason-box");
+    const inactiveReasonInput = document.getElementById("inactive-reason");
+    const saveBtn = document.getElementById("save-order-status");
+
+    const errorBox = document.getElementById("ajax-error");
+    const successBox = document.getElementById("ajax-success");
+    const shippingId = document.querySelector(".admin-controls").dataset.shippingId;
+
+    // Show/hide inactive reason box
+    statusSelect.addEventListener("change", function(){
+        inactiveReasonBox.style.display = (this.value === "Inactive") ? "block" : "none";
+    });
+
+    saveBtn.addEventListener("click", function(){
+        const status = statusSelect.value;
+        const paymentStatus = paymentSelect.value;
+        const inactiveReason = inactiveReasonInput.value;
+
+        const formData = new FormData();
+        formData.append("status", status);
+        formData.append("payment_status", paymentStatus);
+        formData.append("inactive_reason", inactiveReason);
+        formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+        fetch(`/update-order-status/${shippingId}/`, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            errorBox.style.display = "none";
+            successBox.style.display = "none";
+
+            if (data.success) {
+                successBox.textContent = data.message;
+                successBox.style.display = "block";
+            } else {
+                errorBox.textContent = data.error;
+                errorBox.style.display = "block";
+            }
+        })
+        .catch(err => {
+            errorBox.textContent = "Something went wrong. Please try again.";
+            errorBox.style.display = "block";
+        });
+    });
+});
+</script>
+
+</html>
+
+{% endblock %}

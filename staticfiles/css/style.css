@@ -1,0 +1,32 @@
+.contact-info{
+    font-size: 12px;
+  }
+  .nav-links{
+    font-size: 19px;
+    font-weight: 500;
+    color: #212934 !important;
+  }
+  .nav-links:hover{
+    color: green !important;
+  }
+  .nav-items{
+    margin-right: 100px;
+    padding: 5px;
+  }
+  .nav-icon{
+    margin-right: 15px;
+  }
+  .cart{
+    top: 1rem;
+    right: 3.4rem;
+    padding: 0px 6px;
+    font-size: small;
+    background: rgb(221, 221, 221);
+  }
+  .user{
+    top: 1rem;
+    right: 0.3rem;
+    padding: 0px 6px;
+    font-size: small;
+    background: rgb(221, 221, 221);
+  }

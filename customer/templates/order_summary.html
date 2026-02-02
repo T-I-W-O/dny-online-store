@@ -1,0 +1,926 @@
+
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+
+   
+    <title>Order Summary and Billing</title>
+    <style>
+        /* Import Google font - Poppins */
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+
+        /* Global reset styles, usually not scoped to .address */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid #999;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .table td,
+        .table th {
+            padding: 1rem;
+            font-size: 1rem;
+            vertical-align: middle;
+        }
+
+        .color-input-box {
+            width: 30px;
+            height: 30px;
+            margin-left: 5px;
+            padding: 3px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .color-input-box.error {
+            border-color: red;
+        }
+
+        .color-item-group {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 15px;
+            margin-bottom: 5px;
+        }
+
+        /* Specific style for the Bootstrap alert container, hidden by default */
+        #validationAlertContainer {
+            display: none;
+            /* Hide by default */
+            margin-top: 20px;
+            /* Add some space above the alert */
+        }
+
+        @media screen and (max-width: 768px) {
+            .table {
+                font-size: 0.9rem;
+            }
+
+            .table td,
+            .table th {
+                padding: 0.5rem;
+            }
+        }
+
+        .btn-checkout {
+            background-color: #FF1493;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        /* Styles from address_form.html */
+        .address-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        .address-section .container {
+            position: relative;
+            max-width: 700px;
+            width: 100%;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        .address-section .container header {
+            font-size: 1.5rem;
+            color: #333;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Change .address-section .container .form to .address-section .container .form-content */
+        .address-section .container .form-content {
+            margin-top: 30px;
+        }
+
+        /* Update all .address-section .form selectors to .address-section .form-content */
+        .address-section .form-content .input-box {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .address-section .input-box label {
+            color: #333;
+        }
+
+        .address-section .form-content :where(.input-box input, .select-box) {
+            position: relative;
+            height: 50px;
+            width: 100%;
+            outline: none;
+            font-size: 1rem;
+            color: #707070;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 0 15px;
+        }
+
+        .address-section .input-box textarea {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            font-size: 1rem;
+            color: #707070;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px 15px;
+            outline: none;
+            font-family: "Poppins", sans-serif;
+        }
+
+
+        .address-section .input-box input:focus {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .address-section .form-content .column {
+            display: flex;
+            column-gap: 15px;
+        }
+
+        .address-section .form-content .gender-box {
+            margin-top: 20px;
+        }
+
+        .address-section .gender-box h3 {
+            color: #333;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .address-section .form-content :where(.gender-option, .gender) {
+            display: flex;
+            align-items: center;
+            column-gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .address-section .form-content .gender {
+            column-gap: 5px;
+        }
+
+        .address-section .gender input {
+            accent-color: #FF1493;
+        }
+
+        .address-section .form-content :where(.gender input, .gender label) {
+            cursor: pointer;
+        }
+
+
+        .address-section .gender label {
+            color: #707070;
+        }
+
+        .address-section :where(input, .select-box) {
+            /* This rule was already scoped to .address-section */
+            margin-top: 15px;
+        }
+
+
+        .address-section .select-box select {
+            height: 100%;
+            width: 100%;
+            outline: none;
+            border: none;
+            color: #707070;
+            font-size: 1rem;
+        }
+
+        /* Change .address-section .form button to .address-section .form-content button */
+        .address-section .form-content button {
+            height: 55px;
+            width: 100%;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #FF1493;
+        }
+
+        /* Change .address-section .form button:hover to .address-section .form-content button:hover */
+        .address-section .form-content button:hover {
+            background: #FF1493;
+        }
+
+        /* File Upload Styling */
+        .address-section .file-upload-box input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            color: #707070;
+            cursor: pointer;
+        }
+
+        .address-section .file-upload-box input[type="file"]::-webkit-file-upload-button {
+            background: #FF1493;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .address-section .file-upload-box input[type="file"]::-webkit-file-upload-button:hover {
+            background: #e01382;
+        }
+
+        .address-section .save-edit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding: 0 2px;
+        }
+
+        .address-section .save-option {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .address-section .save-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .address-section .edit-option {
+            color: #FF1493;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .address-section .save-edit-row-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding: 0 2px;
+        }
+
+        /* Custom Styles for Delivery Options Boxes */
+        .delivery-options-container {
+            display: flex;
+            justify-content: space-between; /* Pushes items to the ends */
+            margin-top: 20px;
+            margin-bottom: 20px; /* Add some space below the options */
+            gap: 20px; /* Space between the two boxes */
+        }
+
+        .delivery-option-box {
+            flex: 1; /* Allows boxes to take equal space */
+            padding: 15px 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center; /* Vertically align content */
+            justify-content: center; /* Horizontally center content */
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #555;
+            text-align: center;
+            min-width: 120px; /* Ensure they don't get too small */
+        }
+
+        .delivery-option-box:hover {
+            background-color: #f8f8f8;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Slightly larger shadow on hover */
+        }
+
+        .delivery-option-box.active {
+            border-color: #FF1493; /* Highlight active choice */
+            background-color: #fff0f5; /* Light pink background for active */
+            color: #FF1493;
+        }
+
+        .delivery-option-box input[type="radio"] {
+            /* Hide the actual radio button */
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .delivery-option-box label {
+            /* Make the label clickable and style it */
+            cursor: pointer;
+            margin-bottom: 0; /* Remove default margin from Bootstrap label */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Custom radio button appearance */
+        .custom-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #999;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            position: relative;
+            flex-shrink: 0; /* Prevent it from shrinking */
+        }
+
+        .delivery-option-box.active .custom-radio {
+            border-color: #FF1493;
+        }
+
+        .custom-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background-color: #FF1493; /* Inner dot color */
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.2s ease;
+        }
+
+        .delivery-option-box.active .custom-radio::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Previous Address Suggestion Box */
+        .previous-address-suggestion {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: none; /* Hidden by default, shown by JS if saved address exists */
+        }
+
+        .previous-address-suggestion:hover {
+            background-color: #e9e9e9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .previous-address-suggestion h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .previous-address-suggestion p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /*Responsive*/
+        @media screen and (max-width: 500px) {
+            .address-section .form-content .column {
+                flex-wrap: wrap;
+            }
+            .address-section .form-content :where(.gender-option, .gender) {
+                row-gap: 15px;
+            }
+            /* Ensure delivery option boxes stay side-by-side and scale down */
+            .delivery-options-container {
+                flex-wrap: nowrap; /* Prevent wrapping */
+                justify-content: space-around; /* Distribute space evenly */
+                gap: 10px; /* Reduce gap on small screens */
+            }
+            .delivery-option-box {
+                min-width: unset; /* Remove min-width to allow more flexibility */
+                padding: 10px 15px; /* Adjust padding for smaller screens */
+                font-size: 1rem; /* Adjust font size */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+        <div class="container mt-3" id="validationAlertContainer">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" id="validationAlert">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-5">
+            <div class="card p-4">
+                <h4 class="mb-4">Your Current Orders</h4>
+
+                {% if orders %}
+                <p><strong>Transaction ID:</strong> {{ orders.0.transaction_id }}</p>
+                {% endif %}
+                <div class="table-responsive">
+
+            <table class="table table-bordered table-hover text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Size</th>
+                        <th>Colors</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        {% for detail in order.details.all %}
+                            <tr>
+                                {% if forloop.first %}
+                                    <td rowspan="{{ order.details.count }}">{{ order.product.name }}</td>
+                                    <td rowspan="{{ order.details.count }}">₦{{ order.total_price }}</td>
+                                {% endif %}
+
+                                <td>
+                                    {% if detail.size %}
+                                        {{ detail.size.size }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td class="color-cell">
+                                    {% for color in detail.colors.all %}
+                                        <div class="color-item-group-vertical">
+                                            <span class="color-item-group">
+                                                <span class="color-dot" style="background-color: {{ color.color_name|lower }};"></span>
+                                            </span>
+                                        </div>
+                                    {% empty %}
+                                        <span>-</span>
+                                    {% endfor %}
+                                </td>
+
+                                {% if forloop.first %}
+                                    <td rowspan="{{ order.details.count }}">{{ order.quantity }}</td>
+                                {% endif %}
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td>{{ order.product.name }}</td>
+                                <td>₦{{ order.total_price }}</td>
+                                <td colspan="2">No size/color selected</td>
+                                <td>{{ order.quantity }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No current orders.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+                </div>
+                <table class="table table-bordered mt-4 w-100">
+                    <tbody>
+                        <tr>
+                            <th>Total Quantity</th>
+                            <td>{{ total_quantity }}</td>
+                        </tr>
+                                {% if coupon_display %}
+                        <tr>
+                            <th>Coupon</th>
+                            <td class="text-success font-weight-bold">{{ coupon_display }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>Total Price</th>
+                            <td>₦{{ total_price }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <a class="btn btn-checkout btn-sm mb-3" href="{% url 'view_cart' %}">Back to cart</a>
+            </div>
+        </div>
+<form id="shipping-form" method="POST" class="form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="address-section">
+        <section class="container">
+            <header>Billing Details</header>
+                                {% if messages %}
+                        {% for message in messages %}
+                            <p style="color: red; margin-top: 5px;">{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    <div id="ajax-error-messages"></div>
+
+            <div class="form-content">
+                <div class="column"> {# This div will help in aligning First and Last Name horizontally #}
+                     <div class="input-box">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Enter your first name" 
+                               value="{% if request.user.is_authenticated and request.user.customer %}{{ request.user.customer.first_name }}{% endif %}" required />
+                    </div>
+                    <div class="input-box">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Enter your last name" 
+                               value="{% if request.user.is_authenticated and request.user.customer %}{{ request.user.customer.last_name }}{% endif %}" required />
+                    </div>
+                </div>
+                <div class="input-box">
+                    <label for="email_address">Email Address</label>
+                    <input type="email" id="email_address" name="gmail" placeholder="Enter email address" value="{% if request.user.is_authenticated and request.user.customer %}{{ request.user.customer.email }}{% endif %}" required />
+                </div>
+
+                <div class="column">
+                    <div class="input-box">
+                        <label for="whatsapp_number">Whatsapp Number</label>
+                        <input type="tel" id="whatsapp_number" name="whatsapp_number" placeholder="Enter WhatsApp number" required />
+                    </div>
+                </div>
+
+                <div class="delivery-options-container">
+                    <div class="delivery-option-box active" id="deliveryBox">
+                        <label for="deliveryOption">
+                            <input type="radio" name="delivery_type" id="deliveryOption" value="delivery" checked>
+                            <span class="custom-radio"></span> Delivery
+                        </label>
+                    </div>
+                    <div class="delivery-option-box" id="pickupBox">
+                        <label for="pickupOption">
+                            <input type="radio" name="delivery_type" id="pickupOption" value="pickup">
+                            <span class="custom-radio"></span> Pickup
+                        </label>
+                    </div>
+                </div>
+                
+
+                {% if latest_shipping %}
+                <div class="previous-address-suggestion" id="previousAddressSuggestion">
+                    <h5>Options</h5>
+                    <p id="suggestedAddressText"></p>
+                    <p id="suggestedStateTownText"></p>
+                    <p id="suggestedLgaText"></p>
+                </div>
+                {% endif %}
+
+                <div id="addressFields">
+                    <div class="input-box address">
+                        <label for="address1">Address</label>
+                        <input type="text" id="address1" name="address1" placeholder="Enter street address" />
+                        <input type="text" id="address2" name="address2" placeholder="Enter street address line 2" />
+                        <div class="column">
+                            <div class="select-box">
+                                <select name="country" id="country">
+                                    <option value="" disabled selected>Select Country</option>
+                                    <option value="Nigeria">Nigeria</option>
+                                </select>
+                            </div>
+                            <input type="text" id="state" name="state" placeholder="Enter your State" />
+                        </div>
+                        <div class="column">
+                            <input type="text" id="town" name="town" placeholder="Town/City" />
+                        </div>
+                        <div class="input-box">
+                            <label for="local_government">Local Government Area (optional)</label>
+                            <input type="text" id="local_government" name="local_government" placeholder="Enter local government" />
+                        </div>
+                    </div>
+
+                    <div class="save-edit-row-wrapper">
+                        <div class="save-option">
+                            <label>
+                                <input type="checkbox" name="save_info" />
+                                Save
+                            </label>
+                        </div>
+                        <div class="edit-option">
+                            Edit
+                        </div>
+
+                        </div> <div class="container mt-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Note on Delivery Fees:</strong><br>
+                                Delivery charges will be communicated to you directly after placing your order. These
+                                fees are not included on the website and will be shared with you personally.
+    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                
+
+                <div class="input-box">
+                    <label for="order_note">Order Notes (Optional)</label>
+                    <textarea name="order_note" id="order_note"
+                                  placeholder="Notes about your order, e.g. special note for delivery"></textarea>
+                </div>
+                <button type="button" onclick="payWithPaystack()">Pay</button>
+            </div>
+        </section>
+    </div>
+</form>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+    // --- Helper function for displaying messages and scrolling ---
+    function displayAndScrollToMessage(message, isError = true) {
+        const errorContainer = document.getElementById('ajax-error-messages');
+        let color = isError ? 'red' : 'blue';
+        errorContainer.innerHTML = `<p style="color: ${color}; margin-top: 5px;">${message}</p>`;
+        errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // --- New email validation function ---
+    function validateEmail(email) {
+        // A simple regex for email validation
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    // --- Client-side form validation function ---
+    function validateForm() {
+        const form = document.getElementById('shipping-form');
+        
+        const firstName = form.querySelector('#first_name');
+        const lastName = form.querySelector('#last_name');
+        const emailInput = form.querySelector('#email_address');
+        const whatsapp = form.querySelector('#whatsapp_number');
+
+        // Check required billing details
+        if (!firstName.value || !lastName.value || !emailInput.value || !whatsapp.value) {
+            displayAndScrollToMessage("Please fill in all required billing details.");
+            return false;
+        }
+
+        // Check email format
+        if (!validateEmail(emailInput.value)) {
+            displayAndScrollToMessage("Please enter a valid email address.");
+            return false;
+        }
+
+        const deliveryOption = document.getElementById('deliveryOption');
+        if (deliveryOption.checked) {
+            const address1 = form.querySelector('#address1');
+            const country = form.querySelector('#country');
+            const state = form.querySelector('#state');
+            const town = form.querySelector('#town');
+
+            if (!address1.value || !country.value || !state.value || !town.value) {
+                displayAndScrollToMessage("Please provide a complete delivery address.");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // --- Main payment function using async/await and AJAX ---
+    async function payWithPaystack() {
+        const form = document.getElementById('shipping-form');
+        const formData = new FormData(form);
+        
+        // First, perform client-side validation
+        if (!validateForm()) {
+            return;
+        }
+        
+        displayAndScrollToMessage("Processing your order...", false);
+
+        const headers = {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+
+        try {
+            // Step 1: Validate the order with AJAX
+            const validateResponse = await fetch('{% url "validate_shipping_order" %}', {
+                method: 'POST',
+                headers: headers,
+                body: formData,
+            });
+            const validateData = await validateResponse.json();
+            if (!validateData.success) {
+                displayAndScrollToMessage(validateData.message);
+                return;
+            }
+
+            // Step 2: Save the shipping info with AJAX
+            const saveResponse = await fetch('{% url "collect_shipping_info" %}', {
+                method: 'POST',
+                headers: headers,
+                body: formData,
+            });
+            const saveData = await saveResponse.json();
+            if (!saveData.success) {
+                displayAndScrollToMessage(saveData.message);
+                return;
+            }
+            
+            // Step 3: Get payment details from a new AJAX endpoint
+            const paymentDetailsResponse = await fetch('{% url "prepare_payment_ajax" %}', {
+                method: 'GET',
+                headers: headers,
+            });
+            const paymentDetailsData = await paymentDetailsResponse.json();
+            if (!paymentDetailsData.success) {
+                displayAndScrollToMessage(paymentDetailsData.message);
+                return;
+            }
+            
+            // Step 4: Open the Paystack modal
+            var handler = PaystackPop.setup({
+                key: paymentDetailsData.paystack_public_key,
+                email: paymentDetailsData.email,
+                amount: paymentDetailsData.amount,
+                currency: 'NGN',
+                ref: paymentDetailsData.reference,
+                callback: function(response) {
+                    window.location.href = "{% url 'payment_success' %}?reference=" + response.reference;
+                },
+                onClose: function() {
+                    window.location.href = "{% url 'view_cart' %}";
+                }
+            });
+            handler.openIframe();
+
+        } catch (error) {
+            displayAndScrollToMessage("An unexpected error occurred. Please try again.");
+            console.error('Error:', error);
+        }
+    }
+
+    // --- Your existing DOMContentLoaded event listener logic for delivery/pickup options ---
+    document.addEventListener('DOMContentLoaded', function () {
+        const pickupOption = document.getElementById('pickupOption');
+        const deliveryOption = document.getElementById('deliveryOption');
+        const pickupBox = document.getElementById('pickupBox');
+        const deliveryBox = document.getElementById('deliveryBox');
+        const addressFields = document.getElementById('addressFields');
+        const previousAddressSuggestion = document.getElementById('previousAddressSuggestion');
+        const suggestedAddressText = document.getElementById('suggestedAddressText');
+        const suggestedStateTownText = document.getElementById('suggestedStateTownText');
+        const suggestedLgaText = document.getElementById('suggestedLgaText');
+
+        const address1Input = document.getElementById('address1');
+        const address2Input = document.getElementById('address2');
+        const countrySelect = document.getElementById('country');
+        const stateInput = document.getElementById('state');
+        const townInput = document.getElementById('town');
+        const localGovernmentInput = document.getElementById('local_government');
+
+        const addressRequiredInputs = addressFields.querySelectorAll('input:not([name="address2"]):not([name="local_government"]):not([type="checkbox"]), select');
+
+        const savedAddress = {
+            address1: "{{ latest_shipping.address|default:'' }}".split(' ')[0],
+            address2: "{{ latest_shipping.address|default:'' }}".split(' ').slice(1).join(' '),
+            country: "{{ latest_shipping.country|default:'' }}",
+            state: "{{ latest_shipping.state|default:'' }}",
+            town: "{{ latest_shipping.town|default:'' }}",
+            local_government: "{{ latest_shipping.local_government|default:'' }}"
+        };
+
+        function updateAddressRequired(isRequired) {
+            addressRequiredInputs.forEach(input => {
+                if (isRequired) {
+                    input.setAttribute('required', 'required');
+                } else {
+                    input.removeAttribute('required');
+                }
+            });
+        }
+
+        function handleDeliveryOptionChange() {
+            if (deliveryOption.checked) {
+                addressFields.style.display = 'block';
+                updateAddressRequired(true);
+                deliveryBox.classList.add('active');
+                pickupBox.classList.remove('active');
+                if (previousAddressSuggestion && Object.keys(savedAddress).length > 0) {
+                    previousAddressSuggestion.style.display = 'block';
+                }
+            } else if (pickupOption.checked) {
+                addressFields.style.display = 'none';
+                updateAddressRequired(false);
+                deliveryBox.classList.remove('active');
+                pickupBox.classList.add('active');
+                if (previousAddressSuggestion) {
+                    previousAddressSuggestion.style.display = 'none';
+                }
+            }
+        }
+
+        function populateSuggestionBox() {
+            if (previousAddressSuggestion && Object.keys(savedAddress).length > 0) {
+                suggestedAddressText.textContent = `${savedAddress.address1}, ${savedAddress.address2 || ''}`.trim();
+                suggestedStateTownText.textContent = `${savedAddress.town}, ${savedAddress.state}, ${savedAddress.country}`;
+                if (savedAddress.local_government) {
+                    suggestedLgaText.textContent = `LGA: ${savedAddress.local_government}`;
+                } else {
+                    suggestedLgaText.textContent = '';
+                }
+            }
+        }
+
+        function fillAddressFields(address) {
+            address1Input.value = address.address1 || '';
+            address2Input.value = address.address2 || '';
+            countrySelect.value = address.country || '';
+            stateInput.value = address.state || '';
+            townInput.value = address.town || '';
+            localGovernmentInput.value = address.local_government || '';
+            if (previousAddressSuggestion) {
+                previousAddressSuggestion.style.display = 'none';
+            }
+        }
+
+        if (previousAddressSuggestion) {
+            previousAddressSuggestion.addEventListener('click', function () {
+                fillAddressFields(savedAddress);
+            });
+        }
+
+        const addressInputs = addressFields.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], select');
+        addressInputs.forEach(input => {
+            input.addEventListener('input', function () {
+                if (previousAddressSuggestion) {
+                    previousAddressSuggestion.style.display = 'none';
+                }
+            });
+        });
+
+        handleDeliveryOptionChange();
+        populateSuggestionBox();
+
+        pickupOption.addEventListener('change', handleDeliveryOptionChange);
+        deliveryOption.addEventListener('change', handleDeliveryOptionChange);
+
+        pickupBox.addEventListener('click', function () {
+            pickupOption.checked = true;
+            handleDeliveryOptionChange();
+        });
+
+        deliveryBox.addEventListener('click', function () {
+            deliveryOption.checked = true;
+            handleDeliveryOptionChange();
+        });
+    });
+</script>
+
+</body>
+
+
+</html>
+{% endblock %}

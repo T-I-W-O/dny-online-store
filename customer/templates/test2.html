@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Creator</title>
+    <!-- Material Symbols Sharp and Chart.js imports are removed as they were not used in the original logic -->
+    <style>
+        /* All necessary variables and base styles */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            --clr-danger: #ff7782;
+            --clr-success: #41f1b6;
+            --clr-white: #fff;
+            --clr-info-dark: #7d8da1;
+            --clr-info-light: #dce1eb;
+            --clr-dark: #363949;
+            --clr-warnig: #ff4edc;
+            --clr-light: rgba(132, 139, 200, 0.18);
+            --clr-primary-variant: #111e88;
+            --clr-dark-variant: #677483;
+            --clr-color-background: #f6f6f9;
+
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 2rem 3rem var(--clr-light);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 1.5rem;
+            /* Equivalent to p-4 */
+            min-height: 100vh;
+            /* Equivalent to min-h-screen */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--clr-color-background);
+            /* Equivalent to bg-gray-100 */
+            color: var(--clr-dark);
+            /* Default text color */
+            box-sizing: border-box;
+        }
+
+        /* Responsive padding for body */
+        @media (min-width: 640px) {
+            /* sm breakpoint */
+            body {
+                padding: 2rem;
+                /* Equivalent to sm:p-8 */
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 64rem;
+            /* Equivalent to max-w-4xl (1024px) */
+            margin-left: auto;
+            margin-right: auto;
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            /* Equivalent to p-6 sm:p-8 */
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        /* Responsive padding for container */
+        @media (min-width: 640px) {
+            /* sm breakpoint */
+            .container {
+                padding: 2rem;
+                /* Equivalent to sm:p-8 */
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            /* text-3xl */
+            font-weight: 700;
+            /* font-bold */
+            text-align: center;
+            margin-bottom: 2rem;
+            /* mb-8 */
+            color: var(--clr-dark);
+            /* text-gray-800 */
+        }
+
+        .section-card {
+            margin-bottom: 2.5rem;
+            /* mb-10 */
+            padding: var(--card-padding);
+            /* p-6 */
+            background-color: rgba(132, 139, 200, 0.05);
+            /* bg-gray-50 - using a light variant of info-light */
+            border-radius: var(--border-radius-3);
+            /* rounded-xl */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            /* shadow-md */
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            /* text-2xl */
+            font-weight: 600;
+            /* font-semibold */
+            margin-bottom: 1.5rem;
+            /* mb-6 */
+            color: var(--clr-dark-variant);
+            /* text-gray-700 */
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            /* grid-cols-1 */
+            gap: 1.5rem;
+            /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            /* md breakpoint */
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+                /* md:grid-cols-2 */
+            }
+        }
+
+        .col-span-full {
+            grid-column: span 2 / span 2;
+        }
+
+        label {
+            display: block;
+            color: var(--clr-dark-variant);
+            /* text-gray-700 */
+            font-size: 0.875rem;
+            /* text-sm */
+            font-weight: 700;
+            /* font-bold */
+            margin-bottom: 0.5rem;
+            /* mb-2 */
+        }
+
+        .input-group-flex {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* gap-2 */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="email"] {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow */
+            border: 1px solid var(--clr-info-light);
+            /* border */
+            border-radius: var(--border-radius-2);
+            /* rounded-lg */
+            width: 100%;
+            padding: 0.75rem 1rem;
+            /* py-3 px-4 */
+            color: var(--clr-dark-variant);
+            /* text-gray-700 */
+            line-height: 1.25;
+            /* leading-tight */
+            outline: none;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="email"]:focus {
+            border-color: var(--clr-primary);
+            /* focus:ring-pink-500 */
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.4);
+            /* focus:ring-2 focus:ring-pink-500 */
+        }
+
+        /* Specific styles for the custom input display */
+        .input-wrapper {
+            position: relative;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow-md */
+        }
+
+        .input-wrapper .display-input {
+            background: var(--clr-white);
+            border: 1px solid var(--clr-info-light);
+            border-radius: var(--border-radius-2);
+            padding: 0.75rem 1rem;
+            color: var(--clr-dark);
+            width: 100%;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+            /* Ensure padding doesn't increase width */
+        }
+
+        .input-wrapper .hidden-input {
+            opacity: 0;
+            position: relative;
+            z-index: 20;
+            cursor: text;
+            width: 100%;
+            height: 100%;
+            padding: 0.75rem 1rem;
+            box-sizing: border-box;
+            /* Ensure padding doesn't increase width */
+        }
+
+        /* Focus and hover styles for the display input */
+        .input-wrapper:focus-within .display-input {
+            border-color: var(--clr-primary);
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.4);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .input-wrapper:hover .display-input {
+            border-color: var(--clr-primary);
+        }
+
+
+        button {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            padding: 0.75rem 1.5rem;
+            /* py-3 px-6 */
+            border-radius: var(--border-radius-2);
+            /* rounded-lg */
+            font-weight: 700;
+            /* font-bold */
+            font-size: 1.125rem;
+            /* text-lg */
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            /* shadow-md */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--clr-primary-variant);
+            /* A darker shade for hover */
+            opacity: 0.9;
+            /* hover:bg-opacity-90 */
+        }
+
+        /* Specific button styles */
+        #generateCodeBtn {
+            font-size: 0.875rem;
+            /* text-sm */
+            padding: 0.75rem 1rem;
+            /* py-3 px-4 */
+        }
+
+        .button-group-end {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            /* gap-4 */
+            margin-top: 1rem;
+            /* mt-4 */
+        }
+
+        #sendToButton {
+            background-color: #3b82f6;
+            /* bg-blue-500 */
+        }
+
+        #sendToButton:hover {
+            background-color: #2563eb;
+            /* hover:bg-blue-600 */
+        }
+
+        #sendToSection {
+            margin-top: 2rem;
+            /* mt-8 */
+            padding: var(--card-padding);
+            /* p-6 */
+            background-color: rgba(59, 130, 246, 0.05);
+            /* bg-blue-50 */
+            border-radius: var(--border-radius-3);
+            /* rounded-xl */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            /* shadow-md */
+        }
+
+        #sendToSection.hidden {
+            display: none;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            /* text-xl */
+            font-weight: 600;
+            /* font-semibold */
+            margin-bottom: 1rem;
+            /* mb-4 */
+            color: #1e40af;
+            /* text-blue-800 */
+        }
+
+        .email-input-group {
+            display: flex;
+            flex-direction: column;
+            /* flex-col */
+            gap: 1rem;
+            /* gap-4 */
+        }
+
+        @media (min-width: 640px) {
+            /* sm breakpoint */
+            .email-input-group {
+                flex-direction: row;
+                /* sm:flex-row */
+            }
+        }
+
+        #emailInput {
+            flex-grow: 1;
+            /* flex-grow */
+        }
+
+        #emailInput:focus {
+            border-color: #3b82f6;
+            /* focus:ring-blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            /* focus:ring-2 focus:ring-blue-500 */
+        }
+
+        #sendEmailButton {
+            background-color: #2563eb;
+            /* bg-blue-600 */
+        }
+
+        #sendEmailButton:hover {
+            background-color: #1d4ed8;
+            /* hover:bg-blue-700 */
+        }
+
+        .message {
+            margin-top: 1rem;
+            /* mt-4 */
+            font-size: 0.875rem;
+            /* text-sm */
+            text-align: center;
+        }
+
+        .message.hidden {
+            display: none;
+        }
+
+        .message.success {
+            color: var(--clr-success);
+            /* text-green-600 */
+        }
+
+        .message.error {
+            color: var(--clr-danger);
+            /* text-red-600 */
+        }
+
+        #couponList {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            /* space-y-4 */
+        }
+
+        #noCouponsMessage {
+            color: var(--clr-info-dark);
+            /* text-gray-500 */
+            text-align: center;
+        }
+
+        #seeMoreContainer {
+            text-align: center;
+            margin-top: 1.5rem;
+            /* mt-6 */
+        }
+
+        #seeMoreContainer.hidden {
+            display: none;
+        }
+
+        #seeMoreBtn {
+            background-color: rgba(132, 139, 200, 0.1);
+            /* bg-gray-200 */
+            color: var(--clr-dark);
+            /* text-gray-800 */
+            padding: 0.5rem 1rem;
+            /* py-2 px-4 */
+            border-radius: var(--border-radius-2);
+            /* rounded-lg */
+            font-weight: 700;
+            /* font-bold */
+            font-size: 1rem;
+            /* text-md */
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: none;
+            /* No shadow by default */
+        }
+
+        #seeMoreBtn:hover {
+            background-color: rgba(132, 139, 200, 0.2);
+            /* hover:bg-gray-300 */
+        }
+
+        .coupon-item {
+            background-color: var(--clr-white);
+            padding: 1rem;
+            /* p-4 */
+            border-radius: var(--border-radius-1);
+            /* rounded */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .coupon-item p {
+            margin: 0;
+        }
+
+        .coupon-item .coupon-code {
+            font-weight: 600;
+            /* font-semibold */
+            color: var(--clr-dark);
+            /* text-gray-800 */
+        }
+
+        .coupon-item .coupon-details {
+            font-size: 0.875rem;
+            /* text-sm */
+            color: var(--clr-info-dark);
+            /* text-gray-500 */
+        }
+
+        .delete-btn {
+            color: var(--clr-danger);
+            /* text-red-600 */
+            font-weight: 500;
+            /* font-medium */
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            transition: color 0.2s ease-in-out;
+            box-shadow: none;
+        }
+
+        .delete-btn:hover {
+            color: #b91c1c;
+            /* hover:text-red-800 */
+            opacity: 1;
+            /* Override default button hover opacity */
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--border-radius-3);
+            box-shadow: var(--box-shadow);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
+            color: var(--clr-dark);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: var(--border-radius-1);
+            box-shadow: none;
+        }
+
+        .modal-buttons .confirm-btn {
+            background-color: var(--clr-danger);
+        }
+
+        .modal-buttons .confirm-btn:hover {
+            background-color: #dc2626;
+            /* A slightly darker red */
+        }
+
+        .modal-buttons .cancel-btn {
+            background-color: var(--clr-info-dark);
+        }
+
+        .modal-buttons .cancel-btn:hover {
+            background-color: var(--clr-dark-variant);
+        }
+    </style>
+    
+</head>
+
+<body>
+    <div class="container">
+        <h1>Coupon Management</h1>
+
+        <div class="section-card">
+            <h2>Create New Coupon</h2>
+            <form id="couponForm" class="form-grid">
+
+                <div class="col-span-full">
+                    <label for="couponName">Coupon Name:</label>
+                    <div class="input-group-flex">
+                        <input type="text" id="couponName" name="couponName" required readonly>
+                        <button type="button" id="generateCodeBtn">
+                            Generate Code
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="percentageDiscount">Percentage Discount:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="percentageDiscountDisplay" class="display-input" readonly>
+                        <input type="number" id="percentageDiscount" name="percentageDiscount" min="0" max="100"
+                            class="hidden-input">
+                    </div>
+                </div>
+                <div>
+                    <label for="normalPriceDiscount">Normal Price Discount:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="normalPriceDiscountDisplay" class="display-input" readonly>
+                        <input type="number" id="normalPriceDiscount" name="normalPriceDiscount" min="0"
+                            class="hidden-input">
+                    </div>
+                </div>
+
+                <div class="col-span-full">
+                    <label for="expiryDate">Expiry Date (Optional):</label>
+                    <input type="date" id="expiryDate" name="expiryDate">
+                </div>
+
+                <div class="col-span-full button-group-end">
+                    <button type="submit">
+                        Save Coupon
+                    </button>
+                    <button type="button" id="sendToButton">
+                        Send To
+                    </button>
+                </div>
+            </form>
+
+            <div id="sendToSection" class="hidden">
+                <h3>Send Coupon to Email</h3>
+                <div class="email-input-group">
+                    <input type="email" id="emailInput" placeholder="Enter recipient email">
+                    <button type="button" id="sendEmailButton">
+                        Send Email
+                    </button>
+                </div>
+            </div>
+
+            <div id="emailMessage" class="message hidden"></div>
+            <div id="formMessage" class="message hidden"></div>
+        </div>
+
+        <div class="section-card">
+            <h2>Existing Coupons</h2>
+            <div id="couponList">
+                <p id="noCouponsMessage">No coupons yet. Create one above!</p>
+            </div>
+            <div id="seeMoreContainer" class="hidden">
+                <button id="seeMoreBtn">
+                    See More
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal HTML -->
+    <div id="customModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button id="modalConfirmBtn" class="confirm-btn">Confirm</button>
+                <button id="modalCancelBtn" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let couponsData = [];
+            let currentPage = 0;
+            const couponsPerPage = 5;
+
+            const couponForm = document.getElementById('couponForm');
+            const couponNameInput = document.getElementById('couponName');
+            const percentageDiscountInput = document.getElementById('percentageDiscount');
+            const percentageDiscountDisplay = document.getElementById('percentageDiscountDisplay');
+            const normalPriceDiscountInput = document.getElementById('normalPriceDiscount');
+            const normalPriceDiscountDisplay = document.getElementById('normalPriceDiscountDisplay');
+            const expiryDateInput = document.getElementById('expiryDate');
+            const formMessage = document.getElementById('formMessage');
+            const couponList = document.getElementById('couponList');
+            const generateCodeBtn = document.getElementById('generateCodeBtn');
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            const seeMoreContainer = document.getElementById('seeMoreContainer');
+
+            const emailInput = document.getElementById('emailInput');
+            const sendEmailButton = document.getElementById('sendEmailButton');
+            const emailMessage = document.getElementById('emailMessage');
+            const sendToSection = document.getElementById('sendToSection');
+
+            const customModalOverlay = document.getElementById('customModalOverlay');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+            const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+            let resolveModalPromise;
+
+            // --- Utility Functions ---
+
+            /**
+             * Displays a message to the user.
+             * @param {HTMLElement} container - The HTML element to display the message in.
+             * @param {string} text - The message text.
+             * @param {'success'|'error'} type - The type of message (determines color).
+             */
+            function showMessage(container, text, type) {
+                container.textContent = text;
+                container.className = `message ${type}`; // Apply base 'message' class and type class
+                container.classList.remove('hidden');
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                }, 5000); // Hide after 5 seconds
+            }
+
+            /**
+             * Shows a custom confirmation modal.
+             * @param {string} message - The message to display in the modal.
+             * @returns {Promise<boolean>} A promise that resolves to true if confirmed, false if cancelled.
+             */
+            function showCustomModal(message) {
+                modalMessage.textContent = message;
+                customModalOverlay.classList.add('visible');
+                return new Promise(resolve => {
+                    resolveModalPromise = resolve;
+                });
+            }
+
+            // Event listeners for modal buttons
+            modalConfirmBtn.addEventListener('click', () => {
+                customModalOverlay.classList.remove('visible');
+                if (resolveModalPromise) {
+                    resolveModalPromise(true);
+                }
+            });
+
+            modalCancelBtn.addEventListener('click', () => {
+                customModalOverlay.classList.remove('visible');
+                if (resolveModalPromise) {
+                    resolveModalPromise(false);
+                }
+            });
+
+            /**
+             * Retrieves the CSRF token from cookies.
+             * @returns {string} The CSRF token.
+             */
+            function getCSRFToken() {
+                const name = 'csrftoken';
+                const cookieValue = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith(name + '='));
+                return cookieValue ? decodeURIComponent(cookieValue.split('=')[1]) : '';
+            }
+
+            /**
+             * Generates a random coupon code.
+             * @returns {string} The generated coupon code.
+             */
+            function generateCouponCode() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const digits = '0123456789';
+                let code = '';
+                for (let i = 0; i < 5; i++) {
+                    code += letters.charAt(Math.floor(Math.random() * letters.length));
+                }
+                for (let i = 0; i < 4; i++) {
+                    code += digits.charAt(Math.floor(Math.random() * digits.length));
+                }
+                return code;
+            }
+
+            // --- Event Listeners ---
+            generateCodeBtn.addEventListener('click', () => {
+                couponNameInput.value = generateCouponCode();
+            });
+
+            /**
+             * Validates and toggles the disabled state of discount inputs.
+             * Ensures only one discount type can be entered.
+             */
+            function validateDiscountInputs() {
+                if (percentageDiscountInput.value) {
+                    normalPriceDiscountInput.disabled = true;
+                } else {
+                    normalPriceDiscountInput.disabled = false;
+                }
+
+                if (normalPriceDiscountInput.value) {
+                    percentageDiscountInput.disabled = true;
+                } else {
+                    percentageDiscountInput.disabled = false;
+                }
+            }
+
+            // Real-time formatting and validation for percentage input
+            percentageDiscountInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value) {
+                    const number = Math.min(parseInt(value, 10), 100);
+                    percentageDiscountDisplay.value = `${number}%`;
+                    e.target.value = number;
+                } else {
+                    percentageDiscountDisplay.value = '';
+                }
+                validateDiscountInputs();
+            });
+
+            // Real-time formatting and validation for Naira input
+            normalPriceDiscountInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value) {
+                    normalPriceDiscountDisplay.value = `₦${value}`;
+                } else {
+                    normalPriceDiscountDisplay.value = '';
+                }
+                validateDiscountInputs();
+            });
+
+            // Handle coupon form submission
+            couponForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = couponNameInput.value.trim();
+                const percentageDiscount = percentageDiscountInput.value.trim();
+                const normalPriceDiscount = normalPriceDiscountInput.value.trim();
+                const expiryDate = expiryDateInput.value;
+
+                if (!name) {
+                    showMessage(formMessage, 'Coupon Name is required.', 'error');
+                    return;
+                }
+
+                if (percentageDiscount && normalPriceDiscount) {
+                    showMessage(formMessage, 'Choose only one type of discount.', 'error');
+                    return;
+                }
+
+                if (!percentageDiscount && !normalPriceDiscount) {
+                    showMessage(formMessage, 'You must enter a discount.', 'error');
+                    return;
+                }
+
+                const payload = {
+                    name,
+                    percentageDiscount: percentageDiscount || null,
+                    normalPriceDiscount: normalPriceDiscount || null,
+                    expiryDate: expiryDate || null,
+                };
+
+                try {
+                    const response = await fetch('/ajax/create-coupon/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(formMessage, 'Coupon created successfully!', 'success');
+
+                        // Clear form
+                        couponNameInput.value = '';
+                        percentageDiscountInput.value = '';
+                        percentageDiscountDisplay.value = '';
+                        normalPriceDiscountInput.value = '';
+                        normalPriceDiscountDisplay.value = '';
+                        expiryDateInput.value = '';
+                        validateDiscountInputs();
+
+                        // Reload list
+                        loadCoupons();
+
+                        // Store coupon locally for email
+                        localStorage.setItem('latest_coupon', JSON.stringify(data.coupon));
+                        sendToSection.classList.remove('hidden');
+                    } else {
+                        showMessage(formMessage, data.error || 'Failed to create coupon.', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showMessage(formMessage, 'Unexpected error occurred.', 'error');
+                }
+            });
+
+            /**
+             * Loads existing coupons from the backend and displays them in batches.
+             */
+            async function loadCoupons() {
+                try {
+                    const response = await fetch('/ajax/get-coupons/');
+                    const data = await response.json();
+
+                    couponsData = data.coupons || [];
+
+                    // Sort coupons by ID in descending order to show the latest first
+                    couponsData.sort((a, b) => b.id - a.id);
+
+                    currentPage = 0;
+                    renderCoupons();
+
+                } catch (error) {
+                    console.error('Error loading coupons:', error);
+                    showMessage(formMessage, 'Failed to load coupons. Please try again.', 'error');
+                }
+            }
+
+            /**
+             * Renders the coupons currently in the `couponsData` array based on `currentPage`.
+             */
+            function renderCoupons() {
+                couponList.innerHTML = ''; // Clear previous entries
+                const startIndex = 0;
+                const endIndex = (currentPage + 1) * couponsPerPage;
+                const couponsToDisplay = couponsData.slice(startIndex, endIndex);
+
+                if (!couponsToDisplay.length) {
+                    couponList.innerHTML = '<p id="noCouponsMessage">No coupons yet. Create one above!</p>';
+                    seeMoreContainer.classList.add('hidden');
+                    return;
+                }
+
+                couponsToDisplay.forEach(coupon => {
+                    const couponDiv = document.createElement('div');
+                    couponDiv.className = "coupon-item"; // Apply custom class
+
+                    const details = `
+                        <div>
+                            <p class="coupon-code">${coupon.code}</p>
+                            <p class="coupon-details">
+                                Discount: ${coupon.is_percent ? coupon.amount + '%' : '₦' + coupon.amount}
+                                ${coupon.expires_at ? '| Expires at: ' + new Date(coupon.expires_at).toLocaleDateString() : ''}
+                            </p>
+                        </div>`;
+
+                    const deleteBtn = `
+                        <button onclick="deleteCoupon(${coupon.id})" class="delete-btn">
+                            Delete
+                        </button>`;
+
+                    couponDiv.innerHTML = details + deleteBtn;
+                    couponList.appendChild(couponDiv);
+                });
+
+                // Show/hide 'See More' button
+                if (endIndex < couponsData.length) {
+                    seeMoreContainer.classList.remove('hidden');
+                } else {
+                    seeMoreContainer.classList.add('hidden');
+                }
+            }
+
+            seeMoreBtn.addEventListener('click', () => {
+                currentPage++;
+                renderCoupons();
+            });
+
+            /**
+             * Deletes a coupon after user confirmation.
+             * @param {number} couponId - The ID of the coupon to delete.
+             */
+            window.deleteCoupon = async function (couponId) {
+                const confirmed = await showCustomModal('Are you sure you want to delete this coupon?');
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/ajax/delete-coupon/${couponId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Remove from the local data array
+                        couponsData = couponsData.filter(coupon => coupon.id !== couponId);
+                        renderCoupons(); // Re-render the list
+                        showMessage(formMessage, 'Coupon deleted successfully!', 'success');
+                    } else {
+                        showMessage(formMessage, data.error || 'Error deleting coupon.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    showMessage(formMessage, 'Failed to delete coupon.', 'error');
+                }
+            };
+
+            // Send coupon via email
+            sendEmailButton.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                if (!email) {
+                    showMessage(emailMessage, 'Enter a valid email.', 'error');
+                    return;
+                }
+
+                const latestCoupon = JSON.parse(localStorage.getItem('latest_coupon') || '{}');
+                if (!latestCoupon || !latestCoupon.code) {
+                    showMessage(emailMessage, 'No coupon to send.', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/ajax/send-coupon-email/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            coupon_code: latestCoupon.code
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(emailMessage, 'Coupon email sent!', 'success');
+                        sendToSection.classList.add('hidden');
+                        emailInput.value = ''; // Clear email input
+                    } else {
+                        showMessage(emailMessage, data.error || 'Failed to send email.', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showMessage(emailMessage, 'Unexpected error while sending email.', 'error');
+                }
+            });
+
+            // Initial load
+            loadCoupons();
+        });
+    </script>
+</body>
+
+</html>

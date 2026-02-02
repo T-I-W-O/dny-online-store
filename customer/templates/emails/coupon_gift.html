@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Exclusive Shopping Token Awaits!</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter for a modern look */
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        td {
+            padding: 0;
+        }
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+        a {
+            text-decoration: none;
+            color: #FF1493; /* Default link color - now Deep Pink */
+        }
+
+        /* Container Styling */
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* Header Styling */
+        .header {
+            background-color: #FF1493; /* Deep Pink */
+            padding: 30px 20px;
+            text-align: center;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+        .header p {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #ffe0f0; /* Lighter pink for subtitle */
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .content-area p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* Coupon Code Box */
+        .coupon-box {
+            background-color: #fff0f5; /* Very light pink background */
+            border: 2px dashed #FF1493; /* Deep Pink border */
+            padding: 20px;
+            margin: 25px auto;
+            border-radius: 8px;
+            max-width: 350px;
+        }
+        .coupon-box strong {
+            display: block;
+            font-size: 18px;
+            color: #555555;
+            margin-bottom: 10px;
+        }
+        .coupon-box .code {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FF1493; /* Deep Pink for the code */
+            letter-spacing: 2px;
+            padding: 10px 0;
+            background-color: #ffffff;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 200px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .coupon-box .discount {
+            font-size: 20px;
+            color: #333333;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        /* Expiry Message */
+        .expiry-message {
+            font-size: 15px;
+            color: #dc3545; /* Red for urgency, kept as is for contrast */
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        /* Call to Action Button */
+        .button-container {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #FF1493; /* Deep Pink button */
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #E01180; /* Slightly darker pink for hover */
+        }
+
+        /* Footer Styling */
+        .footer {
+            background-color: #e0e0e0;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #777777;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            margin-top: 30px;
+        }
+        .footer p {
+            margin: 0;
+            line-height: 1.5;
+        }
+        .footer a {
+            color: #777777;
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 0;
+            }
+            .content-area {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .coupon-box .code {
+                font-size: 24px;
+            }
+            .button {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🎁 Congratulations!</h1>
+            <p>An exclusive shopping token just for you!</p>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content-area">
+            <p>
+                We're excited to let you know that you've received a **free token** to shop any goods of your choice on our store!
+                Consider this our way of saying thank you for being a valued customer.
+            </p>
+
+            <div class="coupon-box">
+                <strong>Your Exclusive Coupon Code:</strong>
+                <div class="code">{{ code }}</div>
+                <div class="discount">
+                    Save {% if is_percent %}{{ amount }}%{% else %}₦{{ amount }}{% endif %} on your next purchase!
+                </div>
+            </div>
+
+            {% if expires_at %}
+                <p class="expiry-message">
+                    <strong>Please use it before it expires ({{ expires_at }}) or before someone else uses it and it becomes invalid</strong>
+                </p>
+            {% endif %}
+
+            <p>
+                Don't miss out on this fantastic opportunity to grab your favorite items.
+                Simply apply the code at checkout to enjoy your discount!
+            </p>
+
+           
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <p>Happy Shopping!</p>
+            <p>&copy; 2025 DNY. All rights reserved.</p>
+        
+        </div>
+    </div>
+</body>
+</html>

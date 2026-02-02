@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+     
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      color: black;
+    }
+
+    .tracking-id {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .expected-arrival {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .progress-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 30px 0;
+      position: relative;
+    }
+
+    .progress-container::before {
+      content: "";
+      position: absolute;
+      top: 15px;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: #ccc;
+      z-index: 0;
+    }
+
+    .progress-container::after {
+      content: "";
+      position: absolute;
+      top: 15px;
+      left: 0;
+      height: 4px;
+      width: 75%; /* 3 out of 4 steps filled */
+      background: #FF1493;
+      z-index: 1;
+    }
+
+    .step {
+      z-index: 2;
+      text-align: center;
+      width: 25%;
+      position: relative;
+    }
+
+    .step label {
+      display: block;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .icons {
+      font-size: 24px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="tracking-id">ORDER #YW5NWDAAW</div>
+    <div class="expected-arrival">
+      Expected Arrival: 28 Aug 2024<br>
+      UPS: 23797238467818717343234
+    </div>
+
+    <div class="progress-container">
+      <div class="step">
+        <div class="icons">📄</div>
+        <label>Order<br>Processed</label>
+      </div>
+      <div class="step">
+        <div class="icons">📦</div>
+        <label>Order<br>Shipped</label>
+      </div>
+      <div class="step">
+        <div class="icons">🚚</div>
+        <label>Order<br>En Route</label>
+      </div>
+      <div class="step">
+        <div class="icons">🏠</div>
+        <label>Order<br>Arrival</label>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

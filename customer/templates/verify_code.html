@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OTP | DNY</title>
+    <link rel="icon" href="{% static 'images/logo.jpg' %}" type="image/gif/jpg">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #fff;
+        }
+
+        .otp-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 440px;
+            padding: 30px;
+        }
+
+        .otp-header header {
+            color: #FF1493;
+            font-size: 30px;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .otp-inputs input {
+            width: 50px;
+            height: 60px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid black;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .otp-inputs.wrong input {
+            border-color: red;
+            animation: shake 0.4s ease;
+        }
+
+        .otp-inputs.correct input {
+            border-color: #FF69B4;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+        }
+
+        .forgot {
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0 20px 0;
+            width: 100%;
+        }
+
+        section a {
+            font-size: 14px;
+            color: #FF1493;
+            text-decoration: none;
+        }
+
+        .info-link {
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .info-link a {
+            color: #FF1493;
+            font-weight: 600;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <form method="POST" id="otpForm">
+        {% csrf_token %}
+        <div class="otp-box">
+            <div class="otp-header">
+                <header>OTP</header>
+            </div>
+
+            <div class="otp-inputs" id="otp-container">
+                {% for _ in "12345" %}
+                <input type="text" maxlength="1" inputmode="numeric" name="otp">
+                {% endfor %}
+            </div>
+
+            <input type="hidden" name="code" id="finalOtpInput">
+
+            {% if error %}
+            <div class="error-message" id="serverError">
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <div class="forgot">
+                <section><a href="{% url 'register' %}">Register</a></section>
+                <section><a href="{% url 'login' %}">Login</a></section>
+            </div>
+
+            <div class="info-link">
+                <p>Input your OTP in the box, it has a 10 min validation.</p>
+                <p><a href="#" id="resend-otp-link">Resend email</a></p>
+                <p id="resend-status" style="color: green; font-size: 0.9em;"></p>
+            </div>
+        </div>
+    </form>
+
+
+    <script>
+        document.getElementById('resend-otp-link').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Optional: Disable link to avoid multiple taps
+            this.innerText = "Resending...";
+            this.style.pointerEvents = "none";
+
+            fetch("{% url 'resend_otp' pk=user.id %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+                .then(data => {
+                    document.getElementById('resend-status').innerText = data.message;
+                    this.innerText = "Resend email";
+                    this.style.pointerEvents = "auto";
+                }).catch(err => {
+                    document.getElementById('resend-status').innerText = "An error occurred.";
+                    this.innerText = "Resend email";
+                    this.style.pointerEvents = "auto";
+                });
+        });
+    </script>
+
+
+
+    <script>
+        const inputs = document.querySelectorAll('#otp-container input');
+        const container = document.getElementById('otp-container');
+        const form = document.getElementById('otpForm');
+        const hiddenInput = document.getElementById('finalOtpInput');
+
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+
+                // Auto-submit when last input is filled
+                if (index === inputs.length - 1 && input.value.length === 1) {
+                    let code = '';
+                    inputs.forEach(i => code += i.value);
+                    hiddenInput.value = code;
+                    form.submit();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Feedback from backend error (invalid or expired code)
+        {% if error %}
+        const error = `{{ error|escapejs }}`;
+        container.classList.remove('correct');
+        container.classList.add('wrong');
+
+        setTimeout(() => {
+            container.classList.remove('wrong');
+            inputs.forEach(input => input.value = '');
+            inputs[0].focus();
+        }, 700);
+        {% elif not error and request.method == 'POST' %}
+        container.classList.remove('wrong');
+        container.classList.add('correct');
+        {% endif %}
+    </script>
+</body>
+
+</html>

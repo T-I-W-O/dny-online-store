@@ -1,0 +1,454 @@
+
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+      const masterCheckbox = document.querySelector('.cart-header-text').previousElementSibling;
+      const allCheckboxes = document.querySelectorAll('.cart-checkbox');
+      const quantityDisplay = document.getElementById('quantity');
+      const totalPriceDisplay = document.getElementById('total-price');
+
+      // ✅ Update the quantity and total cost
+      function updateCartSummary() {
+         let total = 0;
+         let quantity = 0;
+
+         document.querySelectorAll('.cart-item').forEach(item => {
+            const checkbox = item.querySelector('input.cart-checkbox');
+            const priceElement = item.querySelector('.product-price');
+            const quantityInput = item.querySelector('input[type="number"]');
+
+            if (
+               checkbox && checkbox.checked &&
+               checkbox.value &&
+               priceElement && priceElement.dataset.price &&
+               quantityInput
+            ) {
+               const price = parseFloat(priceElement.dataset.price);
+               const itemQuantity = parseInt(quantityInput.value);
+
+               if (!isNaN(price) && !isNaN(itemQuantity) && itemQuantity > 0) {
+                  total += price * itemQuantity;
+                  quantity += itemQuantity;
+               }
+            }
+         });
+
+         quantityDisplay.innerText = quantity > 0 ? quantity : '0';
+         totalPriceDisplay.innerText = total > 0 ? '₦' + total.toLocaleString() : '₦0';
+      }
+
+      // ✅ Master checkbox toggle
+      masterCheckbox.addEventListener('change', function () {
+         allCheckboxes.forEach(function (box) {
+            box.checked = masterCheckbox.checked;
+         });
+         updateCartSummary();
+      });
+
+      // ✅ Each product checkbox change
+      allCheckboxes.forEach(box => {
+         box.addEventListener('change', updateCartSummary);
+      });
+
+      // ✅ Quantity input + buttons + limit
+      document.querySelectorAll('input[type="number"]').forEach(input => {
+         const spinner = input.closest('.number-spinner');
+         const minusBtn = spinner.querySelector('button:first-child');
+         const plusBtn = spinner.querySelector('button:last-child');
+         const errorElement = input.nextElementSibling; // <small>
+
+         // ✅ Input event — allow backspace/editing freely
+         input.addEventListener('input', function () {
+            const limit = parseInt(this.dataset.limit);
+
+            if (this.value === '') {
+               errorElement.classList.add('d-none'); // hide error
+               return;
+            }
+
+            const value = parseInt(this.value);
+            if (!isNaN(value) && value > limit) {
+               errorElement.classList.remove('d-none');
+            } else {
+               errorElement.classList.add('d-none');
+            }
+
+            updateCartSummary();
+         });
+
+         // ✅ Blur event — finalize validation
+         input.addEventListener('blur', function () {
+            const limit = parseInt(this.dataset.limit);
+            let value = parseInt(this.value);
+
+            if (isNaN(value) || value < 1) {
+               this.value = 1;
+            } else if (value > limit) {
+               this.value = limit;
+               errorElement.classList.remove('d-none');
+            } else {
+               errorElement.classList.add('d-none');
+            }
+
+            updateCartSummary();
+         });
+
+         // ✅ Minus button
+         minusBtn.addEventListener('click', () => {
+            let value = parseInt(input.value);
+            if (!isNaN(value) && value > 1) {
+               input.value = value - 1;
+               errorElement.classList.add('d-none');
+               updateCartSummary();
+            }
+         });
+
+         // ✅ Plus button
+         plusBtn.addEventListener('click', () => {
+            const limit = parseInt(input.dataset.limit);
+            let value = parseInt(input.value);
+
+            if (!isNaN(value) && value < limit) {
+               input.value = value + 1;
+               errorElement.classList.add('d-none');
+               updateCartSummary();
+            } else if (!isNaN(value) && value >= limit) {
+               errorElement.classList.remove('d-none');
+            }
+         });
+      });
+
+      // ✅ Initial load
+      updateCartSummary();
+   });
+</script>
+<!---remove cart item-->
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".remove-item").forEach(function (btn) {
+         btn.addEventListener("click", function () {
+            if (!confirm("Are you sure you want to remove this product from cart?")) return;
+
+            const cartItem = btn.closest(".cart-item");
+            const productId = cartItem.querySelector("input[name='selected_products']").value;
+
+            fetch("{% url 'remove_from_cart' %}", {
+               method: "POST",
+               headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": getCookie("csrftoken"),
+               },
+               body: JSON.stringify({ product_id: productId }),
+            })
+               .then((res) => res.json())
+               .then((data) => {
+                  if (data.success) {
+                     cartItem.remove();
+                  } else {
+                     alert("Failed to remove product.");
+                  }
+               })
+               .catch(() => alert("An error occurred."));
+         });
+      });
+
+      // Helper to get CSRF token
+      function getCookie(name) {
+         let cookieValue = null;
+         if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+               const cookie = cookies[i].trim();
+               if (cookie.substring(0, name.length + 1) === name + "=") {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+               }
+            }
+         }
+         return cookieValue;
+      }
+   });
+</script>
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+      // ✅ Master "Carts" checkbox logic
+      const masterCheckbox = document.querySelector('.cart-header-text').previousElementSibling;
+      const allCheckboxes = document.querySelectorAll('.cart-checkbox');
+
+      masterCheckbox.addEventListener('change', function () {
+         const isChecked = this.checked;
+         allCheckboxes.forEach(box => box.checked = isChecked);
+      });
+
+      // ✅ Loop through each cart-item
+      document.querySelectorAll('.cart-item').forEach(cartItem => {
+         const sizeBoxes = cartItem.querySelectorAll('.toggle-size');
+         const colorCircles = cartItem.querySelectorAll('.toggle-color');
+         const limitInput = cartItem.querySelector('#color-limit-input');
+
+         let currentLimit = parseInt(limitInput?.value || 0);
+
+         // 🔁 Continuously watch for limit changes
+         setInterval(() => {
+            const newLimit = parseInt(limitInput?.value || 0);
+            if (newLimit !== currentLimit) {
+               currentLimit = newLimit;
+               updateColorErrors();
+            }
+         }, 300);
+
+         function getColorLimit() {
+            return parseInt(limitInput?.value || 0);
+         }
+
+         function updateColorErrors() {
+            const limit = getColorLimit();
+
+            // ✅ Count all selected colors in this product
+            const totalSelected = cartItem.querySelectorAll('.color-wrapper.selected').length;
+
+            // ✅ Show or hide error messages in all color sections
+            const colorSections = cartItem.querySelectorAll('.colors');
+            colorSections.forEach(section => {
+               const errorDiv = section.nextElementSibling;
+               if (errorDiv && errorDiv.classList.contains('color-error')) {
+                  if (totalSelected > limit) {
+                     errorDiv.textContent = `You can't choose more than ${limit} color(s).`;
+                  } else {
+                     errorDiv.textContent = '';
+                  }
+               }
+            });
+         }
+
+         // ✅ Size toggle logic
+         sizeBoxes.forEach(sizeBox => {
+            sizeBox.addEventListener('click', () => {
+               const selectedSize = sizeBox.getAttribute('data-size');
+               const targetGroup = cartItem.querySelector(`.size-color-group[data-size="${selectedSize}"]`);
+
+               sizeBox.classList.toggle('selected');
+
+               if (targetGroup) {
+                  if (sizeBox.classList.contains('selected')) {
+                     targetGroup.style.display = 'block';
+                  } else {
+                     targetGroup.style.display = 'none';
+                     targetGroup.querySelectorAll('.color-wrapper').forEach(w => w.classList.remove('selected'));
+                  }
+               }
+
+               updateColorErrors();
+            });
+         });
+
+         // ✅ Color toggle logic
+         colorCircles.forEach(colorCircle => {
+            colorCircle.addEventListener('click', () => {
+               const wrapper = colorCircle.parentElement;
+               const section = wrapper.closest('.colors');
+               const errorDiv = section.nextElementSibling;
+
+               const selectedCount = cartItem.querySelectorAll('.color-wrapper.selected').length;
+               const limit = getColorLimit();
+
+               if (!wrapper.classList.contains('selected') && selectedCount >= limit) {
+                  if (errorDiv && errorDiv.classList.contains('color-error')) {
+                     errorDiv.textContent = `You can't choose more than ${limit} color(s).`;
+                  }
+                  return;
+               }
+
+               wrapper.classList.toggle('selected');
+               updateColorErrors();
+            });
+         });
+
+         // ✅ Also update on direct input typing/change
+         if (limitInput) {
+            limitInput.addEventListener('input', updateColorErrors);
+            limitInput.addEventListener('change', updateColorErrors);
+         }
+      });
+
+      // ✅ Toggle dropdown visibility
+      document.querySelectorAll('.toggle-icon').forEach(icon => {
+         icon.addEventListener('click', () => {
+            const cartItem = icon.closest('.cart-item');
+            const details = cartItem.querySelector('.toggle-details');
+
+            if (details.classList.contains('d-none')) {
+               details.classList.remove('d-none');
+               icon.classList.add('rotated');
+            } else {
+               details.classList.add('d-none');
+               icon.classList.remove('rotated');
+            }
+         });
+      });
+   });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+   const checkOutBtn = document.querySelector('.check-out');
+
+   if (!checkOutBtn) {
+      console.error("❌ .check-out button not found");
+      return;
+   }
+
+   checkOutBtn.addEventListener('click', function () {
+      let isValid = true;
+      let selectedProductCount = 0;
+      let scrollToItem = null;
+      let errorMessage = "";
+
+      const cartItems = document.querySelectorAll('.cart-item');
+      if (!cartItems.length) {
+         alert("No products available.");
+         return;
+      }
+
+      const selectedProducts = [];
+
+      cartItems.forEach(cartItem => {
+         const checkbox = cartItem.querySelector('.cart-checkbox');
+
+         // ✅ Skip if checkbox is missing, not checked, or doesn't have a value
+         if (!checkbox || !checkbox.checked || !checkbox.value) return;
+
+         const productId = checkbox.value;
+         if (!productId || isNaN(productId)) return;
+
+         selectedProductCount++;
+         cartItem.classList.remove('error-highlight');
+
+         const limitError = cartItem.querySelector('.limit-error');
+         const colorErrors = cartItem.querySelectorAll('.color-error');
+         const hasLimitError = limitError && !limitError.classList.contains('d-none');
+         const hasColorError = Array.from(colorErrors).some(err => err.textContent.trim() !== '');
+
+         if ((hasLimitError || hasColorError) && isValid) {
+            scrollToItem = cartItem;
+            errorMessage = "Fix all quantity or color selection errors before proceeding.";
+            isValid = false;
+            return;
+         }
+
+         const hasSizeOptions = cartItem.querySelectorAll('.toggle-size').length > 0;
+         const hasColorOptions = cartItem.querySelectorAll('.color-wrapper').length > 0;
+
+         let colorSelected = false;
+
+         if (hasSizeOptions) {
+            const selectedSizes = cartItem.querySelectorAll('.toggle-size.selected');
+            selectedSizes.forEach(sizeBox => {
+               const sizeName = sizeBox.getAttribute('data-size');
+               const group = cartItem.querySelector(`.size-color-group[data-size="${sizeName}"]`);
+               if (group) {
+                  const selectedInGroup = group.querySelectorAll('.color-wrapper.selected');
+                  if (selectedInGroup.length > 0) {
+                     colorSelected = true;
+                  }
+               }
+            });
+         } else {
+            const selectedColors = cartItem.querySelectorAll('.color-wrapper.selected');
+            if (selectedColors.length > 0) {
+               colorSelected = true;
+            }
+         }
+
+         if ((hasSizeOptions || hasColorOptions) && !colorSelected && isValid) {
+            scrollToItem = cartItem;
+            errorMessage = "Please select at least one color inside a selected size or from available colors.";
+            isValid = false;
+            return;
+         }
+
+         // Start collecting valid product data
+         const quantityInput = cartItem.querySelector('#color-limit-input');
+         const quantity = parseInt(quantityInput?.value || 1);
+         const basePrice = parseFloat(cartItem.dataset.price) || 0;
+         const discountedPrice = parseFloat(cartItem.dataset.discount) || 0;
+         const finalPrice = discountedPrice > 0 ? discountedPrice : basePrice;
+         const totalPrice = finalPrice * quantity;
+
+         const selectedSizes = [];
+         const sizeColorMap = {};
+
+         cartItem.querySelectorAll('.toggle-size.selected').forEach(sizeBox => {
+            const sizeName = sizeBox.dataset.size;
+            selectedSizes.push(sizeName);
+
+            const group = cartItem.querySelector(`.size-color-group[data-size="${sizeName}"]`);
+            if (group) {
+               const selectedColorElems = group.querySelectorAll('.color-wrapper.selected .color-circle');
+               const colors = Array.from(selectedColorElems).map(c => c.style.backgroundColor);
+               sizeColorMap[sizeName] = colors;
+            }
+         });
+
+         const selectedColors = [];
+         cartItem.querySelectorAll('.color-wrapper.selected').forEach(wrapper => {
+            const circle = wrapper.querySelector('.color-circle');
+            const color = circle?.style.backgroundColor;
+            if (color) selectedColors.push(color);
+         });
+
+         selectedProducts.push({
+            product_id: productId,
+            quantity: quantity,
+            total_price: totalPrice,
+            selected_sizes: selectedSizes,
+            size_color_map: sizeColorMap,
+            selected_colors: selectedColors
+         });
+      });
+
+      if (selectedProductCount === 0) {
+         alert("Please select at least one product.");
+         return;
+      }
+
+      if (!isValid && scrollToItem) {
+         scrollToItem.classList.add('error-highlight');
+         scrollToItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+         setTimeout(() => scrollToItem.classList.remove('error-highlight'), 3000);
+         setTimeout(() => alert(errorMessage), 100);
+         return;
+      }
+
+      // ✅ Submit with AJAX
+      fetch('/create-order/', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+         },
+         body: JSON.stringify({ orders: selectedProducts })
+      })
+         .then(res => res.json())
+         .then(data => {
+            if (data.success) {
+               window.location.href = '/order-summary/';
+            } else {
+               alert(data.message || 'Order creation failed.');
+            }
+         })
+         .catch(err => console.error('Error:', err));
+   });
+
+   function getCSRFToken() {
+      const name = 'csrftoken';
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+         if (cookie.trim().startsWith(name + '=')) {
+            return decodeURIComponent(cookie.trim().substring(name.length + 1));
+         }
+      }
+      return '';
+   }
+});
+</script>
+

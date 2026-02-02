@@ -1,0 +1,584 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #fff;
+        }
+
+        /* Custom styles for horizontal scrolling in "More Like This" */
+        .scroll-container-horizontal {
+            overflow-x: auto;
+            /* Enable horizontal scrolling */
+            overflow-y: hidden;
+            /* Hide vertical scrollbar */
+            white-space: nowrap;
+            /* Prevent items from wrapping */
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .scroll-container-horizontal::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari, Opera */
+        }
+                /* Status Tag */
+        .status-tag {
+            position: absolute;
+            top: 0.625rem; /* 10px */
+            left: 0.625rem; /* 10px */
+            background-color: #FF1493; /* bg-pink-500 */
+            color: white;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 0.3rem;
+            z-index: 3;
+            text-transform: uppercase;
+        }
+
+        /* Slideshow Arrows */
+        .img-container .arrow-left,
+        .img-container .arrow-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            z-index: 2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .img-container .arrow-left:hover,
+        .img-container .arrow-right:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .img-container .arrow-left {
+            left: 10px;
+        }
+
+        .img-container .arrow-right {
+            right: 10px;
+        }
+
+        /* Color Variants */
+        .color-variants {
+            display: flex;
+            flex-wrap: wrap; /* flex-wrap */
+            gap: 0.5rem; /* gap-2 */
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+
+        .color-circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 1px solid black;
+        }
+
+        /* Size Variants */
+        .size-variants {
+            display: flex;
+            flex-wrap: wrap; /* flex-wrap */
+            gap: 0.5rem; /* gap-2 */
+        }
+
+        .size-box {
+            border: 1px solid #ccc;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            
+        }
+
+        /* Custom scrollbar for horizontal container - NO COLORING */
+        .scroll-container-horizontal {
+            overflow-x: auto;
+        }
+        
+        .highlighted-comment {
+            background-color: rgba(255, 192, 203, 0.4); /* light pink */
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+            transition: background-color 0.3s ease;
+        }
+
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Product Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-10 flex flex-col lg:flex-row gap-8">
+            <!-- Product Image Gallery -->
+            <div class="lg:w-1/2 flex flex-col items-center">
+                <div class="main-image-container w-full max-w-md mb-4 rounded-xl overflow-hidden shadow-md relative">
+                    <!-- Main product image will be set by JavaScript -->
+                    <img id="mainProductImage" src="" alt="{{ product.name }} Main Image"
+                        class="w-full h-auto object-cover rounded-xl">
+
+                    <!-- Navigation Arrows (conditionally displayed by JS) -->
+                    <button id="prevImageBtn"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hidden lg:hidden focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button id="nextImageBtn"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hidden lg:hidden focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Thumbnail Gallery (conditionally displayed by JS) -->
+                <div id="thumbnailGallery" class="thumbnail-gallery flex gap-3 lg:flex">
+                    <!-- Thumbnails will be dynamically generated by JS using data from Django -->
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="lg:w-1/2">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">{{ product.name|capfirst }}</h1>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                    {{ product.description }}
+                </p>
+
+                <!-- Price Section -->
+                <div class="flex items-baseline mb-6">
+                    {% if product.discounted_price %}
+                    <span class="text-4xl font-extrabold text-red-600 mr-3" data-price="{{ product.price }}"
+                        data-discounted-price="{{ product.discounted_price }}">
+                        {{ product.discounted_price|format_k }}
+                    </span>
+
+                    <span class="text-xl text-gray-500 line-through">{{ product.price|format_k }}</span>
+                    <span id="discountPercentage" class="ml-3 text-green-600 font-semibold text-lg">
+                        <!-- Percentage will be calculated by JavaScript -->
+                    </span>
+                    {% else %}
+                    <span class="text-4xl font-extrabold text-red-600 mr-3" data-price="{{ product.price }}"
+                        data-discounted-price="{{ product.discounted_price }}">
+                        {{ product.price|format_k }}
+                    </span>
+                    {% endif %}
+                </div>
+                <!-- Ratings -->
+                <div class="flex items-center mb-4">
+  <div class="flex text-yellow-400 text-lg mr-2">
+    {% for i in "12345"|make_list %}
+      {% if i|add:'0' <= average_rating %}
+        <i class="fas fa-star"></i>
+      {% elif i|add:'0' < average_rating|add:'1' %}
+        <i class="fas fa-star-half-alt"></i>
+      {% else %}
+        <i class="far fa-star"></i>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if total_reviews > 0 %}
+    <span class="text-gray-600">({{ average_rating }}/5 from {{ total_reviews }} review{{ total_reviews|pluralize }})</span>
+  {% else %}
+    <span class="text-gray-600">(No reviews yet.)</span>
+  {% endif %}
+</div>
+
+
+
+                {% if product.limit == 0 %}
+    <p class="text-red-600 font-medium mb-4">Out of Stock</p>
+{% elif product.limit < 5 %}
+    <p class="text-yellow-600 font-medium mb-4">Limited Stock</p>
+{% else %}
+    <p class="text-green-600 font-medium mb-4">Available</p>
+{% endif %}
+
+
+                <!-- Quantity, Color, Size -->
+                <div class="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <!-- Quantity -->
+                    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-auto">
+                        <label for="quantity" class="text-gray-700 mr-2">Quantity:</label>
+                        <button onclick="updateQuantity(-1)"
+                            class="text-gray-600 hover:text-gray-800 focus:outline-none p-1">-</button>
+                        <input type="text" id="quantity" value="0"
+                            class="w-12 text-center border-none focus:ring-0 bg-transparent" readonly>
+                        <button onclick="updateQuantity(1)"
+                            class="text-gray-600 hover:text-gray-800 focus:outline-none p-1">+</button>
+                    </div>
+
+
+                    <!-- Sizes (Example - assuming sizes are not in Product model directly or handled by variant) -->
+                    {% if has_sizes %}
+                    <!-- SIZE SELECT -->
+                    <div class="flex items-center gap-2 w-full sm:w-auto mb-2">
+                        <label for="sizes" class="text-gray-700">Size:</label>
+                        <select id="sizes"
+                            class="form-select border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#FF1493] focus:border-[#FF1493] w-full sm:w-auto">
+                            <option disabled selected value="">Select size</option>
+                            {% for size, colors in size_color_map.items %}
+                            <option value="{{ size }}">{{ size }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- COLOR SELECT (will be populated by JS after size is selected) -->
+                    <div id="color-section" class="flex items-center gap-2 w-full sm:w-auto hidden">
+                        <label for="colors" class="text-gray-700">Color:</label>
+                        <select id="colors"
+                            class="form-select border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#FF1493] focus:border-[#FF1493] w-full sm:w-auto">
+                            <!-- JS will inject placeholder and options -->
+                        </select>
+                    </div>
+
+                    <script>
+                        const sizeColorMap = {{ size_color_map| safe }};
+                        const sizeSelect = document.getElementById('sizes');
+                        const colorSelect = document.getElementById('colors');
+                        const colorSection = document.getElementById('color-section');
+
+                        sizeSelect.addEventListener('change', function () {
+                            const selectedSize = this.value;
+                            const colors = sizeColorMap[selectedSize] || [];
+
+                            // Clear and add placeholder first
+                            colorSelect.innerHTML = '';
+                            const placeholderOption = document.createElement('option');
+                            placeholderOption.textContent = 'Select color';
+                            placeholderOption.disabled = true;
+                            placeholderOption.selected = true;
+                            placeholderOption.value = '';
+                            colorSelect.appendChild(placeholderOption);
+
+                            // Add actual color options
+                            colors.forEach(color => {
+                                const option = document.createElement('option');
+                                option.value = color;
+                                option.textContent = color;
+                                colorSelect.appendChild(option);
+                            });
+
+                            colorSection.classList.remove('hidden');
+                        });
+                    </script>
+
+                    {% elif has_colors_only %}
+                    <!-- COLOR ONLY SELECT (with placeholder) -->
+                    <div class="flex items-center gap-2 w-full sm:w-auto mb-2">
+                        <label for="colors" class="text-gray-700">Color:</label>
+                        <select id="colors"
+                            class="form-select border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#FF1493] focus:border-[#FF1493] w-full sm:w-auto">
+                            <option disabled selected value="">Select color</option>
+                            {% for color in color_variants.colors.all %}
+                            <option value="{{ color.color_name }}">{{ color.color_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button {% if product.limit == 0 %} disabled
+                    class="w-full bg-gray-300 text-white py-3 px-6 rounded-lg text-lg font-semibold cursor-not-allowed opacity-50"
+                    {% else %} onclick="addToCart()"
+                    class="w-full bg-[#FF1493] text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-pink-700 transition-colors duration-300 shadow-md"
+                    {% endif %}>
+                    Add to Cart
+                </button>
+
+
+            </div>
+        </div>
+
+        <!-- More Like This Section -->
+                <!-- More Like This Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-10 mt-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">More Like This</h2>
+            <div class="scroll-container-horizontal h-80 md:h-96">
+                <div class="flex gap-6 pb-4">
+                    {% for good in goods %}
+                    <a href="{% url 'product' pk=good.id %}"
+                       class="product-card-link flex-shrink-0 w-64 transform-card"> {# Moved these classes here #}
+                        <div class="flex-shrink-0 w-64 bg-gray-50 rounded-xl shadow-sm overflow-hidden transform hover:scale-105 transition-transform duration-300">
+                            <div class="img-container relative h-48 overflow-hidden">
+ {% if good.limit == 0 %}
+                    <div class="status-tag">Sold</div>
+                    {% elif good.limit < 5 %}
+                    <div class="status-tag">Limited</div>
+                    {% elif good.discounted_price and goodt.discounted_price > 0 %}
+                    <div class="status-tag">Discount</div>
+                    {% elif good.is_new %}
+                    <div class="status-tag">New</div>
+                    {% endif %}
+
+                                {# Display the main image based on type, or fallback #}
+                                {% with main_image_found=False %}
+                                    {% for image in good.images.all %}
+                                        {% if image.type == 'Main' %}
+                                            <img src="{{ image.image.url }}" alt="{{ good.name }} Image" class="w-full h-full object-cover" id="img{{ good.id }}" />
+                                            {% comment %} Set flag to true if main image is found {% endcomment %}
+                                            {% with main_image_found=True %}{% endwith %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {# Fallback if no 'Main' image found or good has no images #}
+                                    {% if not main_image_found or not good.images.all %}
+                                        <img src="https://placehold.co/300x300/F0F0F0/555555?text=No+Image" alt="No Image" class="w-full h-full object-cover" id="img{{ good.id }}" />
+                                    {% endif %}
+                                {% endwith %}
+
+                                {% if good.images.count > 1 %}
+                                <button class="arrow-left" onclick="manualChangeImage('img{{ good.id }}', -1, {{ good.id }})">&#10094;</button>
+                                <button class="arrow-right" onclick="manualChangeImage('img{{ good.id }}', 1, {{ good.id }})">&#10095;</button>
+                                {% endif %}
+                            </div>
+                            <div class="p-4 flex flex-col flex-grow">
+                                <h3 class="font-semibold text-lg text-gray-800 mb-1">{{ good.name|capfirst }}</h3>
+
+                                {# Price Display #}
+                                <div class="flex justify-between items-baseline mb-2"> {# Added mb-2 for spacing #}
+                                    {% if good.discounted_price and good.discounted_price > 0 %}
+                                        <span class="text-xl font-bold text-[#FF1493]">{{ good.discounted_price|format_k }}</span>
+                                        <span class="text-sm text-gray-500 line-through">{{ good.price|format_k }}</span>
+                                    {% else %}
+                                        <span class="text-xl font-bold text-[#FF1493]">{{ good.price|format_k }}</span>
+                                    {% endif %}
+                                </div>
+
+                                {# NEW: Container for Color/Size Variants - ensures consistent positioning #}
+                                <div class="flex items-center flex-wrap gap-1 mt-2">
+                                    {# Color Variants Section #}
+                                    {% if good.color_variants.exists %}
+                                        {% for color_variant in good.color_variants.all %}
+                                            {% for color in color_variant.colors.all %}
+                                                <div class="color-circle" style="background-color: {{ color.color_name|lower }};"></div>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    {# Size Variants Section #}
+                                    {% if good.size_variants.exists %}
+                                        {% for variant in good.size_variants.all %}
+                                            <div class="size-box">{{ variant.size }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-gray-600">No similar goods found.</p>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Comment Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-10 mt-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Customer Reviews</h2>
+
+            <!-- Review Form -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">Leave a Review</h3>
+                <form id="reviewForm" class="space-y-4">
+                    {% if not request.user.is_authenticated %}
+                    <div>
+                        <label for="reviewerEmail" class="block text-gray-700 text-sm font-bold mb-2">Your
+                            Email:</label>
+                        <input type="email" id="reviewerEmail"
+                            class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-[#FF1493] focus:border-[#FF1493]"
+                            placeholder="your.email@example.com" required>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label for="reviewThought" class="block text-gray-700 text-sm font-bold mb-2">Your
+                            Thoughts:</label>
+                        <textarea id="reviewThought" rows="4"
+                            class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-[#FF1493] focus:border-[#FF1493]"
+                            placeholder="Share your experience with the product..." required></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Rating:</label>
+                        <div class="flex items-center space-x-1" id="starRating">
+                            <!-- Stars will be generated by JS -->
+                        </div>
+                        <input type="hidden" id="selectedRating" value="0">
+                    </div>
+                    <button type="submit"
+                        class="bg-[#FF1493] text-white py-2 px-4 rounded-lg font-semibold hover:bg-pink-700 transition-colors duration-300 shadow-md">
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+
+            <!-- Existing Reviews -->
+            <div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">What others are saying:</h3>
+                <div id="reviewsList" class="space-y-6">
+                    {% for comment in comments %}
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm relative" id="comment-{{ comment.id }}">
+                        <div class="flex items-center mb-2">
+
+                            {% if comment.customer %}
+                            {% if comment.customer.user.groups.all.0.name == "admin" %}
+                            <span class="font-semibold text-pink-600 mr-2">Admin</span>
+                            {% else %}
+                            <span class="font-semibold text-gray-800 mr-2"> {{ comment.customer.user.email}}</span>
+                            {% endif %}
+                            {% elif comment.guest_customer %}
+                            <span class="font-semibold text-gray-800 mr-2">{{ comment.guest_customer.email }}</span>
+                            {% else %}
+                            <span class="font-semibold text-gray-800 mr-2"> Anonymous</span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="flex flex-wrap items-center justify-between mb-2 text-yellow-400">
+                            <div class="flex flex-wrap">
+                                {% for i in "12345"|make_list %} {# Loop 5 times for stars #}
+                                {% if forloop.counter <= comment.rating %} {# Assuming 'rating' field exists on Comment model #} <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 18.896l-7.416 3.817 1.48-8.279-6.064-5.828 8.332-1.151z" />
+                                    </svg>
+                                    {% else %}
+                                    <svg class="w-5 h-5 fill-current text-gray-300" viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 18.896l-7.416 3.817 1.48-8.279-6.064-5.828 8.332-1.151z" />
+                                    </svg>
+                                    {% endif %}
+                                    {% endfor %}
+                            </div>
+                            <span class="text-xs text-gray-400">{{ comment.time|timesince }} ago</span> {# Using timesince filter for "X hours ago" #}
+                        </div>
+                        <p class="text-gray-700">"{{ comment.comment }}"</p> {# Assuming 'text' field for comment content #}
+
+                        {# Container for main comment's action buttons - now in flow #}
+
+                        <div class="flex justify-between items-center mt-3">
+                            {% if customer.user.groups.all.0.name == "admin" %}
+                            <button onclick="showReplyForm('{{ comment.id }}')"
+                                class="text-blue-500 hover:text-blue-700 focus:outline-none p-1 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M7.707 3.293a1 1 0 010 1.414L5.414 7H14a1 1 0 110 2H5.414l2.293 2.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            {% endif %}
+                            {% if customer.user.groups.all.0.name == "admin" or comment.customer and customer and comment.customer.id == customer.id or comment.guest_customer and guest_customer and comment.guest_customer.id == guest_customer.id %}
+                            <button onclick="deleteComment('{{ comment.id }}', this.closest('.bg-gray-50'))"
+                                class="text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            {% endif %}
+                        </div>
+                        <!-- Container for replies (both existing and new) -->
+                        <div class="replies-container mt-3 space-y-3">
+                            {% for reply in comment.replies.all %} {# Assuming 'replies' related name on Comment model #}
+                            {# Ensure reply div is relative for its own delete button #}
+                            <div  class="mt-3 p-3 bg-gray-100 rounded-lg border border-gray-200 relative">
+
+                                <div class="flex items-center mb-1">
+                                    <span class="font-semibold text-pink-600 mr-2">
+                                        {% if reply.customer.user.groups.all.0.name == "admin" %}Admin{% else %}{{ reply.customer.user.email }}{% endif %}
+                                    </span>
+                                    <span class="text-xs text-gray-400">{{ reply.time|timesince }} ago</span>
+                                </div>
+                                <p class="text-gray-700">"{{ reply.reply }}"</p>
+                                {% if customer.user.groups.all.0.name == "admin" %}
+                                <button onclick="deleteComment('{{ reply.id }}', this.closest('.bg-gray-100'))"
+                                    class="absolute bottom-2 right-2 text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Reply Form Container (initially hidden) -->
+                        <div id="replyForm-{{ comment.id }}"
+                            class="reply-form-container mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200 hidden">
+                            <h4 class="font-semibold text-gray-700 mb-2">Your Reply:</h4>
+                            <textarea
+                                class="reply-textarea shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-[#FF1493] focus:border-[#FF1493]"
+                                rows="2" placeholder="Write your reply..."></textarea>
+                            <button
+                                onclick="submitReply('{{ comment.id }}', this.previousElementSibling.value, this.closest('.reply-form-container'))"
+                                class="mt-2 bg-blue-500 text-white py-1.5 px-4 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors duration-300">
+                                Post Reply
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p  class="text-gray-600">No reviews yet. Be the first to leave one!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'description_script.html' %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const hash = window.location.hash;
+
+    if (hash.startsWith("#comment-")) {
+        const commentElement = document.querySelector(hash);
+        if (commentElement) {
+            // Add highlight class
+            commentElement.classList.add("highlighted-comment");
+
+            // Optionally scroll it into view (smoothly)
+            commentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            // Remove the class after a delay (e.g. 3 seconds)
+            setTimeout(() => {
+                commentElement.classList.remove("highlighted-comment");
+            }, 60000);
+        }
+    }
+});
+</script>
+
+</body>
+
+</html>
+{% endblock %}

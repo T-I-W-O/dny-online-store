@@ -1,0 +1,1223 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* All necessary variables and base styles are duplicated here */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            --clr-danger: #ff7782;
+            --clr-success: #41f1b6;
+            --clr-white: #fff;
+            --clr-info-dark: #7d8da1;
+            --clr-info-light: #dce1eb;
+            --clr-dark: #363949;
+            /* Keeping this as the default text color */
+            --clr-warnig: #ff4edc;
+            --clr-light: rgba(132, 139, 200, 0.18);
+            --clr-primary-variant: #111e88;
+            --clr-dark-variant: #677483;
+            --clr-color-background: #f6f6f9;
+            /* Keeping this as the default background */
+
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 2rem 3rem var(--clr-light);
+        }
+
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        /* Body styles are typically handled by the base template,
+           but including them here to ensure they are available if
+           admin_home.html doesn't define them globally. */
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            font-size: .7rem;
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+        }
+
+        /* Container for dashboard ONLY content - no sidebar, no right panel */
+        /* This .dashboard-container is from your original template and assumes
+           it wraps the main content area. */
+        .dashboard-container {
+            width: 96%;
+            max-width: 1200px;
+            margin: 1.4rem auto;
+            gap: 1.8rem;
+            display: grid;
+            grid-template-columns: auto 16rem;
+        }
+
+        /* Common Typography and Utility Classes (duplicated) */
+        a {
+            color: var(--clr-dark);
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.8rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+        }
+
+        h3 {
+            font-size: 0.87;
+        }
+
+        h4 {
+            font-weight: 0.8rem;
+        }
+
+        h5 {
+            font-size: 0.77rem;
+        }
+
+        small {
+            font-size: 0.75rem;
+        }
+
+        .profile-photo img {
+            width: 2.8rem;
+            height: 2.8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .text-muted {
+            color: var(--clr-info-dark);
+        }
+
+        p {
+            color: var(--clr-dark-variant);
+        }
+
+        b {
+            color: var(--clr-dark);
+        }
+
+        .primary {
+            color: var(--clr-primary);
+        }
+
+        .success {
+            color: var(--clr-success);
+        }
+
+        .danger {
+            color: var(--clr-danger);
+        }
+
+        .warning {
+            color: var(--clr-warnig);
+        }
+
+        /* Main Dashboard Content CSS */
+        main {
+            width: 100%;
+        }
+
+        main input {
+            background-color: transparent;
+            border: 0;
+            outline: 0;
+            color: var(--clr-dark);
+        }
+
+        main .date {
+            display: inline-block;
+            background: var(--clr-white);
+            border-radius: var(--border-radius-1);
+            margin-top: 1rem;
+            padding: 0.5rem 1.6rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        main .insights {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.6rem;
+            margin-top: 1rem;
+        }
+
+        main .insights>div {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+        }
+
+        main .insights>div:hover {
+            box-shadow: none;
+        }
+
+        main .insights>div span {
+            background: coral;
+            padding: 0.5rem;
+            border-radius: 50%;
+            color: var(--clr-white);
+            font-size: 2rem;
+        }
+
+        main .insights>div.visitors span {
+            background: var(--clr-primary);
+        }
+
+        main .insights>div.unique-visitors span {
+            background: var(--clr-info-dark);
+        }
+
+        main .insights>div.sales span {
+            background: var(--clr-success);
+        }
+
+        main .insights>div .middle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        main .insights>div .middle h1 {
+            font-size: 1.6rem;
+        }
+
+        main h1 {
+            color: var(--clr-dark);
+        }
+
+        main .insights h1 {
+            color: var(--clr-dark);
+        }
+
+        main .insights h3 {
+            color: var(--clr-dark);
+        }
+
+        main .insights p {
+            color: var(--clr-dark);
+        }
+
+        main .insights .progress {
+            position: relative;
+            height: 68px;
+            width: 68px;
+            border-radius: 50px;
+        }
+
+        main .insights svg {
+            height: 150px;
+            width: 150px;
+            position: absolute;
+            top: 0;
+        }
+
+        main .insights svg circle {
+            fill: none;
+            stroke: var(--clr-primary);
+            transform: rotate(270deg, 80px, 80px);
+            stroke-width: 5;
+        }
+
+        main .insights .website-visits svg circle {
+            stroke-dashoffset: 0;
+            stroke-dasharray: 150;
+            stroke: var(--clr-primary);
+        }
+
+        main .insights .unique-visitors svg circle {
+            stroke-dashoffset: 10;
+            stroke-dasharray: 150;
+            stroke: var(--clr-info-dark);
+        }
+
+        main .insights .total-sales svg circle {
+            stroke: var(--clr-success);
+        }
+
+        main .insights .progress .number {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Order Summary Section */
+        main .order-summary {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.6rem;
+        }
+
+        main .order-summary h2 {
+            grid-column: 1 / -1;
+            margin-bottom: 0.8rem;
+        }
+
+        main .order-summary>div {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+            text-align: center;
+        }
+
+        main .order-summary>div:hover {
+            box-shadow: none;
+        }
+
+        main .order-summary>div span {
+            font-size: 2rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            color: var(--clr-white);
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        main .order-summary>div.total-orders span {
+            background: var(--clr-primary);
+        }
+
+        main .order-summary>div.pending-orders span {
+            background: var(--clr-warnig);
+        }
+
+        main .order-summary>div.completed-orders span {
+            background: var(--clr-success);
+        }
+
+        main .order-summary>div.cancelled-orders span {
+            background: var(--clr-danger);
+        }
+
+        main .order-summary>div h3 {
+            margin-top: 0.5rem;
+        }
+
+        /* Right Section Styles (ONLY for this dashboard page - Analytics, Updates) */
+        .right-dashboard-content {
+            margin-top: 1.4rem;
+        }
+
+        .right-dashboard-content h2 {
+            color: var(--clr-dark);
+        }
+
+        /* Recent update */
+        .right-dashboard-content .recent_updates {
+            margin-top: 1rem;
+        }
+
+        .right-dashboard-content .recent_updates .updates {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+        }
+
+        .right-dashboard-content .recent_updates .updates:hover {
+            box-shadow: none;
+        }
+
+        .right-dashboard-content .recent_updates .update {
+            display: grid;
+            grid-template-columns: 2.6rem auto;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Sales Analytics */
+        .right-dashboard-content .sales-analytics {
+            margin-top: 2rem;
+        }
+
+        .right-dashboard-content .sales-analytics h2 {
+            margin-bottom: 0.8rem;
+        }
+
+        .right-dashboard-content .sales-analytics .item {
+            background-color: var(--clr-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 10px 0;
+            width: 100%;
+            margin-bottom: 0.8rem;
+            padding: 1.4rem var(--card-padding);
+            border-radius: var(--border-radius-3);
+            box-shadow: var(--box-shadow);
+        }
+
+        .right-dashboard-content .sales-analytics .item:hover {
+            box-shadow: none;
+        }
+
+        .right-dashboard-content .sales-analytics .item .icon {
+            padding: 0.6rem;
+            color: var(--clr-white);
+            border-radius: 50%;
+            height: 50px;
+            width: 50px;
+            line-height: 50px;
+            align-items: center;
+            background: coral;
+        }
+
+        .right-dashboard-content .sales-analytics .item:nth-child(3) .icon {
+            background: var(--clr-success);
+        }
+
+        .right-dashboard-content .sales-analytics .item:nth-child(4) .icon {
+            background: var(--clr-danger);
+        }
+
+        .right-dashboard-content .sales-analytics .item .right_text {
+            margin-left: 15px;
+            display: flex;
+            justify-content: space-around;
+            flex-direction: column;
+        }
+
+        .right-dashboard-content .sales-analytics .item .right_text h3 {
+            color: var(--clr-dark);
+        }
+
+        .right-dashboard-content .add_product div {
+            display: flex;
+            height: 60px;
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed;
+            color: var(--clr-dark-variant);
+            margin-bottom: 40px;
+        }
+         /* New Notification Manager Styles */
+        .notification-manager {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+            margin-top: 2rem;
+        }
+
+        .notification-manager:hover {
+            box-shadow: none;
+        }
+
+        .notification-manager h2 {
+            margin-bottom: 1rem;
+            color: var(--clr-dark);
+        }
+
+        .notification-manager .notification-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .notification-manager textarea {
+            background-color: var(--clr-info-light);
+            border-radius: var(--border-radius-1);
+            padding: 0.8rem;
+            resize: vertical;
+            color: var(--clr-dark);
+        }
+
+        .notification-manager .form-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-manager .form-row label {
+            font-size: 0.87rem;
+            font-weight: 600;
+        }
+
+        .notification-manager input[type="date"] {
+            background-color: var(--clr-info-light);
+            border-radius: var(--border-radius-1);
+            padding: 0.5rem;
+            color: var(--clr-dark);
+            font-size: 0.77rem;
+        }
+
+        .notification-manager button {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border: none;
+            padding: 0.8rem;
+            border-radius: var(--border-radius-1);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .notification-manager button:hover {
+            background-color: var(--clr-primary-variant);
+        }
+
+        .notification-manager .recent-notifications {
+            margin-top: 2rem;
+        }
+
+        .notification-manager .recent-notifications h3 {
+            margin-bottom: 0.8rem;
+        }
+
+        .notification-manager #notification-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notification-manager #notification-list li {
+            background-color: var(--clr-light);
+            padding: 1rem;
+            border-radius: var(--border-radius-1);
+            margin-bottom: 0.8rem;
+            border-left: 5px solid var(--clr-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-manager #notification-list li .notification-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-manager #notification-list li .notification-content span {
+            font-size: 0.7rem;
+            color: var(--clr-info-dark);
+            margin-top: 0.4rem;
+        }
+
+        .right-dashboard-content .add_product div {
+            display: flex;
+            height: 60px;
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed;
+            color: var(--clr-dark-variant);
+            margin-bottom: 40px;
+        }
+
+        /* Media Queries for Independent Dashboard Page */
+        @media screen and (max-width:1200px) {
+            .dashboard-container {
+                width: 94%;
+                grid-template-columns: auto 14rem;
+            }
+
+            main .insights,
+            main .order-summary {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+
+        @media screen and (max-width:768px) {
+            .dashboard-container {
+                width: 100%;
+                grid-template-columns: repeat(1, 1fr);
+                padding: 0 20px;
+            }
+
+            main {
+                padding-top: 0;
+            }
+
+            main .insights,
+            main .order-summary {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 1.6rem;
+                padding: 0;
+            }
+
+            /* Adjust padding for the moved 'right' content on mobile */
+            .right-dashboard-content .recent_updates,
+            .right-dashboard-content .sales-analytics,
+            .right-dashboard-content .add_product {
+                padding: 0;
+                margin-left: 0;
+            }
+        }
+
+        .week-picker-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .week-picker-wrapper input[type="week"] {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .calendar-icon {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            font-size: 22px;
+            color: #666;
+        }
+
+        .date-label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: block;
+            color: #333;
+        }
+
+        .danger {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+
+        /* Admin Image Upload Page Specific Styles */
+        .slide-management-container {
+        padding: var(--card-padding);
+        background: var(--clr-white);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--box-shadow);
+        margin-top: 2rem;
+    }
+
+    h2 {
+        color: var(--clr-dark);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Form Styles */
+    .slide-form-container {
+        padding: var(--card-padding);
+        background: var(--clr-info-light);
+        border-radius: var(--border-radius-2);
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        color: var(--clr-dark);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="file"] {
+        width: 100%;
+        padding: var(--padding-1);
+        border: 1px solid var(--clr-info-dark);
+        border-radius: var(--border-radius-1);
+        background: var(--clr-white);
+        color: var(--clr-dark);
+    }
+    
+    .form-group input[type="file"] {
+        padding: 0.5rem;
+    }
+
+    .form-group .error {
+        color: var(--clr-danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-actions button {
+        background: var(--clr-primary);
+        color: var(--clr-white);
+        border: none;
+        padding: var(--padding-1) 2rem;
+        border-radius: var(--border-radius-1);
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .form-actions button:hover {
+        background: var(--clr-primary-variant);
+    }
+
+    /* Existing Slides Section */
+    .slides-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .slide-box {
+        background: var(--clr-white);
+        border: 1px solid var(--clr-info-dark);
+        padding: 1.5rem;
+        border-radius: var(--border-radius-2);
+        text-align: center;
+        box-shadow: 0 1rem 2rem rgba(132, 139, 200, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .slide-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(132, 139, 200, 0.2);
+    }
+
+    .slide-box strong {
+        display: block;
+        font-size: 1.2rem;
+        color: var(--clr-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .slide-box p {
+        color: var(--clr-dark-variant);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .slide-box img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--border-radius-1);
+        margin-bottom: 1rem;
+        object-fit: cover;
+        max-height: 150px;
+    }
+
+    .delete-slide {
+        background-color: var(--clr-danger);
+        color: var(--clr-white);
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--border-radius-1);
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+    
+    .delete-slide:hover {
+        background-color: #e03f4f; /* A slightly darker red */
+    }
+
+    .divider {
+        border: 0;
+        height: 1px;
+        background: var(--clr-info-light);
+        margin: 2rem 0;
+    }
+
+        /* Message Box styles */
+        .message-box {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            color: var(--clr-white);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box.success {
+            background: var(--clr-success);
+        }
+
+        .message-box.error {
+            background: var(--clr-danger);
+        }
+
+        .message-box.warning {
+            background: var(--clr-warnig);
+        }
+
+        .message-box.info {
+            background: var(--clr-info-dark);
+        }
+        .delete-btn {
+    background-color: crimson;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: darkred;
+}
+
+    </style>
+
+    <!-- Message Box for alerts -->
+    <div id="messageBox" class="message-box">
+        <p id="messageText"></p>
+    </div>
+<h1>Dashboard</h1>
+    <!-- Main Dashboard Content -->
+    <div class="dashboard-container">
+        <main>
+           
+
+            <form id="weekForm" method="get">
+                <div class="date">
+                    <label for="weekInput" class="date-label">
+                        Choose week:
+                        <span id="weekLabel" class="week-label">Loading...</span>
+                    </label>
+                    <div class="week-picker-wrapper">
+                        <input type="week" id="weekInput" name="week" value="{{ selected_week }}">
+                        <span class="calendar-icon material-symbols-sharp">calendar_month</span>
+                    </div>
+                </div>
+            </form>
+
+            <div class="insights">
+                <div class="website-visits">
+                    <span class="material-symbols-sharp">visibility</span>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Website Visits</h3>
+                            <h1>{{ total_visits }}</h1>
+                        </div>
+                    </div>
+                    <small id="visitLabel"></small>
+                </div>
+
+                <div class="unique-visitors">
+                    <span class="material-symbols-sharp">group</span>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Unique Visitors</h3>
+                            <h1>{{ unique_visitors }}</h1>
+                        </div>
+                    </div>
+                    <small id="uniqueLabel"></small>
+                </div>
+
+                <div class="sales">
+                    <span class="material-symbols-sharp">payments</span>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Total Sales</h3>
+                            <h1>₦{{ total_sales|floatformat:2 }}</h1>
+                        </div>
+                    </div>
+                    <small id="salesLabel"></small>
+                </div>
+            </div>
+
+                 
+<div class="slide-management-container">
+    <h2>Create a New Slide</h2>
+    <div class="slide-form-container">
+        <form id="slide-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" name="title" id="title">
+                <div class="error" id="title-error"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" name="description" id="description">
+                <div class="error" id="description-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="image">Image:</label>
+                <input type="file" name="image" id="image">
+                <div class="error" id="image-error"></div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit">Create Slide</button>
+            </div>
+        </form>
+    </div>
+
+    <hr class="divider">
+
+    <h2>Existing Slides</h2>
+    <div id="slides-container" class="slides-container">
+        {% for slide in slides %}
+        <div class="slide-box" id="slide-{{ slide.id }}">
+            <strong>{{ slide.title }}</strong>
+            <p>{{ slide.description }}</p>
+            <img src="{{ slide.image.url }}" alt="Slide Image">
+            <button class="delete-slide" data-id="{{ slide.id }}">Delete</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+        </main>
+
+        <div class="right-dashboard-content">
+            <div class="sales-analytics">
+                <h2>Sales Analytics</h2>
+
+                <div class="item onlion">
+                    <div class="icon">
+                        <span class="material-symbols-sharp">shopping_cart</span>
+                    </div>
+                    <div class="right_text">
+                        <div class="info">
+                            <h3>Order Update</h3>
+                            <small class="text-muted">From Last week</small>
+                        </div>
+
+                        {% if order_percent_change > 0 %}
+                        <h5 class="success">+{{ order_percent_change }}%</h5>
+                        {% elif order_percent_change < 0 %} <h5 class="danger">{{ order_percent_change }}%</h5>
+                        {% else %}
+                        <h5 class="neutral">0%</h5>
+                        {% endif %}
+
+                        <h3>{{ this_week_order_count }}</h3>
+                    </div>
+                </div>
+
+                <div class="item onlion">
+                    <div class="icon">
+                        <span class="material-symbols-sharp">person</span>
+                    </div>
+                    <div class="right_text">
+                        <div class="info">
+                            <h3>New Customers</h3>
+                            <small class="text-muted">From Last week</small>
+                        </div>
+                        <h5 class="success">
+                            {% if customer_percent_change >= 0 %}+{{ customer_percent_change }}%{% else %}<span
+                                class="danger">{{ customer_percent_change }}%</span>{% endif %}
+                        </h5>
+                        <h3>{{ new_customer_count }}</h3>
+                    </div>
+                </div>
+            </div>
+    <div class="notification-manager">
+        <h2>General Notifications</h2>
+        <div class="notification-form">
+            <textarea id="notification-text" placeholder="Enter new notification..." rows="3"></textarea>
+            <div class="form-row">
+                <label for="expiration-date">Expiration Date:</label>
+                <input type="date" id="expiration-date">
+            </div>
+            <button id="add-notification-btn">Add Notification</button>
+        </div>
+
+        <div class="recent-notifications">
+            <h3>Recent Notifications</h3>
+            <ul id="notification-list">
+            </ul>
+        </div>
+    </div>
+            <div class="item add_product">
+                <a href="{% url 'add_product' %}">
+                    <div>
+                        <span class="material-symbols-sharp">add</span>
+                        <h3>Add Product</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard specific JavaScript
+        function getWeekNumber(date) {
+            const tempDate = new Date(date.getTime());
+            tempDate.setUTCDate(tempDate.getUTCDate() + 4 - (tempDate.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+            const weekNo = Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
+            return weekNo;
+        }
+
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentWeek = getWeekNumber(today);
+        const defaultWeekValue = `${currentYear}-W${currentWeek.toString().padStart(2, '0')}`;
+        const weekInput = document.getElementById("weekInput");
+        const weekLabel = document.getElementById("weekLabel");
+
+        // Prevent selecting future weeks
+        if (weekInput) {
+            weekInput.max = defaultWeekValue;
+        }
+
+
+        function updateWeekLabel(selectedValue) {
+            const selectedYear = parseInt(selectedValue.substring(0, 4));
+            const selectedWeek = parseInt(selectedValue.substring(6));
+            const diff = currentWeek + (currentYear - selectedYear) * 52 - selectedWeek;
+
+            let label = "This week";
+            if (diff === 1) label = "Last week";
+            else if (diff > 1) label = `${diff} weeks ago`;
+
+            if (weekLabel) weekLabel.textContent = label;
+            const visitLabel = document.getElementById("visitLabel");
+            if (visitLabel) visitLabel.textContent = label;
+            const uniqueLabel = document.getElementById("uniqueLabel");
+            if (uniqueLabel) uniqueLabel.textContent = label;
+            const salesLabel = document.getElementById("salesLabel");
+            if (salesLabel) salesLabel.textContent = label;
+        }
+
+        // Update label on page load
+        if (weekInput && weekInput.value) {
+            updateWeekLabel(weekInput.value);
+        }
+
+        // Submit form ONLY — do NOT re-update label just before submit
+        if (weekInput) {
+            weekInput.addEventListener("change", () => {
+                const weekForm = document.getElementById("weekForm");
+                if (weekForm) {
+                    weekForm.submit();
+                }
+            });
+        }
+
+</script>
+       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+        // Handle slide creation
+        $('#slide-form').on('submit', function(e) {
+            e.preventDefault();
+            $('.error').text('');
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: "{% url 'test' %}",
+                type: 'POST',
+                data: formData,
+                enctype: 'multipart/form-data',
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        const slide = response.slide;
+
+                        // Prepend the new slide
+                        $('#slides-container').prepend(`
+                            <div class="slide-box" id="slide-${slide.id}">
+                                <strong>${slide.title}</strong>
+                                <p>${slide.description}</p>
+                                <img src="${slide.image_url}" alt="Slide Image">
+                                <button class="delete-slide" data-id="${slide.id}">Delete</button>
+                            </div>
+                        `);
+
+                        // Reset the form
+                        $('#slide-form')[0].reset();
+                    } else {
+                        if (response.errors.title) {
+                            $('#title-error').text(response.errors.title);
+                        }
+                        if (response.errors.description) {
+                            $('#description-error').text(response.errors.description);
+                        }
+                        if (response.errors.image) {
+                            $('#image-error').text(response.errors.image);
+                        }
+                    }
+                },
+                error: function() {
+                    alert('Something went wrong. Please try again.');
+                }
+            });
+        });
+
+        // Handle slide deletion with confirmation
+        $(document).on('click', '.delete-slide', function() {
+            const slideId = $(this).data('id');
+            const slideDiv = $('#slide-' + slideId);
+
+            const confirmed = confirm('Are you sure you want to delete this slide?');
+            if (!confirmed) return;
+
+            $.ajax({
+                url: `/slides/delete/${slideId}/`,
+                type: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                success: function(response) {
+                    if (response.success) {
+                        slideDiv.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert(response.error || 'Failed to delete slide.');
+                    }
+                },
+                error: function() {
+                    alert('Error deleting slide.');
+                }
+            });
+        });
+    });
+</script>
+   
+<script>
+    // Load existing notifications
+    function fetchNotifications() {
+        $.get('/notifications/', function (response) {
+            const list = $('#notification-list');
+            list.empty();
+
+            response.notifications.forEach(notif => {
+                const li = $(`
+                    <li data-id="${notif.id}">
+                        <div class="notification-content">
+                            <p>${notif.notice}</p>
+                            <span>Expires: ${notif.expiry}</span>
+                            <button class="delete-btn" style="margin-left: 10px;">Delete</button>
+                        </div>
+                    </li>
+                `);
+
+                // Attach click event to the delete button
+                li.find('.delete-btn').on('click', function () {
+                    const noticeId = li.data('id');
+
+                    if (!confirm('Are you sure you want to delete this notification?')) {
+                        return; // Cancel deletion
+                    }
+
+                    $.ajax({
+                        url: `/notifications/delete/${noticeId}/`,
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': getCSRFToken() },
+                        success: function () {
+                            li.remove(); // Remove from UI
+                        },
+                        error: function (xhr) {
+                            alert(xhr.responseJSON?.error || 'Failed to delete notification.');
+                        }
+                    });
+                });
+
+                list.append(li);
+            });
+        });
+    }
+
+    // Submit new notification via AJAX
+    $('#add-notification-btn').on('click', function () {
+        const notice = $('#notification-text').val().trim();
+        const expiry = $('#expiration-date').val();
+
+        if (!notice) {
+            alert('Notification message cannot be empty.');
+            return;
+        }
+
+        if (!expiry) {
+            alert('Expiration date is required.');
+            return;
+        }
+
+        $.ajax({
+            url: '/notifications/create/',
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() },
+            data: JSON.stringify({ notice, expiry }),
+            contentType: 'application/json',
+            success: function (res) {
+                $('#notification-text').val('');
+                $('#expiration-date').val('');
+                fetchNotifications(); // Refresh list
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.error || 'Failed to create notification');
+            }
+        });
+    });
+
+    // CSRF token getter (needed for Django POST/DELETE requests)
+    function getCSRFToken() {
+        return document.cookie.split('; ')
+            .find(row => row.startsWith('csrftoken'))
+            ?.split('=')[1];
+    }
+
+    // Fetch notifications on page load
+    $(document).ready(function () {
+        fetchNotifications();
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <style>
+        /* Custom font for Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            /* Changed to white as per request */
+        }
+
+        .gradient-button {
+            background: linear-gradient(to right, #FF1493, #FF69B4);
+            /* Pink gradient */
+            transition: all 0.3s ease;
+        }
+
+        .gradient-button:hover {
+            background: linear-gradient(to right, #FF69B4, #FFB6C1);
+            /* Lighter pink gradient on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            /* rounded-xl */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            /* Deeper shadow */
+            padding: 1.5rem;
+            /* p-6 */
+            border: 1px solid #e2e8f0;
+            /* Subtle border */
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            /* py-3 */
+            border-bottom: 1px dashed #e2e8f0;
+            /* Dashed separator */
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Keyframes for animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body >
+
+    <main class="p-6 md:p-10 text-center">
+        <!-- Success Icon -->
+        <div class="flex justify-center mb-6">
+            <svg class="w-20 h-20 text-[#FF1493] animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+
+        <!-- Thank You Message -->
+        <h2 class="text-4xl font-bold text-gray-900 mb-4 animate-fade-in">Order Received!</h2>
+        <p class="text-lg text-gray-700 mb-10 leading-relaxed">
+            Thank you for your purchase. Your order <span class="font-semibold text-[#FF1493]">{{orders.0.transaction_id }}</span> has been successfully placed. We've sent a
+            detailed confirmation to <span class="font-semibold">{{ shipping.email }}</span>.
+        </p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 text-left mb-10">
+            <!-- Order Summary Section -->
+            <div class="lg:col-span-2 section-card">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-5 pb-3 border-b-2 border-[#ffe6f2]">Order Details
+                </h3>
+                <div class="space-y-4">
+                    {% for order in orders %}
+                    <div class="product-item flex-col items-start !border-b-0 pb-2">
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center">
+                                <img src="{{ order.product.main_images.0.image.url }}" alt="{{ order.product.name }}"
+                                    class="w-16 h-16 object-cover rounded-md mr-4 shadow-sm">
+
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ order.product.name|capfirst }}</p>
+                                </div>
+                            </div>
+                            <span class="font-semibold text-gray-900">{{ order.total_price|format_k }}</span>
+                        </div>
+                        <div class="w-full pl-20 pt-1 text-sm text-gray-500 space-y-0.5">
+
+
+
+ {% for detail in order.details.all %}
+
+        {% for color in detail.colors.all %}
+        <p>&bullet; {{ order.quantity }} of {{ color.color_name }}{% if detail.size %} for size {{ detail.size.size }}{% endif %}</p>
+        {% endfor %}
+
+    {% endfor %}
+                        </div>
+                    </div>
+                    <div class="w-full border-b dashed #e2e8f0 my-2"></div> <!-- Manual dashed line -->
+                    {% endfor %}
+
+
+                    <div class="pt-4 border-t border-gray-200 space-y-2">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Quantity:</span>
+                            <span>{{ total_quantity }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal:</span>
+                            <span>₦{{ subtotal|floatformat:2 }}</span>
+                        </div>
+{% if coupon_display %}
+<div class="flex justify-between text-gray-600">
+    <span>Discount (Coupon):</span>
+    <span class="text-[#FF69B4]">{{ coupon_display }}</span>
+</div>
+{% endif %}
+
+
+                        <div
+                            class="flex justify-between font-extrabold text-2xl text-gray-900 pt-4 border-t-2 border-gray-300">
+                            <span>Grand Total:</span>
+                            <span>₦{{ total_price }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer & Delivery Information Section -->
+            <div class="section-card">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-5 pb-3 border-b-2 border-[#ffe6f2]">Delivery
+                    Information</h3>
+                <div class="space-y-4 text-gray-700">
+                    <div>
+                        {% if shipping.mode == "Pickup" %}
+                        <p class="font-medium text-gray-800">Pickup:</p>
+                        <p>42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1</p>
+                        
+                        {% else %}
+                        <p class="font-medium text-gray-800">Shipping Address:</p>
+                        <p>{{customer.last_name|capfirst}} {{customer.first_name|capfirst}}</p>
+                        <p>{{shipping.address}}</p>
+                        <p>{{shipping.town|capfirst}}{% if shipping.local_goverment %}-{{shipping.local_goverment|capfirst}}{% endif %},{{shipping.state|capfirst}}</p>
+                        <p>{{shipping.country|capfirst}}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800">Estimated Delivery:</p>
+                        
+                        <p class="text-[#FF1493] font-semibold">{{shipping.deliverydate|format_date_range}}</p>
+                    </div>
+                   {% if customer %}
+                   <div>
+    <p class="font-medium text-gray-800">Customer name:</p>
+    <p>{{ customer.first_name }} {{customer.last_name }}</p>
+</div>
+<div>
+    <p class="font-medium text-gray-800">Contact Phone:</p>
+    <p>{{ customer.number }}</p>
+</div>
+<div>
+    <p class="font-medium text-gray-800">Contact Email:</p>
+    <p>{{ customer.email }}</p>
+</div>
+
+{% elif guest_customer %}
+                   <div>
+    <p class="font-medium text-gray-800">Customer name:</p>
+    <p>{{ guest_customer.first_name }} {{guest_customer.last_name }}</p>
+</div>
+<div>
+    <p class="font-medium text-gray-800">Contact Phone:</p>
+    <p>{{ shipping.whatsapp_number }}</p>
+</div>
+<div>
+    <p class="font-medium text-gray-800">Contact Email:</p>
+    <p>{{ shipping.email }}</p>
+</div>
+
+{% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Tracking and Support Section -->
+        <div class="bg-[#fff0f5] p-6 rounded-lg shadow-md border border-[#ffccd9] text-gray-800 mb-10">
+            <h3 class="text-xl font-semibold mb-3">What's Next?</h3>
+            <p class="mb-4">You can track the status of your order using the link below. For any questions, our support
+                team is ready to help!</p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{% url 'home' %}"
+                    class="gradient-button text-white font-medium py-3 px-8 rounded-full shadow-lg">
+                    Continue Shopping
+                </a>
+                <a href="{% url 'track_order' %}" class="gradient-button text-white font-medium py-3 px-8 rounded-full shadow-lg">
+                    Track My Order
+                </a>
+                <a href="#social"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-8 rounded-full transition duration-300 ease-in-out shadow-md hover:shadow-lg">
+                    Contact Support
+                </a>
+            </div>
+        </div>
+        
+    </main>
+</body>
+
+</html>
+
+{% endblock %}

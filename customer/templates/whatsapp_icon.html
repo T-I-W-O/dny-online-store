@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Floating WhatsApp Chat</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 120vh;
+            position: relative;
+        }
+
+        @keyframes radiate {
+            0% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(34, 197, 94, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+            }
+        }
+
+        .radiating-icon {
+            animation: radiate 1.5s infinite;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .whatsapp-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' ...");
+            background-repeat: repeat;
+            background-size: 100px 100px;
+        }
+
+        .message-bubble {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            max-width: 80%;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message-bubble.incoming {
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .double-tick {
+            width: 16px;
+            height: 16px;
+            fill: #53bdeb;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+
+<body class="relative">
+
+    <div id="whatsapp-icon"
+        class="fixed bottom-8 right-8 bg-green-500 p-4 rounded-full cursor-pointer z-50 transition-all duration-300 hover:scale-110 flex items-center justify-center radiating-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="w-8 h-8" />
+    </div>
+
+    <div id="whatsapp-chatbox"
+        class="fixed bottom-24 right-8 w-80 lg:w-96 bg-white rounded-lg shadow-xl hidden z-50 flex flex-col transition-all duration-300 transform scale-95 opacity-0 overflow-hidden">
+
+        <div class="bg-green-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+            <div class="flex items-center">
+                <img src="https://placehold.co/40x40/ffffff/000000?text=DNY" alt="DNY Logo"
+                    class="w-10 h-10 rounded-full border-2 border-white mr-3">
+                <div>
+                    <h3 class="font-bold text-lg">DNY Collections</h3>
+                    <p class="text-xs text-gray-200">Typically replies within 10 minutes</p>
+                </div>
+            </div>
+            <button id="close-chatbox" class="text-white hover:text-gray-200 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="flex-grow p-4 overflow-y-auto whatsapp-bg chat-messages flex flex-col justify-end">
+            <div class="message-bubble incoming mb-2">
+                <p class="text-sm text-gray-800">Hi, welcome to DNY Collections, how can we help you today 🙂</p>
+                <div class="flex justify-end items-center text-xs text-gray-500 mt-1">
+                    <span id="message-time">07:40 AM</span>
+                    <svg class="double-tick" viewBox="0 0 24 24">
+                        <path
+                            d="M9.86 18a1 1 0 0 1-.7-.29l-3.36-3.36a1 1 0 0 1 1.42-1.42L9.86 15.59l6.36-6.36a1 1 0 0 1 1.42 1.42l-7.07 7.07a1 1 0 0 1-.7.29z" />
+                        <path
+                            d="M19.86 18a1 1 0 0 1-.7-.29l-3.36-3.36a1 1 0 0 1 1.42-1.42l2.65 2.65 6.36-6.36a1 1 0 0 1 1.42 1.42l-7.07 7.07a1 1 0 0 1-.7.29z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex p-3 border-t border-gray-200 bg-gray-100 items-center">
+            <input type="text" id="whatsapp-input" placeholder="Type a message..."
+                class="w-64 rounded-full border-0 bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 shadow-sm">
+            <button id="send-whatsapp"
+                class="ml-2 bg-green-500 text-white p-3 rounded-full shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                    <path d="M2.01 21L23 12 2.01 3v7l15 2-15 2z" />
+                </svg>
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const whatsappIcon = document.getElementById('whatsapp-icon');
+            const whatsappChatbox = document.getElementById('whatsapp-chatbox');
+            const closeChatboxBtn = document.getElementById('close-chatbox');
+            const whatsappInput = document.getElementById('whatsapp-input');
+            const sendWhatsappBtn = document.getElementById('send-whatsapp');
+            const whatsappNumber = '+2347037588397';
+
+            // Function to format the time as HH:MM AM/PM
+            function formatTime(date) {
+                let hours = date.getHours();
+                const minutes = date.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+                return `${hours}:${minutesStr} ${ampm}`;
+            }
+
+            // Update the time on page load
+            const messageTimeSpan = document.getElementById('message-time');
+            if (messageTimeSpan) {
+                messageTimeSpan.textContent = formatTime(new Date());
+
+                // Set up an interval to update the time every second
+                setInterval(() => {
+                    messageTimeSpan.textContent = formatTime(new Date());
+                }, 1000); // Update every 1000 milliseconds (1 second)
+            }
+
+
+            function showChatbox() {
+                whatsappChatbox.classList.remove('hidden');
+                setTimeout(() => {
+                    whatsappChatbox.classList.remove('scale-95', 'opacity-0');
+                    whatsappChatbox.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function hideChatbox() {
+                whatsappChatbox.classList.remove('scale-100', 'opacity-100');
+                whatsappChatbox.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    whatsappChatbox.classList.add('hidden');
+                }, 300);
+            }
+
+            whatsappIcon.addEventListener('click', () => {
+                if (whatsappChatbox.classList.contains('hidden')) {
+                    showChatbox();
+                } else {
+                    hideChatbox();
+                }
+            });
+
+            closeChatboxBtn.addEventListener('click', () => {
+                hideChatbox();
+            });
+
+            sendWhatsappBtn.addEventListener('click', () => {
+                const message = whatsappInput.value.trim();
+                if (message) {
+                    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                    whatsappInput.value = '';
+                    hideChatbox();
+                } else {
+                    console.log("Please type a message before sending.");
+                }
+            });
+
+            whatsappInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendWhatsappBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

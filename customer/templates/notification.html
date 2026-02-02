@@ -1,0 +1,39 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<section id="notifications" class="mb-8">
+    <div class="bg-black text-white py-4 text-center">
+        <h1 class="text-2xl font-bold">Notification</h1>
+    </div>
+    <div class="space-y-4">
+        {% for notice in notices %}
+        <div class="flex items-center p-4 rounded-lg border border-gray-200 shadow-sm 
+                        {% if notice.broadcast %}
+                            bg-red-100
+                        {% else %}
+                            bg-gray-50
+                        {% endif %}">
+            <p class="text-gray-800 text-base">
+                {{ notice.notice }}
+            </p>
+            <span class="text-xs text-gray-500 ml-auto flex-shrink-0">
+                {{ notice.created_at|timesince }} ago
+            </span>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-4">No new notifications.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

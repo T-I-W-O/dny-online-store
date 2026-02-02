@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shop Notifications</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="csrf-token" content="{{ csrf_token }}"> {# Added for CSRF token in JS #}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fff;
+    }
+
+    #toast-container {
+      position: fixed;
+      top: 200px; /* Adjusted to be lower */
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 99999; /* 🔼 Very high priority */
+    }
+
+    .toast {
+      background-color: #fff8dc;
+      border-left: 5px solid #facc15;
+      color: #92400e;
+      padding: 18px 20px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      min-width: 320px;
+      max-width: 400px;
+      font-size: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.4s ease forwards;
+      position: relative;
+    }
+
+    .toast.hide {
+      animation: slideOut 0.4s ease forwards;
+    }
+
+    .toast-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 5px;
+      width: 100%;
+      background-color: #fde68a;
+      transform-origin: left;
+      animation: progressBar linear forwards;
+    }
+
+    .toast-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      color: #facc15;
+    }
+
+    /* --- New: Close Button Style --- */
+    .toast-close-button {
+      margin-left: auto; /* Pushes the button to the right */
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #92400e; /* Matches your toast text color */
+      cursor: pointer;
+      padding: 0 5px;
+      line-height: 1;
+    }
+
+    .toast-close-button:hover {
+      color: #c26727; /* Darker hover color */
+    }
+    /* --- End New --- */
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes progressBar {
+      from {
+        transform: scaleX(1);
+      }
+      to {
+        transform: scaleX(0);
+      }
+    }
+  </style>
+</head>
+<body class="relative">
+<!--{% if messages %}
+  <div class="space-y-4">
+    {% for message in messages %}
+      <div class="p-4 rounded-md shadow-md border
+        {% if message.tags == 'success' %}
+          bg-green-100 border-green-300 text-green-800
+        {% elif message.tags == 'error' %}
+          bg-red-100 border-red-300 text-red-800
+        {% elif message.tags == 'warning' %}
+          bg-yellow-100 border-yellow-300 text-yellow-800
+        {% elif message.tags == 'info' %}
+          bg-blue-100 border-blue-300 text-blue-800
+        {% else %}
+          bg-gray-100 border-gray-300 text-gray-800
+        {% endif %}
+      ">
+        <div class="flex justify-between items-center">
+          <span>{{ message }}</span>
+          <button onclick="this.parentElement.parentElement.remove();" class="ml-4 text-sm font-bold text-gray-500 hover:text-gray-800">✕</button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+-->
+
+
+  {% for notice in broadcast_notices %}
+  <div class="bg-red-100 border border-red-300 text-red-800 px-5 py-4 rounded relative max-w-3xl mx-auto mt-5 text-base leading-relaxed shadow-sm">
+    <strong class="font-semibold">Notice:</strong> {{ notice.notice|capfirst }}
+  </div>
+  {% endfor %}
+  <div id="toast-container"></div>
+
+
+
+
+</body>
+</html>

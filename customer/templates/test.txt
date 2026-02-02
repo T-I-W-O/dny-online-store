@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Page</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey background */
+        }
+        .whatsapp-fab {
+            background-color: #25D366; /* WhatsApp green */
+            box-shadow: 0 4px 6px -1px rgba(37, 211, 102, 0.1), 0 2px 4px -1px rgba(37, 211, 102, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Top Navigation Bar (Simplified) -->
+        <header class="bg-white shadow-sm py-3">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <!-- User Profile/Avatar -->
+                <div class="flex items-center">
+                    <img src="https://placehold.co/40x40/cccccc/ffffff?text=User" alt="User Avatar" class="rounded-full mr-2">
+                    <span class="font-semibold text-gray-800 hidden md:block">User Name</span>
+                </div>
+
+                <!-- Currency and Icons -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-gray-700">
+                        <img src="https://placehold.co/20x15/000000/ffffff?text=NGN" alt="Nigerian Flag" class="mr-1 rounded"> <!-- Placeholder for flag -->
+                        <span class="font-medium">NGN</span>
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </div>
+                    <a href="#" class="text-gray-700 hover:text-gray-900"><i class="fas fa-search text-lg"></i></a>
+                    <a href="#" class="text-gray-700 hover:text-gray-900"><i class="fas fa-user-circle text-lg"></i></a>
+                    <a href="#" class="relative text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">1</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Checkout Header -->
+        <div class="bg-black text-white py-4 text-center">
+            <h1 class="text-2xl font-bold">Checkout</h1>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- Important Note Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 flex items-start space-x-4">
+                <div class="flex-grow">
+                    <h3 class="font-bold text-gray-800 mb-2">Important Note:</h3>
+                    <p class="text-gray-600 text-sm">
+                        Within Lagos delivery takes 24-72 hours. Delivery outside Lagos takes within 3-7 working days depending on your location. International delivery depends on the mode of delivery. Please contact our representatives for further clarification.
+                    </p>
+                </div>
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-gray-500 text-2xl"></i>
+                </div>
+            </div>
+
+            <!-- Delivery Details Section -->
+            <section class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Delivery Details</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <label class="flex items-center bg-gray-100 rounded-lg p-4 cursor-pointer hover:bg-gray-200 transition-colors duration-200">
+                        <input type="checkbox" checked class="form-checkbox h-5 w-5 text-green-500 rounded focus:ring-green-400">
+                        <span class="ml-3 text-lg text-gray-700 font-medium">Delivery</span>
+                    </label>
+                    <label class="flex items-center bg-gray-100 rounded-lg p-4 cursor-pointer hover:bg-gray-200 transition-colors duration-200">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-green-500 rounded focus:ring-green-400">
+                        <span class="ml-3 text-lg text-gray-700 font-medium">Pick-up</span>
+                    </label>
+                </div>
+
+                <button class="bg-blue-600 text-white w-full py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-md">
+                    Add delivery details
+                </button>
+            </section>
+
+            <!-- Optional Note Section -->
+            <section class="bg-white rounded-xl shadow-lg p-6">
+                <label for="optional-note" class="block text-gray-600 mb-2">Note (Optional)</label>
+                <textarea id="optional-note" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y" placeholder="Add any special instructions or notes here..."></textarea>
+            </section>
+        </main>
+
+        <!-- WhatsApp Floating Action Button -->
+        <button class="whatsapp-fab fixed bottom-6 right-6 p-4 rounded-full text-white text-3xl shadow-lg hover:scale-110 transition-transform duration-200 z-50">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+    </div>
+</body>
+</html>

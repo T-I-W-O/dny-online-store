@@ -1,0 +1,531 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>DNY</title>
+     <link rel="icon" href="{% static 'images/logo.jpg' %}" type="image/gif/jpg">
+    <link rel="icon" href="https://placehold.co/32x32?text=DNY" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Playfair Display (for headings), Inter (for body), and Poppins (for footer) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- AOS CSS for scroll animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Font Awesome for social media icons and hamburger/close icons -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <style>
+        /* Custom styles for DNY Fashion theme */
+        body {
+            font-family: 'Inter', sans-serif; /* Default font for the main content */
+            line-height: 1.5; /* Standard line height */
+            color: #333; /* Default text color */
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif; /* Elegant font for headings */
+        }
+        .btn-pink-custom {
+            background-color: #ff1493; /* Custom vibrant pink */
+            color: white;
+            padding: 0.85rem 2rem; /* Slightly larger padding for a bolder button */
+            border-radius: 0.75rem; /* More rounded corners */
+            font-weight: 700; /* Bolder text */
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effects */
+            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3); /* Subtle shadow */
+            text-transform: uppercase; /* Uppercase text for buttons */
+            letter-spacing: 0.05em; /* Slight letter spacing */
+        }
+        .btn-pink-custom:hover {
+            background-color: #e00080; /* Darker shade on hover */
+            transform: translateY(-2px); /* Slight lift effect on hover */
+        }
+        .text-pink-custom {
+            color: #ff1493; /* Custom pink color */
+        }
+        .bg-pink-custom {
+            background-color: #ff1493; /* Custom pink background */
+        }
+
+        /* Hero section specific styles for the image slideshow */
+        .hero-slideshow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Ensures images don't spill out */
+        }
+
+        .hero-slideshow-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures images cover the area without distortion */
+            opacity: 0; /* Hidden by default */
+            transition: opacity 1.5s ease-in-out; /* Smooth fade transition */
+            z-index: 0; /* Default z-index */
+        }
+
+        .hero-slideshow-image.active {
+            opacity: 1; /* Active image is visible */
+            z-index: 1; /* Active image on top */
+        }
+
+        /* Responsive adjustments for text sizes */
+        @media (min-width: 768px) {
+            .md\\:text-5xl-custom {
+                font-size: 3.5rem; /* Larger heading for desktop */
+            }
+            .md\\:text-4xl-custom {
+                font-size: 2.75rem; /* Larger sub-heading for desktop */
+            }
+        }
+
+        /* --- Side Navigation Styles --- */
+        .sidenav {
+            height: 100%;
+            width: 0; /* 0 width by default - hidden */
+            position: fixed;
+            z-index: 100; /* High z-index to be on top */
+            top: 0;
+            left: 0; /* Changed from right: 0 to left: 0 */
+            background-color: #ffffff; /* Changed to white background */
+            overflow-x: hidden;
+            transition: 0.5s; /* Smooth transition effect to slide in the sidenav */
+            padding-top: 60px; /* Space from top */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2); /* Added a subtle shadow */
+        }
+
+        .sidenav.open {
+            width: 80%; /* Responsive width for smaller screens */
+            max-width: 280px; /* Maximum width to prevent it from becoming too wide on tablets */
+        }
+
+        .sidenav a {
+            padding: 15px 8px 15px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #333; /* Changed link color for white background */
+            display: block;
+            transition: 0.3s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .sidenav a:hover {
+            color: #ffffff; /* Text color on hover */
+            background-color: #ff1493; /* Highlight on hover */
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px; /* Still on the right inside the sidenav */
+            font-size: 36px;
+            margin-left: 50px;
+            color: #333; /* Changed close button color for white background */
+            cursor: pointer;
+        }
+
+        /* Overlay effect when sidenav is open */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+            z-index: 99; /* Below sidenav but above content */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- Footer Styles --- */
+        .footer {
+            background-color: #24262b; /* Dark background for the footer */
+            padding: 70px 0;
+            position: relative; /* Needed for background image positioning */
+            overflow: hidden; /* Hide overflow from background image */
+        }
+
+        /* Background image for the footer */
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:url("{% static 'images/footer.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.2; /* Adjust opacity for the background image */
+            z-index: 0; /* Place behind content */
+        }
+
+        .footer .box {
+            max-width: 1170px;
+            margin: auto;
+            position: relative; /* Ensure content is above background image */
+            z-index: 1;
+        }
+
+        .footer .row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        .footer ul {
+            list-style: none;
+            padding-left: 0 !important;
+            margin: 0 !important;
+        }
+
+        .footer .footer-col {
+            width: 25%;
+            padding: 0 15px;
+        }
+
+        .footer .footer-col h4 {
+            font-size: 18px;
+            color: #ffffff;
+            text-transform: capitalize;
+            margin-bottom: 35px;
+            font-weight: 500;
+            position: relative;
+            font-family: 'Poppins', sans-serif; /* Use Poppins for footer headings */
+        }
+
+        .footer .footer-col h4::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+            background-color: #e91e63; /* Pink accent line */
+            height: 2px;
+            box-sizing: border-box;
+            width: 50px;
+        }
+
+        .footer .footer-col h4 + ul {
+            margin-top: 0 !important;
+        }
+
+        .footer .footer-col ul li:not(:last-child) {
+            margin-bottom: 10px;
+        }
+
+        .footer .footer-col ul li a {
+            font-size: 16px;
+            text-transform: capitalize;
+            color: #bbbbbb;
+            text-decoration: none;
+            font-weight: 300;
+            display: block;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif; /* Use Poppins for footer links */
+        }
+
+        .footer .footer-col ul li a:hover {
+            color: #ffffff;
+            padding-left: 8px;
+        }
+
+        .footer .footer-col .social-links a {
+            display: inline-block;
+            height: 40px;
+            width: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            margin: 0 10px 10px 0;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 50%;
+            color: #ffffff;
+            transition: all 0.5s ease;
+        }
+
+        .footer .footer-col .social-links a:hover {
+            color: #24262b;
+            background-color: #ffffff;
+        }
+
+        /* Responsive adjustments for footer */
+        @media (max-width: 767px) {
+            .footer .footer-col {
+                width: 50%;
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 574px) {
+            .footer .footer-col {
+                width: 100%;
+                text-align: center; /* Center text on small screens */
+            }
+            .footer .footer-col h4::before {
+                left: 50%;
+                transform: translateX(-50%); /* Center the underline */
+            }
+            .footer .footer-col ul {
+                text-align: center; /* Center list items */
+            }
+            .footer .footer-col ul li a:hover {
+                padding-left: 0; /* Remove padding-left on hover for centered items */
+            }
+            .footer .footer-col .social-links {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased">
+
+    <!-- Side Navigation (Hidden by default) -->
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'home' %}">Shop</a>
+        <a href="#about">About</a>
+        <a href="#social">Contact</a>
+    </div>
+
+    <!-- Overlay for when the sidenav is open -->
+    <div id="overlay" class="overlay" onclick="closeNav()"></div>
+
+    <!-- Hero Section -->
+    <section class="relative w-full h-screen md:h-[700px] flex items-center justify-center text-white">
+        <!-- Image Slideshow Container -->
+        <div class="hero-slideshow-container">
+           
+            <img src="{% static 'images/land_neck.jpg' %}" alt="Fashion Model 1" class="hero-slideshow-image active">
+            <img src="{% static 'images/dny1.jpg' %}" alt="Fashion Model 2" class="hero-slideshow-image">
+        </div>
+
+        <!-- Header/Navigation on top of the image -->
+        <header class="absolute top-0 left-0 right-0 p-6 z-20 flex justify-between items-center max-w-7xl mx-auto">
+            <div class="text-3xl font-extrabold text-white tracking-wider" data-aos="fade-down" data-aos-delay="50">DNY</div>
+            <nav class="hidden md:flex space-x-8 text-lg font-medium">
+                <!-- Navigation links -->
+                <a href="{% url 'home' %}" class="hover:text-pink-300 transition duration-300">Home</a>
+                <a href="{% url 'home' %}" class="hover:text-pink-300 transition duration-300">Shop</a>
+                <a href="#about" class="hover:text-pink-300 transition duration-300">About</a>
+                <a href="#social" class="hover:text-pink-300 transition duration-300">Contact</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <!-- Icons for cart/user profile -->
+                 <a href="{% url 'view_cart' %}">
+                <button class="text-white hover:text-pink-300 transition duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                </button>                 
+                 </a>
+                                     
+                 <a href="{% url 'profile' %}">
+                <button class="hidden md:block text-white hover:text-pink-300 transition duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </button>
+                                    
+                 </a>
+                <!-- Hamburger Menu Button -->
+                <button class="md:hidden text-white hover:text-pink-300 transition duration-300" onclick="openNav()">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </header>
+        <div class="relative z-10 text-center px-4">
+            <h1 class="text-4xl md:text-5xl-custom font-extrabold mb-6 leading-tight" data-aos="fade-up" data-aos-delay="100">Quick and hassle-free shopping</h1>
+            <a href="{% url 'home' %}"><button class="btn-pink-custom" data-aos="fade-up" data-aos-delay="200">SHOP NOW</button></a>
+        </div>
+    </section>
+
+    <!-- Extension of your closet / DNY Fashion Offers Section -->
+    <section class="bg-pink-custom p-10 md:p-20 text-white flex flex-col md:flex-row items-center justify-between space-y-8 md:space-y-0 md:space-x-12">
+        <div class="md:w-1/2 text-center md:text-left" data-aos="fade-right" data-aos-delay="100">
+            <h2 class="text-3xl md:text-4xl-custom font-bold mb-4 leading-tight">An extension of your closet</h2>
+        </div>
+        <div class="md:w-1/2 text-center md:text-left" data-aos="fade-left" data-aos-delay="200">
+            <p class="text-lg mb-4 opacity-90">DNY Fashion offers same-day or next-day delivery within our service areas.</p>
+            <p class="text-base opacity-80">Shop for clothes you'll love wearing that are comfortable and stylish. Find your perfect outfit for any occasion.</p>
+        </div>
+    </section>
+
+    <!-- Product Sections: Clothes for Her, Wigs, Accessories, Why people love to shop -->
+    <section class="bg-white py-12 md:py-20">
+        <!-- Clothes for Her (Image Left, Text Right) -->
+        <div class="flex flex-col md:flex-row items-center justify-center max-w-7xl mx-auto px-4 py-8 md:py-12 border-b border-gray-100">
+            <div class="md:w-1/2 p-4 md:p-8" data-aos="fade-right" data-aos-delay="100">
+               
+                <img src="{% static 'images/land_bubu.jpg' %}" alt="Clothes for Her" class="w-full h-auto object-cover rounded-xl shadow-lg">
+            </div>
+            <div class="md:w-1/2 p-4 md:p-8 text-center md:text-left" data-aos="fade-left" data-aos-delay="200">
+                <h3 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Clothes for Her</h3>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">Shop for classic or trendy styles that make a statement and elevate your everyday look.</p>
+                <a href="{% url 'home' %}"><button class="btn-pink-custom">SHOP NOW</button></a>
+            </div>
+        </div>
+
+        <!-- Wigs (Image Right, Text Left) -->
+        <div class="flex flex-col md:flex-row-reverse items-center justify-center max-w-7xl mx-auto px-4 py-8 md:py-12 border-b border-gray-100">
+            <div class="md:w-1/2 p-4 md:p-8" data-aos="fade-left" data-aos-delay="100">
+                <img src="{% static 'images/land_wig.jpg' %}"alt="Wigs" class="w-full h-auto object-cover rounded-xl shadow-lg">
+            </div>
+            <div class="md:w-1/2 p-4 md:p-8 text-center md:text-left" data-aos="fade-right" data-aos-delay="200">
+                <h3 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Wigs</h3>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">Switch up your style effortlessly — sleek, bold, or curly, the choice is yours with our premium wig collection.</p>
+                <a href="{% url 'home' %}"><button class="btn-pink-custom">SHOP NOW</button></a>
+            </div>
+        </div>
+
+        <!-- Accessories (Image Left, Text Right) -->
+        <div class="flex flex-col md:flex-row items-center justify-center max-w-7xl mx-auto px-4 py-8 md:py-12 border-b border-gray-100">
+            <div class="md:w-1/2 p-4 md:p-8" data-aos="fade-right" data-aos-delay="100">
+                <img src="{% static 'images/land_bag.jpg' %}" alt="Accessories" class="w-full h-auto object-cover rounded-xl shadow-lg">
+            </div>
+            <div class="md:w-1/2 p-4 md:p-8 text-center md:text-left" data-aos="fade-left" data-aos-delay="200">
+                <h3 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Accessories</h3>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">Add shoes, bags, jewelry, and more to complete your look.</p>
+                <a href="{% url 'home' %}"><button class="btn-pink-custom">SHOP NOW</button></a>
+            </div>
+        </div>
+
+        <!-- Why people love to shop (Image Right, Text Left - using a placeholder image for the person) -->
+        <div class="flex flex-col md:flex-row-reverse items-center justify-center max-w-7xl mx-auto px-4 py-8 md:py-12">
+            <div class="md:w-1/2 p-4 md:p-8" data-aos="fade-left" data-aos-delay="100">
+                <img src="{% static 'images/land_shirt.jpg' %}" alt="Happy Customer" class="w-full h-auto object-cover rounded-xl shadow-lg">
+            </div>
+            <div class="md:w-1/2 p-4 md:p-8 text-center md:text-left" data-aos="fade-right" data-aos-delay="200">
+                <h3 class="text-3xl md:text-4xl font-bold mb-6 text-gray-800">Why people love to shop at DNY Fashion</h3>
+                <ul class="list-none text-gray-700 text-left space-y-3 mb-6">
+                    <li class="flex items-center" data-aos="fade-up" data-aos-delay="250">
+                        <svg class="w-6 h-6 text-pink-custom mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        <span class="text-lg">Fast Nationwide delivery</span>
+                    </li>
+                    <li class="flex items-center" data-aos="fade-up" data-aos-delay="300">
+                        <svg class="w-6 h-6 text-pink-custom mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        <span class="text-lg">Affordable luxury</span>
+                    </li>
+                    <li class="flex items-center" data-aos="fade-up" data-aos-delay="350">
+                        <svg class="w-6 h-6 text-pink-custom mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        <span class="text-lg">One-stop fashion shop</span>
+                    </li>
+                    <li class="flex items-center" data-aos="fade-up" data-aos-delay="400">
+                        <svg class="w-6 h-6 text-pink-custom mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        <span class="text-lg">Trendy and Timeless styles</span>
+                    </li>
+                    <li class="flex items-center" data-aos="fade-up" data-aos-delay="450">
+                        <svg class="w-6 h-6 text-pink-custom mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        <span class="text-lg">Customer satisfaction first</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Footer Section -->
+    <footer class="footer">
+        <div class="box">
+            <div class="row">
+                <div id='about' class="footer-col" data-aos="fade-up" data-aos-delay="100">
+                    <h4>company</h4>
+                    <ul>
+                        <li><a href="#">42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1</a></li>
+                        <li><a href="#">Store opens: Monday-Saturday 9:00am-6:00pm</a></li>
+                        <li><a href="#">call us on +2347030572996</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
+                    <h4>get help</h4>
+                    <ul>
+                        <li><a href="#">returns</a></li>
+                        <li><a href="{% url 'track_order' %}">Track order</a></li>
+                        <li><a href="#">payment options</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col" data-aos="fade-up" data-aos-delay="300">
+                    <h4>online shop</h4>
+                    <ul>
+                        <li><a href="{% url 'category' category_name='Others' %}">others</a></li>
+                        <li><a href="{% url 'category' category_name='Bag' %}">bag</a></li>
+                        <li><a href="{% url 'category' category_name='Shoe' %}">shoes</a></li>
+                        <li><a href="{% url 'category' category_name='Cloth' %}">dress</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col" data-aos="fade-up" data-aos-delay="400">
+                    <h4>follow us</h4>
+                    <div id="social" class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.tiktok.com/@dnyhair"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.instagram.com/dnyhair"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/2347030572996"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000, // values from 0 to 3000, with step 50ms
+            once: true, // whether animation should happen only once - while scrolling down
+        });
+
+        // JavaScript for the hero image slideshow
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('.hero-slideshow-image');
+            let currentImageIndex = 0;
+
+            // Ensure the first image is active when the page loads
+            if (images.length > 0) {
+                images[currentImageIndex].classList.add('active');
+            }
+
+            function showNextImage() {
+                // Hide the current image
+                images[currentImageIndex].classList.remove('active');
+
+                // Move to the next image, loop back to the start if at the end
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+
+                // Show the next image
+                images[currentImageIndex].classList.add('active');
+            }
+
+            // Start the slideshow, switching every 5 seconds (5000 milliseconds)
+            // Only start if there are images to slide
+            if (images.length > 1) { // Need at least two images to slide
+                setInterval(showNextImage, 5000); // Changed duration to 5000ms (5 seconds)
+            }
+        });
+
+        // JavaScript for Side Navigation
+        function openNav() {
+            document.getElementById("mySidenav").classList.add("open");
+            document.getElementById("overlay").classList.add("active");
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").classList.remove("open");
+            document.getElementById("overlay").classList.remove("active");
+        }
+    </script>
+</body>
+</html>

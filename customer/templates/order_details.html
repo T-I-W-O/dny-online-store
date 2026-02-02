@@ -1,0 +1,502 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Body and Container Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFFF;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            
+        }
+
+        @media (min-width: 640px) { /* sm:p-6 */
+            body {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) { /* lg:p-8 */
+            body {
+                padding: 2rem;
+            }
+        }
+
+        .order-details-container {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            padding: 1.5rem; /* p-6 */
+            max-width: 64rem; /* max-w-4xl */
+            width: 100%;
+        }
+
+        @media (min-width: 640px) { /* sm:p-8 */
+            .order-details-container {
+                padding: 2rem;
+            }
+        }
+
+        @media (min-width: 1024px) { /* lg:p-10 */
+            .order-details-container {
+                padding: 2.5rem;
+            }
+        }
+
+        /* Heading Styles */
+        .order-title {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #374151; /* text-gray-800 */
+            margin-bottom: 2rem; /* mb-8 */
+            text-align: center;
+        }
+
+        /* Order Info Section */
+        .order-info-card {
+            background-color: #F3F4F6; /* bg-gray-100 */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1rem; /* p-4 */
+            margin-bottom: 2.5rem; /* mb-10 */
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* shadow-inner */
+        }
+
+        .order-header {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        @media (min-width: 768px) { /* md:flex-row, md:items-center */
+            .order-header {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .order-id-wrapper {
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+
+        @media (min-width: 768px) { /* md:mb-0 */
+            .order-id-wrapper {
+                margin-bottom: 0;
+            }
+        }
+
+        .order-id-text {
+            color: #6B7280; /* text-gray-500 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+        }
+
+        .order-id-number {
+            color: #FF1493; /* text-[#FF1493] */
+        }
+
+        .order-date-transaction {
+            text-align: right;
+        }
+
+        .order-created-text {
+            color: #374151; /* text-gray-700 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+        }
+
+        .order-created-date {
+            font-weight: 700; /* font-bold */
+        }
+
+        .transaction-id-text {
+            color: #6B7280; /* text-gray-500 */
+            font-size: 0.75rem; /* text-xs */
+        }
+
+        /* Progress Bar Section */
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem; /* mb-8 */
+            padding-left: 1rem; /* px-4 */
+            padding-right: 1rem; /* px-4 */
+        }
+
+        .progress-step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #E0E0E0;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .progress-circle.completed {
+            background-color: #FF1493;
+            border-color: #FF1493;
+            box-shadow: 0 4px 10px rgba(255, 20, 147, 0.4);
+        }
+
+        .progress-circle .fa-check {
+            font-size: 12px;
+            display: none;
+        }
+
+        .progress-circle.completed .fa-check {
+            display: block;
+        }
+
+        .progress-line-segment {
+            height: 4px;
+            flex-grow: 1;
+            margin: 0 -2px;
+            position: relative;
+            z-index: 5;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .progress-line-segment.completed {
+            background-color: #FF1493;
+        }
+
+        .progress-line-segment.incomplete {
+            background-color: #E0E0E0;
+        }
+
+        .status-icon, .status-label {
+            transition: color 0.3s ease-in-out;
+        }
+
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem; /* gap-4 */
+            text-align: center;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-item i {
+            font-size: 1.5rem; /* text-2xl */
+            margin-bottom: 0.5rem; /* mb-2 */
+            color: #000000; /* text-black */
+        }
+
+        .status-item span {
+            color: #000000; /* text-black */
+        }
+
+        .status-item.incomplete i,
+        .status-item.incomplete span {
+            color: #9CA3AF; /* text-gray-400 */
+        }
+
+        /* Products Section */
+        .section-divider {
+            border-top: 1px solid #E5E7EB; /* border-t border-gray-200 */
+            padding-top: 1.5rem; /* pt-6 */
+            margin-top: 1.5rem; /* mt-6 */
+        }
+
+        .section-title {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            color: #374151; /* text-gray-800 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .product-item {
+            display: flex;
+            align-items: flex-start;
+            space-x: 1rem; /* space-x-4 */
+            background-color: #F9FAFB; /* bg-gray-50 */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+
+        .product-image-wrapper {
+            flex-shrink: 0;
+            width: 6rem; /* w-24 */
+            height: 6rem; /* h-24 */
+        }
+
+        @media (min-width: 640px) { /* sm:w-32, sm:h-32 */
+            .product-image-wrapper {
+                width: 8rem;
+                height: 8rem;
+            }
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+
+        .product-details {
+            flex-grow: 1;
+        }
+
+        .product-name {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 500; /* font-medium */
+            color: #111827; /* text-gray-900 */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        .product-quantity,
+        .product-price {
+            color: #4B5563; /* text-gray-600 */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        .product-quantity span,
+        .product-price span {
+            font-weight: 600; /* font-semibold */
+        }
+
+        .product-price span {
+            color: #FF1493; /* text-[#FF1493] */
+        }
+
+        .variant-details {
+            margin-top: 0.5rem; /* mt-2 */
+        }
+
+        .variant-details ul {
+            list-style-type: disc;
+            list-style-position: inside;
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* text-gray-700 */
+        }
+
+        .variant-details p {
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* text-gray-700 */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        /* Address/Pickup Section */
+        .address-card {
+            background-color: #F9FAFB; /* bg-gray-50 */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        }
+
+        .address-card p {
+            color: #4B5563; /* text-gray-600 */
+        }
+
+        .address-card .email-phone {
+            color: #374151; /* text-gray-800 */
+            font-weight: 500; /* font-medium */
+        }
+
+        .address-card .phone-number {
+            margin-top: 0.5rem; /* mt-2 */
+        }
+
+        /* Order Summary Section */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* grid-cols-1 */
+            gap: 1rem; /* gap-4 */
+            background-color: #F9FAFB; /* bg-gray-50 */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        }
+
+        @media (min-width: 640px) { /* sm:grid-cols-2 */
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .summary-item p:first-child {
+            color: #4B5563; /* text-gray-600 */
+        }
+
+        .summary-item p:last-child {
+            font-weight: 500; /* font-medium */
+            color: #374151; /* text-gray-800 */
+        }
+
+        .summary-item .grand-total-amount {
+            color: #FF1493; /* text-[#FF1493] */
+            font-size: 1.25rem; /* text-xl */
+        }
+    </style>
+</head>
+<body class="body-reset">
+<div class="order-details-container">
+    <h1 class="order-title">Order Details</h1>
+
+    <div class="order-info-card">
+        <div class="order-header">
+            <div class="order-id-wrapper">
+                <p class="order-id-text">ORDER <span class="order-id-number">#{{ shipping.id }}</span></p>
+            </div>
+            <div class="order-date-transaction">
+                <p class="order-created-text">Delivery: <span class="order-created-date">{{ shipping.deliverydate|format_date_range }}</span></p>
+                <p class="transaction-id-text">Transaction: {{ orders.first.transaction_id }}</p>
+            </div>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-step-item" data-step="0">
+                <div class="progress-circle completed"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="progress-line-segment completed"></div>
+            <div class="progress-step-item" data-step="1">
+                <div class="progress-circle completed"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="progress-line-segment completed"></div>
+            <div class="progress-step-item" data-step="2">
+                <div class="progress-circle completed"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="progress-line-segment incomplete"></div>
+            <div class="progress-step-item" data-step="3">
+                <div class="progress-circle"></div>
+            </div>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Order Processed</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-truck"></i>
+                <span>Order Shipped</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-route"></i>
+                <span>Order En Route</span>
+            </div>
+            <div class="status-item incomplete">
+                <i class="fas fa-home"></i>
+                <span>Order Arrival</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-divider">
+        <h2 class="section-title">Products in this Order</h2>
+
+        {% for order in orders %}
+        <div class="product-item">
+            <div class="product-image-wrapper">
+                <img src="{{ order.product.images.first.image.url }}" alt="{{ order.product.name }}" class="product-image">
+            </div>
+
+            <div class="product-details">
+                <h3 class="product-name">{{ order.product.name }}</h3>
+                <p class="product-quantity">Quantity: <span class="font-semibold">{{ order.quantity }}</span></p>
+                <p class="product-price">Price: <span>₦{{ order.total_price }}</span></p>
+
+                {% if order.details.all %}
+                <div class="variant-details">
+                    <ul class="list-disc list-inside">
+                        {% for detail in order.details.all %}
+                            {% for color in detail.colors.all %}
+                            <p>Variants:</p>
+                                <li>{{ order.quantity }} of {{ color.color_name }}{% if detail.size %} for size {{ detail.size.size }}{% endif %}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section-divider">
+        {% if shipping.mode == "Pickup" %}
+        <h2 class="section-title">Pickup</h2>
+            <div class="address-card">
+                <p class="email-phone">{{ shipping.email }}</p>
+                <p>42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1</p>
+                <p class="phone-number">Phone: {{ shipping.whatsapp_number }}</p>
+            </div>
+        {% else %}
+        <h2 class="section-title">Shipping Address</h2>
+        <div class="address-card">
+            <p class="email-phone">{{ shipping.email }}</p>
+            <p>{{ shipping.address }}</p>
+            <p>{{ shipping.town }}, {{ shipping.state }}, {{ shipping.country }}</p>
+            <p>LGA: {{ shipping.local_government }}</p>
+            <p class="phone-number">Phone: {{ shipping.whatsapp_number }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="section-divider">
+        <h2 class="section-title">Order Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <p>Subtotal:</p>
+                <p class="font-medium text-gray-800">₦{{ subtotal }}</p>
+            </div>
+            {% if coupon %}
+            <div class="summary-item">
+                <p>Coupon ({{ coupon.code }}):</p>
+                <p>
+                        {% if coupon.is_percent %}
+                            -{{ coupon.amount }}%
+                        {% else %}
+                            -₦{{ discount }}
+                        {% endif %}
+                </p>
+            </div>
+            {% endif %}
+            <div class="summary-item">
+                <p>Grand Total:</p>
+                <p class="grand-total-amount">₦{{ grand_total }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{% endblock %}

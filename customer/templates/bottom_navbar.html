@@ -1,0 +1,67 @@
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #dfdfdf;
+        padding-bottom: 60px; /* Add padding to prevent content from being hidden behind the navbar */
+      }
+      .bottom-bar {
+        position: fixed; /* Make the navbar fixed */
+        bottom: 0; /* Stick it to the bottom */
+        left: 0; /* Align to the left */
+        right: 0; /* Align to the right */
+        background-color: #eee;
+        text-align: center;
+        border-radius: 20px 20px 0 0;
+        padding: 10px 0; /* Add some padding for aesthetics */
+        z-index: 3; /* Ensures the navbar stays above other content */
+      }
+      .icon {
+        font-size: 1.5em;
+        padding: 0.5em;
+        margin: 0.5em;
+        margin-top: 0;
+        transition: 0.5s ease-in-out;
+        border-radius: 100%;
+        border: 7px solid #eee;
+      }
+      .active {
+        transform: scale(1.25) translateY(-1em);
+        background: #FF1493;
+        border: 7px solid #dcdcdc;
+        color: white;
+      }
+    </style>
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+  </head>
+  <body>
+    {% block content %}
+
+    {% endblock %}
+    <div class="bottom-bar">
+      <ion-icon name="home-outline" class="icon active" onclick="change(this)"></ion-icon>
+      <ion-icon name="folder-outline" class="icon" onclick="change(this)"></ion-icon>
+      <ion-icon name="person-outline" class="icon" onclick="change(this)"></ion-icon>
+      <ion-icon name="image-outline" class="icon" onclick="change(this)"></ion-icon>
+      
+    </div>
+
+    <script>
+      function change(item) {
+        const buttons = document.querySelectorAll('ion-icon');
+        buttons.forEach(function (obj) {
+          obj.classList.remove("active");
+        });
+        item.classList.add("active");
+      }
+    </script>
+  </body>
+</html>

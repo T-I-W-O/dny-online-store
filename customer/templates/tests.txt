@@ -1,0 +1,85 @@
+        <div class="container mt-5">
+            <div class="card p-4">
+                <h4 class="mb-4">Your Current Orders</h4>
+
+                {% if orders %}
+                <p><strong>Transaction ID:</strong> {{ orders.0.transaction_id }}</p>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Size</th>
+                                <th>Colors</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            {% for detail in order.details.all %}
+                            <tr>
+                                {% if forloop.first %}
+                                <td rowspan="{{ order.details.count }}">{{ order.product.name }}</td>
+                                <td rowspan="{{ order.details.count }}">₦{{ order.total_price }}</td>
+                                {% endif %}
+
+                                <td>
+                                    {% if detail.size %}
+                                    {{ detail.size.size }}
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
+                                <td class="color-cell">
+                                    {% for color in detail.colors.all %}
+
+                                    <div class="color-item-group-vertical">
+                                        <span class="color-item-group">
+                                            <span class="color-circle"
+                                                style="background-color: {{ color.color_name|lower }};"></span>
+                                        </span>
+                                    </div>
+
+                                    {% empty %}
+                                    <span>-</span>
+                                    {% endfor %}
+                                </td>
+
+                                {% if forloop.first %}
+                                <td rowspan="{{ order.details.count }}">{{ order.quantity }}</td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td>{{ order.product.name }}</td>
+                                <td>₦{{ order.total_price }}</td>
+                                <td colspan="2">No size/color selected</td>
+                                <td>{{ order.quantity }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No current orders.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <table class="table table-bordered mt-4 w-100">
+                    <tbody>
+                        <tr>
+                            <th>Total Quantity</th>
+                            <td>{{ total_quantity }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Price</th>
+                            <td>₦{{ total_price }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <a class="btn btn-checkout btn-sm mb-3" href="{% url 'cart' %}">Back to cart</a>
+            </div>
+        </div>

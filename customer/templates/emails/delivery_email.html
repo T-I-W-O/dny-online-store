@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your DNY Order Has Been Delivered!</title>
+    <style>
+        /* Base styles for better email client compatibility */
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333333;
+            line-height: 1.6;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            width: 100% !important;
+        }
+
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        td, th {
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        a {
+            color: #FF1493; /* Deep pink for links */
+            text-decoration: none;
+        }
+
+        h2, h3 {
+            color: #FF1493; /* Matching link color */
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        /* Container for the email content */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Header section */
+        .header {
+            background-color: #FFCCE5; /* Lighter pink background for header */
+            padding: 25px 20px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .header h1 {
+            color: #FF1493; /* Deep pink text */
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Body content section */
+        .content-body {
+            padding: 20px 30px;
+        }
+
+        /* Section titles */
+        .section-title {
+            border-bottom: 2px solid #e0e0e0; /* Subtle grey line */
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #FF1493; /* Deep pink for section titles */
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Order summary table container for horizontal scroll */
+        .table-responsive {
+            overflow-x: auto; /* Enables horizontal scrolling */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            margin-bottom: 24px;
+        }
+
+        /* Order summary table */
+        .order-summary-table {
+            width: 100%; /* Default width */
+            min-width: 500px; /* Ensure table has a minimum width to enable scroll on small screens if needed */
+            border-collapse: separate; /* Use separate to allow border-radius on cells */
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        .order-summary-table th {
+            background-color: #f5f5f5; /* Light grey table header */
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            color: #555555;
+            padding: 12px 10px;
+            white-space: nowrap; /* Prevent headers from wrapping */
+        }
+
+        .order-summary-table td {
+            border-bottom: 1px dashed #eeeeee; /* Lighter dashed line for clarity */
+            padding: 10px;
+            white-space: nowrap; /* Prevent content from wrapping unless explicitly allowed */
+        }
+
+        .order-summary-table td:nth-child(1) { /* Product name can wrap */
+            white-space: normal;
+        }
+        .order-summary-table td:nth-child(3) { /* Size/Color can wrap */
+            white-space: normal;
+        }
+
+
+        .order-summary-table tbody tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .order-summary-table .text-right {
+            text-align: right;
+        }
+
+        /* Totals table */
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            margin-top: 20px;
+            border-top: 2px solid #e0e0e0; /* Top border for totals section */
+            padding-top: 15px;
+        }
+
+        .totals-table td {
+            padding: 8px 10px;
+        }
+
+        .totals-table strong {
+            color: #333333;
+        }
+
+        .grand-total-row td {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF1493; /* Highlight grand total with deep pink */
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .text-success {
+            color: #28a745; /* Green for coupon */
+            font-weight: bold;
+        }
+
+        /* Footer section */
+        .footer {
+            background-color: #f5f5f5; /* Light grey footer */
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #777777;
+            text-decoration: underline;
+        }
+
+        /* No specific stacking rules for mobile on tables, instead using overflow-x: auto */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                border-radius: 0;
+            }
+            .content-body {
+                padding: 15px 20px !important;
+            }
+            .header {
+                padding: 20px 15px !important;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+            .totals-table td {
+                padding: 6px 8px;
+            }
+            .grand-total-row td {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Your DNY Order Delivered!</h1>
+        </div>
+
+        <!-- Body Content -->
+        <div class="content-body">
+            <p>Hello {{ username }},</p>
+
+            <p>Good news — your order **#{{ orders.0.transaction_id }}** has been marked as delivered to the address you provided!</p>
+
+            <h3 class="section-title">📦 Delivery Details</h3>
+            <p>
+                <strong>Date:</strong> {{ now.date }}<br>
+                <strong>Address:</strong>
+                {% if shipping.mode == "Pickup" %}
+                    Pickup: 42, Ishola Bello Street, Akiode Ojodu Berger Adj, Omole Phase 1
+                {% else %}
+                    Delivery: {{ shipping.address }}<br>
+                    {{ shipping.town|capfirst }}{% if shipping.local_government %} - {{ shipping.local_government|capfirst }}{% endif %}, {{ shipping.state|capfirst }}, {{ shipping.country|capfirst }}
+                {% endif %}
+            </p>
+
+            <h3 class="section-title">🛍 Order Summary</h3>
+            <div class="table-responsive">
+                <table class="order-summary-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-right">Price (Unit)</th>
+                            <th>Size/Color</th>
+                            <th class="text-right">Qty</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order_item in orders %}
+                        <tr>
+                            <td>{{ order_item.product.name }}</td>
+                            <td class="text-right">₦{{ order_item.product.price }}</td>
+                            <td>
+                                {% for detail in order_item.details.all %}
+                                    {% if detail.colors.all %}
+                                        {% for color in detail.colors.all %}
+                                            {% if detail.size %}Size: {{ detail.size.size }}, {% endif %}
+                                            Color: {{ color.color_name }}<br>
+                                        {% endfor %}
+                                    {% else %}
+                                        {% if detail.size %}Size: {{ detail.size.size }}<br>{% endif %}
+                                    {% endif %}
+                                {% empty %}
+                                    N/A
+                                {% endfor %}
+                            </td>
+                            <td class="text-right">{{ order_item.quantity }}</td>
+                            <td class="text-right">₦{{ order_item.total_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <table class="totals-table">
+                <tr>
+                    <td><strong>Total Quantity:</strong></td>
+                    <td class="text-right">{{ total_quantity }}</td>
+                </tr>
+                {% if applied_coupon %}
+                <tr>
+                    <td><strong>Coupon:</strong></td>
+                    <td class="text-right text-success">
+                        {% if applied_coupon.is_percent %}
+                            -{{ applied_coupon.amount }}%
+                        {% else %}
+                            -₦{{ applied_coupon.amount }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                <tr class="grand-total-row">
+                    <td><strong>Grand Total:</strong></td>
+                    <td class="text-right"><strong>₦{{ total_price }}</strong></td>
+                </tr>
+            </table>
+
+            <p>If you've received your order and everything is to your satisfaction, no further action is needed. We hope you love your new items!</p>
+
+            <p>However, if you have not received your package, or if there's any issue, please contact our customer service team within **[14 days]** so we can assist you promptly:</p>
+            <p>
+                📞 <a href="tel:+2347030572996">+234 703 057 2996</a><br>
+                📧 <a href="mailto:dnyhairng@gmail.com">dnyhairng@gmail.com</a>
+            </p>
+
+            <p>We’re committed to making sure your experience is smooth and satisfactory. Thank you for shopping with us!</p>
+
+            <p>Kind regards,<br>
+            The DNY Customer Service Team</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; {{ now.year }} DNY. All rights reserved.</p
+        </div>
+    </div>
+
+</body>
+</html>

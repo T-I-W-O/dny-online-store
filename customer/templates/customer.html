@@ -1,0 +1,1943 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Page Dashboard</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Your existing CSS styles go here.
+                   Add the new styles below to support the search and filter elements. */
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            /* A nice shade of purple */
+            --clr-danger: #EF4444;
+            /* Red */
+            --clr-success: #10B981;
+            /* Green */
+            --clr-white: #fff;
+            --clr-info-dark: #4B5563;
+            /* Darker gray for info text */
+            --clr-info-light: #D1D5DB;
+            /* Lighter gray for info backgrounds */
+            --clr-dark: #1F2937;
+            /* Very dark gray for primary text */
+            --clr-warning: #F59E0B;
+            /* Orange for warnings */
+            --clr-light: rgba(209, 213, 219, 0.3);
+            /* Light background for shadows */
+            --clr-primary-variant: #5A3A9F;
+            /* Darker primary */
+            --clr-dark-variant: #6B7280;
+            /* Medium gray for secondary text */
+            --clr-color-background: #F9FAFB;
+            /* Lightest gray for overall background */
+
+            --card-border-radius: 1.5rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.5rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 1rem 2rem var(--clr-light);
+
+            /* New custom CSS variables for product table */
+            --primary-text: #333;
+            --secondary-text: #666;
+            --border-color: #eee;
+            --light-grey: #f8f9fa;
+            --medium-grey: #ced4da;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+
+            /* Status colors */
+            --ok-color: #28a745;
+            /* Green */
+            --low-color: #ffc107;
+            /* Orange */
+            --out-color: #dc3545;
+            /* Red */
+        }
+
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            font-size: .87rem;
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        img {
+            width: 2.8rem;
+            height: 2.8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        /* Container for dashboard ONLY content - no sidebar, no right panel */
+        .dashboard-container {
+            width: 96%;
+            max-width: 1200px;
+            margin: 1.4rem auto;
+            gap: 1.8rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            /* Single column for all content */
+        }
+
+        /* Common Typography and Utility Classes (duplicated) */
+        a {
+            color: var(--clr-dark);
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--clr-dark);
+        }
+
+        h3 {
+            font-size: 0.95rem;
+            color: var(--clr-dark);
+        }
+
+        h4 {
+            font-size: 0.8rem;
+        }
+
+        h5 {
+            font-size: 0.77rem;
+        }
+
+        small {
+            font-size: 0.75rem;
+            color: var(--clr-info-dark);
+        }
+
+        .profile-photo img {
+            width: 2.8rem;
+            height: 2.8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .text-muted {
+            color: var(--clr-info-dark);
+        }
+
+        p {
+            color: var(--clr-dark-variant);
+        }
+
+        b {
+            color: var(--clr-dark);
+        }
+
+        .primary {
+            color: var(--clr-primary);
+        }
+
+        .success {
+            color: var(--clr-success);
+        }
+
+        .danger {
+            color: var(--clr-danger);
+        }
+
+        .warning {
+            color: var(--clr-warning);
+        }
+
+        /* Main Dashboard Content CSS */
+        main {
+            width: 100%;
+        }
+
+        main .date {
+            display: inline-block;
+            background: var(--clr-white);
+            border-radius: var(--border-radius-1);
+            margin-top: 1rem;
+            padding: 0.5rem 1.6rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        /* Product Counts Section */
+        main .product-counts {
+            display: flex;
+            gap: 1.6rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            /* Allow wrapping on smaller screens */
+            justify-content: space-between;
+            /* Distribute items horizontally */
+        }
+
+        main .product-counts>div {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+            flex: 1;
+            /* Allow items to grow and shrink */
+            min-width: 250px;
+            /* Minimum width before wrapping */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            /* Make summary cards clickable */
+        }
+
+        main .product-counts>div:hover {
+            box-shadow: none;
+        }
+
+        main .product-counts>div span {
+            padding: 0.7rem;
+            border-radius: 50%;
+            color: var(--clr-white);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        main .product-counts>div.customers span {
+            background: var(--clr-primary);
+        }
+
+        main .product-counts>div.guest-customers span {
+            background: var(--clr-warning);
+        }
+
+        main .product-counts>div.out-of-stock-products span {
+            background: var(--clr-danger);
+        }
+
+        main .product-counts .left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        main .product-counts .left h3 {
+            font-size: 1rem;
+        }
+
+        main .product-counts .left h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        /* Add the following CSS to your existing <style> block */
+
+        /* Container to align heading and button */
+        .recent-updates-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            /* Matches the margin from the original h2 */
+        }
+
+        /* Style for the View All button */
+        .view-all-button {
+            padding: 0.5rem 1rem;
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border-radius: var(--border-radius-1);
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-all-button:hover {
+            background-color: var(--clr-primary-variant);
+        }
+
+        /* Chart Sections */
+        .chart-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-card {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            /* Set a fixed height for the chart cards */
+        }
+
+        .chart-card h2 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chart-card canvas {
+            max-width: 100%;
+            height: 100%;
+            /* Make the canvas fill the height of the card */
+        }
+
+
+        /* Media Queries */
+        @media screen and (max-width: 1200px) {
+            .dashboard-container {
+                width: 94%;
+                grid-template-columns: 1fr;
+            }
+
+            main .product-counts {
+                justify-content: center;
+                /* Center items when they wrap */
+            }
+
+            main .product-counts>div {
+                min-width: 300px;
+                /* Slightly larger min-width for tablets */
+            }
+        }
+
+        /* New styles for the product-list div */
+        .product-list {
+            background-color: var(--clr-white);
+            /* White background */
+            padding: 30px;
+            /* Ample padding around content */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 4px 20px var(--shadow-color);
+            /* More prominent shadow */
+            max-width: 1000px;
+            /* Limit overall width of the card */
+            width: 100%;
+            /* Take full width up to max-width */
+            box-sizing: border-box;
+            /* Include padding in width calculation */
+            margin-top: 2rem;
+            /* Add some space above the product list */
+        }
+
+        .product-list h2 {
+            /* Targeting the h2 inside product-list */
+            color: var(--primary-text);
+            font-weight: 600;
+            margin-top: 0;
+            /* Remove default top margin */
+            margin-bottom: 25px;
+            text-align: center;
+            /* Centralize the text */
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            /* Enables horizontal scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling on iOS */
+            padding-bottom: 5px;
+            /* Add slight padding for scrollbar visibility */
+        }
+
+        /* Custom scrollbar for Webkit browsers */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--light-grey);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--medium-grey);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #adb5bd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            /* Allows for border-radius on cells if needed */
+            border-spacing: 0;
+            /* Remove space between cells */
+            min-width: 700px;
+            /* Ensure sufficient width to trigger scroll on smaller screens */
+        }
+
+        th,
+        td {
+            padding: 14px 20px;
+            /* Increased padding for more breathing room */
+            text-align: left;
+            white-space: nowrap;
+            /* Prevent text wrapping */
+            border-bottom: 1px solid var(--border-color);
+            /* Only bottom border */
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: var(--light-grey);
+            /* Lighter header background */
+            color: var(--secondary-text);
+            /* Softer header text color */
+            font-weight: 600;
+            /* Slightly bolder */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            /* A little spacing for headers */
+            position: sticky;
+            /* Make headers sticky for horizontal scroll */
+            top: 0;
+            z-index: 1;
+            /* Ensure headers are above content when scrolling */
+        }
+
+        td {
+            background-color: var(--clr-white);
+            color: var(--primary-text);
+            font-weight: 400;
+        }
+
+        /* Zebra striping for rows */
+        tbody tr:nth-child(even) td {
+            background-color: var(--clr-white);
+            /* Very subtle lighter shade */
+        }
+
+        /* Hover effect for rows */
+        tbody tr:hover td {
+            background-color: #f5f7f9;
+            /* Subtle hover background */
+            transition: background-color 0.2s ease;
+            /* Smooth transition */
+            cursor: pointer;
+            /* Indicate row is clickable */
+        }
+
+        /* Remove bottom border from cells in the last row */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status specific styling */
+        .status {
+            font-weight: 500;
+            /* Medium weight for status */
+            padding: 4px 8px;
+            border-radius: 5px;
+            /* Rounded corners for status badges */
+            display: inline-block;
+            /* Allows padding and border-radius */
+            min-width: 60px;
+            /* Ensure minimum width for badges */
+            text-align: center;
+        }
+
+        .status-ok {
+            color: var(--ok-color);
+            background-color: #e6ffed;
+            /* Very light green background */
+            border: 1px solid var(--ok-color);
+        }
+
+        .status-low {
+            color: var(--low-color);
+            background-color: #fff9e6;
+            /* Very light orange background */
+            border: 1px solid var(--low-color);
+        }
+
+        .status-out {
+            color: var(--out-color);
+            background-color: #ffe6e6;
+            /* Very light red background */
+            border: 1px solid var(--out-color);
+        }
+
+        /* New styles for search and filter */
+        .search-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-filter-container input[type="text"] {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            min-width: 200px;
+            /* Ensure search bar has a decent minimum width */
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-buttons button {
+            padding: 10px 15px;
+            border: 1px solid var(--clr-primary);
+            border-radius: 5px;
+            background-color: var(--clr-white);
+            color: var(--clr-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-buttons button:hover,
+        .filter-buttons button.active {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+        }
+
+        .product-message {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: var(--clr-info-dark);
+        }
+
+        .see-more-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .see-more-button {
+            padding: 10px 20px;
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .see-more-button:hover {
+            background-color: var(--clr-primary-variant);
+        }
+
+
+        /* Media Queries */
+        @media screen and (max-width: 768px) {
+            body {
+                margin: 15px;
+            }
+
+            .product-list {
+                padding: 20px;
+                /* Reduce padding on smaller screens */
+            }
+
+            .product-list h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            th,
+            td {
+                padding: 10px 15px;
+                /* Slightly less padding on smaller screens */
+                font-size: 0.85em;
+            }
+
+            .table-container {
+                padding-bottom: 0;
+                /* Adjust padding for scrollbar on small screens if needed */
+            }
+
+            .status {
+                padding: 3px 6px;
+                font-size: 0.8em;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-filter-container input[type="text"] {
+                width: 100%;
+            }
+
+            .filter-buttons {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .filter-buttons button {
+                flex: 1;
+                /* Make buttons fill available space */
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .dashboard-container {
+                width: 100%;
+                padding: 0 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            main .product-counts {
+                flex-direction: column;
+                /* Stack vertically */
+                align-items: center;
+                /* Center items when stacked */
+            }
+
+            main .product-counts>div {
+                width: 100%;
+                /* Full width for mobile */
+                min-width: unset;
+                /* Remove min-width constraint */
+            }
+
+
+            .chart-section {
+                grid-template-columns: 1fr;
+                /* Stack charts vertically */
+            }
+        }
+        @media (min-width: 640px) {
+            /* sm breakpoint */
+            body {
+                padding: 2rem;
+                /* Equivalent to sm:p-8 */
+            }
+        }
+
+        .containers {
+            width: 100%;
+            max-width: 64rem;
+            /* Equivalent to max-w-4xl (1024px) */
+            margin-left: auto;
+            margin-right: auto;
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            /* Equivalent to p-6 sm:p-8 */
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        /* Responsive padding for containers */
+        @media (min-width: 640px) {
+            /* sm breakpoint */
+            .containers {
+                padding: 2rem;
+                /* Equivalent to sm:p-8 */
+            }
+        }
+
+      
+        .section-card {
+            margin-bottom: 2.5rem;
+            /* mb-10 */
+            padding: var(--card-padding);
+            /* p-6 */
+            background-color: rgba(132, 139, 200, 0.05);
+            /* bg-gray-50 - using a light variant of info-light */
+            border-radius: var(--border-radius-3);
+            /* rounded-xl */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            /* shadow-md */
+        }
+
+       
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            /* grid-cols-1 */
+            gap: 1.5rem;
+            /* gap-6 */
+        }
+
+        @media (min-width: 768px) {
+            /* md breakpoint */
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+                /* md:grid-cols-2 */
+            }
+        }
+
+        .col-span-full {
+            grid-column: span 2 / span 2;
+        }
+
+        label {
+            display: block;
+            color: var(--clr-dark-variant);
+            /* text-gray-700 */
+            font-size: 0.875rem;
+            /* text-sm */
+            font-weight: 700;
+            /* font-bold */
+            margin-bottom: 0.5rem;
+            /* mb-2 */
+        }
+
+        .input-group-flex {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* gap-2 */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="email"] {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow */
+            border: 1px solid var(--clr-info-light);
+            /* border */
+            border-radius: var(--border-radius-2);
+            /* rounded-lg */
+            width: 100%;
+            padding: 0.75rem 1rem;
+            /* py-3 px-4 */
+            color: var(--clr-dark-variant);
+            /* text-gray-700 */
+            line-height: 1.25;
+            /* leading-tight */
+            outline: none;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="email"]:focus {
+            border-color: var(--clr-primary);
+            /* focus:ring-pink-500 */
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.4);
+            /* focus:ring-2 focus:ring-pink-500 */
+        }
+
+        /* Specific styles for the custom input display */
+        .input-wrapper {
+            position: relative;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow-md */
+        }
+
+        .input-wrapper .display-input {
+            background: var(--clr-white);
+            border: 1px solid var(--clr-info-light);
+            border-radius: var(--border-radius-2);
+            padding: 0.75rem 1rem;
+            color: var(--clr-dark);
+            width: 100%;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+            /* Ensure padding doesn't increase width */
+        }
+
+        .input-wrapper .hidden-input {
+            opacity: 0;
+            position: relative;
+            z-index: 20;
+            cursor: text;
+            width: 100%;
+            height: 100%;
+            padding: 0.75rem 1rem;
+            box-sizing: border-box;
+            /* Ensure padding doesn't increase width */
+        }
+
+        /* Focus and hover styles for the display input */
+        .input-wrapper:focus-within .display-input {
+            border-color: var(--clr-primary);
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.4);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .input-wrapper:hover .display-input {
+            border-color: var(--clr-primary);
+        }
+
+
+        button {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            padding: 0.75rem 1.5rem;
+            /* py-3 px-6 */
+            border-radius: var(--border-radius-2);
+            /* rounded-lg */
+            font-weight: 700;
+            /* font-bold */
+            font-size: 1.125rem;
+            /* text-lg */
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            /* shadow-md */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--clr-primary-variant);
+            /* A darker shade for hover */
+            opacity: 0.9;
+            /* hover:bg-opacity-90 */
+        }
+
+        /* Specific button styles */
+        #generateCodeBtn {
+            font-size: 0.875rem;
+            /* text-sm */
+            padding: 0.75rem 1rem;
+            /* py-3 px-4 */
+        }
+
+        .button-group-end {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            /* gap-4 */
+            margin-top: 1rem;
+            /* mt-4 */
+        }
+
+        #sendToButton {
+            background-color: #3b82f6;
+            /* bg-blue-500 */
+        }
+
+        #sendToButton:hover {
+            background-color: #2563eb;
+            /* hover:bg-blue-600 */
+        }
+
+        #sendToSection {
+            margin-top: 2rem;
+            /* mt-8 */
+            padding: var(--card-padding);
+            /* p-6 */
+            background-color: rgba(59, 130, 246, 0.05);
+            /* bg-blue-50 */
+            border-radius: var(--border-radius-3);
+            /* rounded-xl */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            /* shadow-md */
+        }
+
+        #sendToSection.hidden {
+            display: none;
+        }
+
+
+
+        .email-input-group {
+            display: flex;
+            flex-direction: column;
+            /* flex-col */
+            gap: 1rem;
+            /* gap-4 */
+        }
+
+        @media (min-width: 640px) {
+            /* sm breakpoint */
+            .email-input-group {
+                flex-direction: row;
+                /* sm:flex-row */
+            }
+        }
+
+        #emailInput {
+            flex-grow: 1;
+            /* flex-grow */
+        }
+
+        #emailInput:focus {
+            border-color: #3b82f6;
+            /* focus:ring-blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            /* focus:ring-2 focus:ring-blue-500 */
+        }
+
+        #sendEmailButton {
+            background-color: #2563eb;
+            /* bg-blue-600 */
+        }
+
+        #sendEmailButton:hover {
+            background-color: #1d4ed8;
+            /* hover:bg-blue-700 */
+        }
+
+        .message {
+            margin-top: 1rem;
+            /* mt-4 */
+            font-size: 0.875rem;
+            /* text-sm */
+            text-align: center;
+        }
+
+        .message.hidden {
+            display: none;
+        }
+
+        .message.success {
+            color: var(--clr-success);
+            /* text-green-600 */
+        }
+
+        .message.error {
+            color: var(--clr-danger);
+            /* text-red-600 */
+        }
+
+        #couponList {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            /* space-y-4 */
+        }
+
+        #noCouponsMessage {
+            color: var(--clr-info-dark);
+            /* text-gray-500 */
+            text-align: center;
+        }
+
+        #seeMorecontainers {
+            text-align: center;
+            margin-top: 1.5rem;
+            /* mt-6 */
+        }
+
+        #seeMorecontainers.hidden {
+            display: none;
+        }
+
+        #seeMoreBtn {
+            background-color: rgba(132, 139, 200, 0.1);
+            /* bg-gray-200 */
+            color: var(--clr-dark);
+            /* text-gray-800 */
+            padding: 0.5rem 1rem;
+            /* py-2 px-4 */
+            border-radius: var(--border-radius-2);
+            /* rounded-lg */
+            font-weight: 700;
+            /* font-bold */
+            font-size: 1rem;
+            /* text-md */
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: none;
+            /* No shadow by default */
+        }
+
+        #seeMoreBtn:hover {
+            background-color: rgba(132, 139, 200, 0.2);
+            /* hover:bg-gray-300 */
+        }
+
+        .coupon-item {
+            background-color: var(--clr-white);
+            padding: 1rem;
+            /* p-4 */
+            border-radius: var(--border-radius-1);
+            /* rounded */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .coupon-item p {
+            margin: 0;
+        }
+
+        .coupon-item .coupon-code {
+            font-weight: 600;
+            /* font-semibold */
+            color: var(--clr-dark);
+            /* text-gray-800 */
+        }
+
+        .coupon-item .coupon-details {
+            font-size: 0.875rem;
+            /* text-sm */
+            color: var(--clr-info-dark);
+            /* text-gray-500 */
+        }
+
+        .delete-btn {
+            color: var(--clr-danger);
+            /* text-red-600 */
+            font-weight: 500;
+            /* font-medium */
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            transition: color 0.2s ease-in-out;
+            box-shadow: none;
+        }
+
+        .delete-btn:hover {
+            color: #b91c1c;
+            /* hover:text-red-800 */
+            opacity: 1;
+            /* Override default button hover opacity */
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--border-radius-3);
+            box-shadow: var(--box-shadow);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
+            color: var(--clr-dark);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: var(--border-radius-1);
+            box-shadow: none;
+        }
+
+        .modal-buttons .confirm-btn {
+            background-color: var(--clr-danger);
+        }
+
+        .modal-buttons .confirm-btn:hover {
+            background-color: #dc2626;
+            /* A slightly darker red */
+        }
+
+        .modal-buttons .cancel-btn {
+            background-color: var(--clr-info-dark);
+        }
+
+        .modal-buttons .cancel-btn:hover {
+            background-color: var(--clr-dark-variant);
+        }
+    </style>
+</head>
+
+<body>
+ <div class="dashboard-container">
+        <main>
+            <h1>Customer Overview</h1>
+            <div class="product-counts">
+                <div class="customers" id="customer-counter">
+                    <span class="material-symbols-sharp">person</span>
+                    <div class="left">
+                        <h3>Customer</h3>
+                        <h1>{{customer_count}}</h1>
+                    </div>
+                </div>
+                <div class="guest-customers" id="guest-customer-counter">
+                    <span class="material-symbols-sharp">person_off</span>
+                    <div class="left">
+                        <h3>Guest Customer</h3>
+                        <h1>{{guest_customer_count}}</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-list" id="customer-list-section">
+                <h2>Customers and Guests</h2>
+                <div class="search-filter-container">
+                    <input type="text" id="search-input" placeholder="Search by name, email, or phone...">
+                    <div class="filter-buttons">
+                        <button id="filter-all" class="active">All</button>
+                        <button id="filter-customer">Customers</button>
+                        <button id="filter-guest">Guests</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Orders</th>
+                                <th>Total spent</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body">
+                            <tr><td colspan="6" class="product-message">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="see-more-container" style="display: none;">
+                    <button class="see-more-button" id="see-more-btn">See More</button>
+                </div>
+                <div class="product-message" id="no-results-message" style="display: none;">
+                    No customers or guests found.
+                </div>
+            </div>
+            <div class="containers">
+        <h1>Coupon Management</h1>
+
+        <div class="section-card">
+            <h2>Create New Coupon</h2>
+            <form id="couponForm" class="form-grid">
+
+                <div class="col-span-full">
+                    <label for="couponName">Coupon Name:</label>
+                    <div class="input-group-flex">
+                        <input type="text" id="couponName" name="couponName" required readonly>
+                        <button type="button" id="generateCodeBtn">
+                            Generate Code
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="percentageDiscount">Percentage Discount:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="percentageDiscountDisplay" class="display-input" readonly>
+                        <input type="number" id="percentageDiscount" name="percentageDiscount" min="0" max="100"
+                            class="hidden-input">
+                    </div>
+                </div>
+                <div>
+                    <label for="normalPriceDiscount">Normal Price Discount:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="normalPriceDiscountDisplay" class="display-input" readonly>
+                        <input type="number" id="normalPriceDiscount" name="normalPriceDiscount" min="0"
+                            class="hidden-input">
+                    </div>
+                </div>
+
+                <div class="col-span-full">
+                    <label for="expiryDate">Expiry Date (Optional):</label>
+                    <input type="date" id="expiryDate" name="expiryDate">
+                </div>
+
+                <div class="col-span-full button-group-end">
+                    <button type="submit">
+                        Save Coupon
+                    </button>
+                    <button type="button" id="sendToButton">
+                        Send To
+                    </button>
+                </div>
+            </form>
+
+            <div id="sendToSection" class="hidden">
+                <h3>Send Coupon to Email</h3>
+                <div class="email-input-group">
+                    <input type="email" id="emailInput" placeholder="Enter recipient email">
+                    <button type="button" id="sendEmailButton">
+                        Send Email
+                    </button>
+                </div>
+            </div>
+
+            <div id="emailMessage" class="message hidden"></div>
+            <div id="formMessage" class="message hidden"></div>
+        </div>
+
+        <div class="section-card">
+            <h2>Existing Coupons</h2>
+            <div id="couponList">
+                <p id="noCouponsMessage">No coupons yet. Create one above!</p>
+            </div>
+            <div id="seeMorecontainers" class="hidden">
+                <button id="seeMoreBtn">
+                    See More
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal HTML -->
+    <div id="customModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button id="modalConfirmBtn" class="confirm-btn">Confirm</button>
+                <button id="modalCancelBtn" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+            <div class="chart-section">
+                <div class="chart-card">
+                    <h2>Top Spending Customers</h2>
+                    <canvas id="productPieChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h2>Top Spending Guest</h2>
+                    <canvas id="stockBarChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let couponsData = [];
+            let currentPage = 0;
+            const couponsPerPage = 5;
+
+            const couponForm = document.getElementById('couponForm');
+            const couponNameInput = document.getElementById('couponName');
+            const percentageDiscountInput = document.getElementById('percentageDiscount');
+            const percentageDiscountDisplay = document.getElementById('percentageDiscountDisplay');
+            const normalPriceDiscountInput = document.getElementById('normalPriceDiscount');
+            const normalPriceDiscountDisplay = document.getElementById('normalPriceDiscountDisplay');
+            const expiryDateInput = document.getElementById('expiryDate');
+            const formMessage = document.getElementById('formMessage');
+            const couponList = document.getElementById('couponList');
+            const generateCodeBtn = document.getElementById('generateCodeBtn');
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            const seeMorecontainers = document.getElementById('seeMorecontainers');
+
+            const emailInput = document.getElementById('emailInput');
+            const sendEmailButton = document.getElementById('sendEmailButton');
+            const emailMessage = document.getElementById('emailMessage');
+            const sendToSection = document.getElementById('sendToSection');
+
+            const customModalOverlay = document.getElementById('customModalOverlay');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+            const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+            let resolveModalPromise;
+
+            // --- Utility Functions ---
+
+            /**
+             * Displays a message to the user.
+             * @param {HTMLElement} containers - The HTML element to display the message in.
+             * @param {string} text - The message text.
+             * @param {'success'|'error'} type - The type of message (determines color).
+             */
+            function showMessage(containers, text, type) {
+                containers.textContent = text;
+                containers.className = `message ${type}`; // Apply base 'message' class and type class
+                containers.classList.remove('hidden');
+                setTimeout(() => {
+                    containers.classList.add('hidden');
+                }, 5000); // Hide after 5 seconds
+            }
+
+            /**
+             * Shows a custom confirmation modal.
+             * @param {string} message - The message to display in the modal.
+             * @returns {Promise<boolean>} A promise that resolves to true if confirmed, false if cancelled.
+             */
+            function showCustomModal(message) {
+                modalMessage.textContent = message;
+                customModalOverlay.classList.add('visible');
+                return new Promise(resolve => {
+                    resolveModalPromise = resolve;
+                });
+            }
+
+            // Event listeners for modal buttons
+            modalConfirmBtn.addEventListener('click', () => {
+                customModalOverlay.classList.remove('visible');
+                if (resolveModalPromise) {
+                    resolveModalPromise(true);
+                }
+            });
+
+            modalCancelBtn.addEventListener('click', () => {
+                customModalOverlay.classList.remove('visible');
+                if (resolveModalPromise) {
+                    resolveModalPromise(false);
+                }
+            });
+
+            /**
+             * Retrieves the CSRF token from cookies.
+             * @returns {string} The CSRF token.
+             */
+            function getCSRFToken() {
+                const name = 'csrftoken';
+                const cookieValue = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith(name + '='));
+                return cookieValue ? decodeURIComponent(cookieValue.split('=')[1]) : '';
+            }
+
+            /**
+             * Generates a random coupon code.
+             * @returns {string} The generated coupon code.
+             */
+            function generateCouponCode() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const digits = '0123456789';
+                let code = '';
+                for (let i = 0; i < 5; i++) {
+                    code += letters.charAt(Math.floor(Math.random() * letters.length));
+                }
+                for (let i = 0; i < 4; i++) {
+                    code += digits.charAt(Math.floor(Math.random() * digits.length));
+                }
+                return code;
+            }
+
+            // --- Event Listeners ---
+            generateCodeBtn.addEventListener('click', () => {
+                couponNameInput.value = generateCouponCode();
+            });
+
+            /**
+             * Validates and toggles the disabled state of discount inputs.
+             * Ensures only one discount type can be entered.
+             */
+            function validateDiscountInputs() {
+                if (percentageDiscountInput.value) {
+                    normalPriceDiscountInput.disabled = true;
+                } else {
+                    normalPriceDiscountInput.disabled = false;
+                }
+
+                if (normalPriceDiscountInput.value) {
+                    percentageDiscountInput.disabled = true;
+                } else {
+                    percentageDiscountInput.disabled = false;
+                }
+            }
+
+            // Real-time formatting and validation for percentage input
+            percentageDiscountInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value) {
+                    const number = Math.min(parseInt(value, 10), 100);
+                    percentageDiscountDisplay.value = `${number}%`;
+                    e.target.value = number;
+                } else {
+                    percentageDiscountDisplay.value = '';
+                }
+                validateDiscountInputs();
+            });
+
+            // Real-time formatting and validation for Naira input
+            normalPriceDiscountInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value) {
+                    normalPriceDiscountDisplay.value = `₦${value}`;
+                } else {
+                    normalPriceDiscountDisplay.value = '';
+                }
+                validateDiscountInputs();
+            });
+
+            // Handle coupon form submission
+            couponForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = couponNameInput.value.trim();
+                const percentageDiscount = percentageDiscountInput.value.trim();
+                const normalPriceDiscount = normalPriceDiscountInput.value.trim();
+                const expiryDate = expiryDateInput.value;
+
+                if (!name) {
+                    showMessage(formMessage, 'Coupon Name is required.', 'error');
+                    return;
+                }
+
+                if (percentageDiscount && normalPriceDiscount) {
+                    showMessage(formMessage, 'Choose only one type of discount.', 'error');
+                    return;
+                }
+
+                if (!percentageDiscount && !normalPriceDiscount) {
+                    showMessage(formMessage, 'You must enter a discount.', 'error');
+                    return;
+                }
+
+                const payload = {
+                    name,
+                    percentageDiscount: percentageDiscount || null,
+                    normalPriceDiscount: normalPriceDiscount || null,
+                    expiryDate: expiryDate || null,
+                };
+
+                try {
+                    const response = await fetch('/ajax/create-coupon/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(formMessage, 'Coupon created successfully!', 'success');
+
+                        // Clear form
+                        couponNameInput.value = '';
+                        percentageDiscountInput.value = '';
+                        percentageDiscountDisplay.value = '';
+                        normalPriceDiscountInput.value = '';
+                        normalPriceDiscountDisplay.value = '';
+                        expiryDateInput.value = '';
+                        validateDiscountInputs();
+
+                        // Reload list
+                        loadCoupons();
+
+                        // Store coupon locally for email
+                        localStorage.setItem('latest_coupon', JSON.stringify(data.coupon));
+                        sendToSection.classList.remove('hidden');
+                    } else {
+                        showMessage(formMessage, data.error || 'Failed to create coupon.', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showMessage(formMessage, 'Unexpected error occurred.', 'error');
+                }
+            });
+
+            /**
+             * Loads existing coupons from the backend and displays them in batches.
+             */
+            async function loadCoupons() {
+                try {
+                    const response = await fetch('/ajax/get-coupons/');
+                    const data = await response.json();
+
+                    couponsData = data.coupons || [];
+
+                    // Sort coupons by ID in descending order to show the latest first
+                    couponsData.sort((a, b) => b.id - a.id);
+
+                    currentPage = 0;
+                    renderCoupons();
+
+                } catch (error) {
+                    console.error('Error loading coupons:', error);
+                    showMessage(formMessage, 'Failed to load coupons. Please try again.', 'error');
+                }
+            }
+
+            /**
+             * Renders the coupons currently in the `couponsData` array based on `currentPage`.
+             */
+            function renderCoupons() {
+                couponList.innerHTML = ''; // Clear previous entries
+                const startIndex = 0;
+                const endIndex = (currentPage + 1) * couponsPerPage;
+                const couponsToDisplay = couponsData.slice(startIndex, endIndex);
+
+                if (!couponsToDisplay.length) {
+                    couponList.innerHTML = '<p id="noCouponsMessage">No coupons yet. Create one above!</p>';
+                    seeMorecontainers.classList.add('hidden');
+                    return;
+                }
+
+                couponsToDisplay.forEach(coupon => {
+                    const couponDiv = document.createElement('div');
+                    couponDiv.className = "coupon-item";
+
+                    let statusInfo = "";
+
+                    // Expiry
+                    if (coupon.expires_at) {
+                        statusInfo += `| Expires at: ${new Date(coupon.expires_at).toLocaleDateString()}`;
+                        if (coupon.is_expired) {
+                            statusInfo += ` <strong style="color:red;">(Expired)</strong>`;
+                        }
+                    }
+
+                    // One-time use
+                    if (coupon.used_by_display) {
+                        statusInfo += ` | <strong>Used by: ${coupon.used_by_display}</strong>`;
+                    }
+
+
+                    // Used
+                    if (coupon.is_used) {
+                        statusInfo += ` | <strong style="color:orange;">Already used</strong>`;
+                    }
+
+                    // Active
+                    statusInfo += coupon.is_active ? ` | Active` : ` | Inactive`;
+
+                    const details = `
+                        <div>
+                            <p class="coupon-code">${coupon.code}</p>
+                            <p class="coupon-details">
+                                Discount: ${coupon.is_percent ? coupon.amount + '%' : '₦' + coupon.amount}
+                                ${statusInfo}
+                            </p>
+                        </div>
+                    `;
+
+                    couponDiv.innerHTML = details;
+                    couponList.appendChild(couponDiv);
+                });
+
+
+                // Show/hide 'See More' button
+                if (endIndex < couponsData.length) {
+                    seeMorecontainers.classList.remove('hidden');
+                } else {
+                    seeMorecontainers.classList.add('hidden');
+                }
+            }
+
+            seeMoreBtn.addEventListener('click', () => {
+                currentPage++;
+                renderCoupons();
+            });
+
+            /**
+             * Deletes a coupon after user confirmation.
+             * @param {number} couponId - The ID of the coupon to delete.
+             */
+            window.deleteCoupon = async function (couponId) {
+                const confirmed = await showCustomModal('Are you sure you want to delete this coupon?');
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/ajax/delete-coupon/${couponId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Remove from the local data array
+                        couponsData = couponsData.filter(coupon => coupon.id !== couponId);
+                        renderCoupons(); // Re-render the list
+                        showMessage(formMessage, 'Coupon deleted successfully!', 'success');
+                    } else {
+                        showMessage(formMessage, data.error || 'Error deleting coupon.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    showMessage(formMessage, 'Failed to delete coupon.', 'error');
+                }
+            };
+
+            // Send coupon via email
+            sendEmailButton.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                if (!email) {
+                    showMessage(emailMessage, 'Enter a valid email.', 'error');
+                    return;
+                }
+
+                const latestCoupon = JSON.parse(localStorage.getItem('latest_coupon') || '{}');
+                if (!latestCoupon || !latestCoupon.code) {
+                    showMessage(emailMessage, 'No coupon to send.', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/ajax/send-coupon-email/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            coupon_code: latestCoupon.code
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(emailMessage, 'Coupon email sent!', 'success');
+                        sendToSection.classList.add('hidden');
+                        emailInput.value = ''; // Clear email input
+                    } else {
+                        showMessage(emailMessage, data.error || 'Failed to send email.', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showMessage(emailMessage, 'Unexpected error while sending email.', 'error');
+                }
+            });
+
+            // Initial load
+            loadCoupons();
+        });
+    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Pie Chart - Top Spending Registered Customers
+        const pieData = {
+            labels: {{ pie_labels|safe }},
+            datasets: [{
+                label: 'Top Customers by Spend',
+                data: {{ pie_data|safe }},
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ],
+                hoverOffset: 4
+            }]
+        };
+
+        const pieOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'Top Customers by Spend',
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        };
+
+        const pieCtx = document.getElementById('productPieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: pieData,
+            options: pieOptions
+        });
+
+        // Bar Chart - Top Spending Guest Customers
+        const barData = {
+            labels: {{ bar_labels|safe }},
+            datasets: [{
+                label: 'Total Spent by Guests',
+                data: {{ bar_data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        const barOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Top Guest Customers by Spend',
+                    font: {
+                        size: 16
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount Spent'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Guest Customers'
+                    }
+                }
+            }
+        };
+
+        const barCtx = document.getElementById('stockBarChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: barData,
+            options: barOptions
+        });
+    });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.getElementById('customer-table-body');
+    const searchInput = document.getElementById('search-input');
+    const filterButtons = document.querySelectorAll('.filter-buttons button');
+    const seeMoreBtn = document.getElementById('see-more-btn');
+    const noResultsMessage = document.getElementById('no-results-message');
+    const customerCounter = document.getElementById('customer-counter');
+    const guestCustomerCounter = document.getElementById('guest-customer-counter');
+    const customerListSection = document.getElementById('customer-list-section');
+    
+    const itemsPerPage = 10;
+    let currentPage = 1;
+    let allData = [];
+    let filteredData = [];
+
+    async function fetchData() {
+        try {
+            const response = await fetch('/api/customers/');
+            const data = await response.json();
+            allData = data.customers;
+            filteredData = [...allData];
+            displayData();
+        } catch (error) {
+            console.error('Error fetching customer data:', error);
+            tableBody.innerHTML = '<tr><td colspan="6" class="product-message">Failed to load data. Please try again.</td></tr>';
+        }
+    }
+
+    // Renders the data to the table
+    // REVISED: This function now takes an 'append' flag.
+    function displayData(append = false) {
+        if (!append) {
+            // Only clear the table if we're not appending
+            tableBody.innerHTML = '';
+            currentPage = 1; // Reset to page 1 for new searches/filters
+        }
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const dataToDisplay = filteredData.slice(start, end);
+
+        if (dataToDisplay.length === 0) {
+            if (!append) { // Show message only if it's a new, empty list
+                noResultsMessage.style.display = 'block';
+            }
+            seeMoreBtn.parentElement.style.display = 'none';
+        } else {
+            noResultsMessage.style.display = 'none';
+            dataToDisplay.forEach(item => {
+                const row = document.createElement('tr');
+                const statusCell = document.createElement('td');
+                const statusSpan = document.createElement('span');
+                
+                statusSpan.classList.add('status');
+                if (item.status === 'Customer') {
+                    statusSpan.classList.add('status-ok');
+                    statusSpan.textContent = 'Customer';
+                } else {
+                    statusSpan.classList.add('status-low');
+                    statusSpan.textContent = 'Guest';
+                }
+                statusCell.appendChild(statusSpan);
+
+                row.innerHTML = `
+                    <td><a href="/customer/${item.type}/${item.id}/">${item.name}</a></td>
+                    <td>${item.email || 'N/A'}</td>
+                    <td>${item.phone || 'N/A'}</td>
+                    <td>${item.orders}</td>
+                    <td>₦${item.total_spent.toFixed(2)}</td>
+                    <td></td> `;
+                
+                // Replace the last cell with our custom status cell
+                row.querySelector('td:last-child').replaceWith(statusCell);
+
+                // Make the whole row clickable
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', () => {
+                    window.location.href = `/customer/${item.type}/${item.id}/`;
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Show/hide the "See More" button
+        if (filteredData.length > end) {
+            seeMoreBtn.parentElement.style.display = 'block';
+        } else {
+            seeMoreBtn.parentElement.style.display = 'none';
+        }
+    }
+    
+    // Handles the search bar
+    function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        const activeFilter = document.querySelector('.filter-buttons button.active').id;
+        let dataToSearch = [];
+        
+        if (activeFilter === 'filter-customer') {
+            dataToSearch = allData.filter(item => item.status === 'Customer');
+        } else if (activeFilter === 'filter-guest') {
+            dataToSearch = allData.filter(item => item.status === 'Guest');
+        } else {
+            dataToSearch = allData;
+        }
+
+        filteredData = dataToSearch.filter(item => 
+            item.name.toLowerCase().includes(searchTerm) ||
+            item.email.toLowerCase().includes(searchTerm) ||
+            item.phone.toLowerCase().includes(searchTerm)
+        );
+
+        // REVISED: Do not reset currentPage. The displayData function handles it.
+        displayData(false); // Pass `false` to clear the table and show the first page
+    }
+    
+    // Handles the filter buttons
+    function handleFilter(filterType) {
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`filter-${filterType}`).classList.add('active');
+        
+        if (filterType === 'all') {
+            filteredData = [...allData];
+        } else if (filterType === 'customer') {
+            filteredData = allData.filter(item => item.status === 'Customer');
+        } else if (filterType === 'guest') {
+            filteredData = allData.filter(item => item.status === 'Guest');
+        }
+        
+        handleSearch(); // Applies search and re-renders the list from the beginning
+    }
+
+    // Event Listeners
+    searchInput.addEventListener('input', handleSearch);
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const filterType = button.id.replace('filter-', '');
+            handleFilter(filterType);
+        });
+    });
+    
+    seeMoreBtn.addEventListener('click', () => {
+        currentPage++; // Increment the page
+        displayData(true); // Pass `true` to append the next set of data
+    });
+
+    customerCounter.addEventListener('click', () => {
+        handleFilter('customer');
+        customerListSection.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    guestCustomerCounter.addEventListener('click', () => {
+        handleFilter('guest');
+        customerListSection.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Initial data fetch when the page loads
+    fetchData();
+});
+</script>
+
+</body>
+
+</html>
+{% endblock %}

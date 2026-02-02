@@ -1,0 +1,1108 @@
+{% extends 'admin_home.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Page Dashboard</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Your existing CSS styles go here.
+           Add the new styles below to support the search and filter elements. */
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap');
+
+        :root {
+            --clr-primary: #FF1493;
+            /* A nice shade of purple */
+            --clr-danger: #EF4444;
+            /* Red */
+            --clr-success: #10B981;
+            /* Green */
+            --clr-white: #fff;
+            --clr-info-dark: #4B5563;
+            /* Darker gray for info text */
+            --clr-info-light: #D1D5DB;
+            /* Lighter gray for info backgrounds */
+            --clr-dark: #1F2937;
+            /* Very dark gray for primary text */
+            --clr-warning: #F59E0B;
+            /* Orange for warnings */
+            --clr-light: rgba(209, 213, 219, 0.3);
+            /* Light background for shadows */
+            --clr-primary-variant: #5A3A9F;
+            /* Darker primary */
+            --clr-dark-variant: #6B7280;
+            /* Medium gray for secondary text */
+            --clr-color-background: #F9FAFB;
+            /* Lightest gray for overall background */
+
+            --card-border-radius: 1.5rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 0.8rem;
+            --border-radius-3: 1.2rem;
+
+            --card-padding: 1.5rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 1rem 2rem var(--clr-light);
+
+            /* New custom CSS variables for order table */
+            --primary-text: #333;
+            --secondary-text: #666;
+            --border-color: #eee;
+            --light-grey: #f8f9fa;
+            --medium-grey: #ced4da;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+
+            /* Status colors */
+            --ok-color: #28a745;
+            /* Green */
+            --low-color: #ffc107;
+            /* Orange */
+            --out-color: #dc3545;
+            /* Red */
+        }
+
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: 0;
+            text-decoration: none;
+            list-style: none;
+            appearance: none;
+        }
+
+        body {
+            width: 100vw;
+            min-height: 100vh;
+            font-size: .87rem;
+            user-select: none;
+            overflow-x: hidden;
+            background: var(--clr-color-background);
+            font-family: 'Poppins', sans-serif;
+            color: var(--clr-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        img {
+            width: 2.8rem;
+            height: 2.8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        /* Container for dashboard ONLY content - no sidebar, no right panel */
+        .dashboard-container {
+            width: 96%;
+            max-width: 1200px;
+            margin: 1.4rem auto;
+            gap: 1.8rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            /* Single column for all content */
+        }
+
+        /* Common Typography and Utility Classes (duplicated) */
+        a {
+            color: var(--clr-dark);
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--clr-dark);
+        }
+
+        h3 {
+            font-size: 0.95rem;
+            color: var(--clr-dark);
+        }
+
+        h4 {
+            font-size: 0.8rem;
+        }
+
+        h5 {
+            font-size: 0.77rem;
+        }
+
+        small {
+            font-size: 0.75rem;
+            color: var(--clr-info-dark);
+        }
+
+        .profile-photo img {
+            width: 2.8rem;
+            height: 2.8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .text-muted {
+            color: var(--clr-info-dark);
+        }
+
+        p {
+            color: var(--clr-dark-variant);
+        }
+
+        b {
+            color: var(--clr-dark);
+        }
+
+        .primary {
+            color: var(--clr-primary);
+        }
+
+        .success {
+            color: var(--clr-success);
+        }
+
+        .danger {
+            color: var(--clr-danger);
+        }
+
+        .warning {
+            color: var(--clr-warning);
+        }
+
+        /* Main Dashboard Content CSS */
+        main {
+            width: 100%;
+        }
+
+        main .date {
+            display: inline-block;
+            background: var(--clr-white);
+            border-radius: var(--border-radius-1);
+            margin-top: 1rem;
+            padding: 0.5rem 1.6rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        /* order Counts Section */
+        main .order-counts {
+            display: flex;
+            gap: 1.6rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            /* Allow wrapping on smaller screens */
+            justify-content: space-between;
+            /* Distribute items horizontally */
+        }
+
+        main .order-counts>div {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+            flex: 1;
+            /* Allow items to grow and shrink */
+            min-width: 250px;
+            /* Minimum width before wrapping */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            /* Make summary cards clickable */
+        }
+
+        main .order-counts>div:hover {
+            box-shadow: none;
+        }
+
+        main .order-counts>div span {
+            padding: 0.7rem;
+            border-radius: 50%;
+            color: var(--clr-white);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        main .order-counts>div.total-orders span {
+            background: var(--clr-primary);
+        }
+
+        main .order-counts>div.inactive-orders span {
+            background: var(--clr-warning);
+        }
+
+        main .order-counts>div.ongoing-orders span {
+            background: var(--clr-danger);
+        }
+
+        main .order-counts>div.delivery-orders span {
+            background: var(--ok-color);
+        }
+
+        main .order-counts .left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        main .order-counts .left h3 {
+            font-size: 1rem;
+        }
+
+        main .order-counts .left h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        /* Add the following CSS to your existing <style> block */
+
+        /* Container to align heading and button */
+        .recent-updates-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            /* Matches the margin from the original h2 */
+        }
+
+        /* Style for the View All button */
+        .view-all-button {
+            padding: 0.5rem 1rem;
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border-radius: var(--border-radius-1);
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-all-button:hover {
+            background-color: var(--clr-primary-variant);
+        }
+
+        /* Remove the margin from the original h2 since it's now in a flex container */
+        .recent-updates-section h2 {
+            margin-bottom: 0;
+        }
+
+        /* Recent Updates Section */
+        .recent-updates-section {
+            margin-top: 2rem;
+        }
+
+        .recent-updates-section h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .recent-updates-section .updates {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all .3s ease;
+        }
+
+        .recent-updates-section .updates:hover {
+            box-shadow: none;
+        }
+
+        .recent-updates-section .update {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--clr-info-light);
+        }
+
+        .recent-updates-section .update:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .recent-updates-section .update .icon {
+            font-size: 1.8rem;
+            color: var(--clr-primary);
+        }
+
+        .recent-updates-section .update .message p {
+            margin-bottom: 0.2rem;
+            line-height: 1.5;
+        }
+
+        .recent-updates-section .update .message small {
+            display: block;
+            color: var(--clr-info-dark);
+        }
+
+        /* Chart Sections */
+        .chart-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-card {
+            background-color: var(--clr-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-card h2 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chart-card canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+
+        /* Media Queries */
+        @media screen and (max-width: 1200px) {
+            .dashboard-container {
+                width: 94%;
+                grid-template-columns: 1fr;
+            }
+
+            main .order-counts {
+                justify-content: center;
+                /* Center items when they wrap */
+            }
+
+            main .order-counts>div {
+                min-width: 300px;
+                /* Slightly larger min-width for tablets */
+            }
+        }
+
+        /* New styles for the order-list div */
+        .order-list {
+            background-color: var(--clr-white);
+            /* White background */
+            padding: 30px;
+            /* Ample padding around content */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 4px 20px var(--shadow-color);
+            /* More prominent shadow */
+            max-width: 1000px;
+            /* Limit overall width of the card */
+            width: 100%;
+            /* Take full width up to max-width */
+            box-sizing: border-box;
+            /* Include padding in width calculation */
+            margin-top: 2rem;
+            /* Add some space above the order list */
+        }
+
+        .order-list h2 {
+            /* Targeting the h2 inside order-list */
+            color: var(--primary-text);
+            font-weight: 600;
+            margin-top: 0;
+            /* Remove default top margin */
+            margin-bottom: 25px;
+            text-align: center;
+            /* Centralize the text */
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            /* Enables horizontal scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling on iOS */
+            padding-bottom: 5px;
+            /* Add slight padding for scrollbar visibility */
+        }
+
+        /* Custom scrollbar for Webkit browsers */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--light-grey);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--medium-grey);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #adb5bd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            /* Allows for border-radius on cells if needed */
+            border-spacing: 0;
+            /* Remove space between cells */
+            min-width: 700px;
+            /* Ensure sufficient width to trigger scroll on smaller screens */
+        }
+
+        th,
+        td {
+            padding: 14px 20px;
+            /* Increased padding for more breathing room */
+            text-align: left;
+            white-space: nowrap;
+            /* Prevent text wrapping */
+            border-bottom: 1px solid var(--border-color);
+            /* Only bottom border */
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: var(--light-grey);
+            /* Lighter header background */
+            color: var(--secondary-text);
+            /* Softer header text color */
+            font-weight: 600;
+            /* Slightly bolder */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            /* A little spacing for headers */
+            position: sticky;
+            /* Make headers sticky for horizontal scroll */
+            top: 0;
+            z-index: 1;
+            /* Ensure headers are above content when scrolling */
+        }
+
+        td {
+            background-color: var(--clr-white);
+            color: var(--primary-text);
+            font-weight: 400;
+        }
+
+        /* Zebra striping for rows */
+        tbody tr:nth-child(even) td {
+            background-color: var(--clr-white);
+            /* Very subtle lighter shade */
+        }
+
+        /* Hover effect for rows */
+        tbody tr:hover td {
+            background-color: #f5f7f9;
+            /* Subtle hover background */
+            transition: background-color 0.2s ease;
+            /* Smooth transition */
+            cursor: pointer;
+            /* Indicate row is clickable */
+        }
+
+        /* Remove bottom border from cells in the last row */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status specific styling */
+        .status {
+            font-weight: 500;
+            /* Medium weight for status */
+            padding: 4px 8px;
+            border-radius: 5px;
+            /* Rounded corners for status badges */
+            display: inline-block;
+            /* Allows padding and border-radius */
+            min-width: 60px;
+            /* Ensure minimum width for badges */
+            text-align: center;
+        }
+
+        .status-delivered {
+            color: var(--ok-color);
+            background-color: #e6ffed;
+            /* Very light green background */
+            border: 1px solid var(--ok-color);
+        }
+
+        .status-ongoing {
+            color: var(--low-color);
+            background-color: #fff9e6;
+            /* Very light orange background */
+            border: 1px solid var(--low-color);
+        }
+
+        .status-inactive {
+            color: var(--out-color);
+            background-color: #ffe6e6;
+            /* Very light red background */
+            border: 1px solid var(--out-color);
+        }
+
+        /* New styles for search and filter */
+        .search-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-filter-container input[type="text"] {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            min-width: 200px;
+            /* Ensure search bar has a decent minimum width */
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-buttons button {
+            padding: 10px 15px;
+            border: 1px solid var(--clr-primary);
+            border-radius: 5px;
+            background-color: var(--clr-white);
+            color: var(--clr-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-buttons button:hover,
+        .filter-buttons button.active {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+        }
+
+        .order-message {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: var(--clr-info-dark);
+        }
+
+        .see-more-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .see-more-button {
+            padding: 10px 20px;
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .see-more-button:hover {
+            background-color: var(--clr-primary-variant);
+        }
+
+
+        /* Media Queries */
+        @media screen and (max-width: 768px) {
+            body {
+                margin: 15px;
+            }
+
+            .order-list {
+                padding: 20px;
+                /* Reduce padding on smaller screens */
+            }
+
+            .order-list h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            th,
+            td {
+                padding: 10px 15px;
+                /* Slightly less padding on smaller screens */
+                font-size: 0.85em;
+            }
+
+            .table-container {
+                padding-bottom: 0;
+                /* Adjust padding for scrollbar on small screens if needed */
+            }
+
+            .status {
+                padding: 3px 6px;
+                font-size: 0.8em;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-filter-container input[type="text"] {
+                width: 100%;
+            }
+
+            .filter-buttons {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .filter-buttons button {
+                flex: 1;
+                /* Make buttons fill available space */
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .dashboard-container {
+                width: 100%;
+                padding: 0 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            main .order-counts {
+                flex-direction: column;
+                /* Stack vertically */
+                align-items: center;
+                /* Center items when stacked */
+            }
+
+            main .order-counts>div {
+                width: 100%;
+                /* Full width for mobile */
+                min-width: unset;
+                /* Remove min-width constraint */
+            }
+
+
+            .chart-section {
+                grid-template-columns: 1fr;
+                /* Stack charts vertically */
+            }
+        }
+    </style>
+    <div class="dashboard-container">
+        <main>
+            <h1>Order Overview</h1>
+
+            <!-- Order Counts -->
+            <div class="order-counts">
+                <div class="total-orders" id="totalOrdersCard">
+                    <span class="material-symbols-sharp">inventory_2</span>
+                    <div class="left">
+                        <h3>Total Orders</h3>
+                        <h1>{{ total_orders }}</h1>
+                    </div>
+                </div>
+
+                <div class="inactive-orders" id="InactiveCard">
+                    <span class="material-symbols-sharp">warning</span>
+                    <div class="left">
+                        <h3>Inactive Orders</h3>
+                        <h1>{{ inactive_orders }}</h1>
+                    </div>
+                </div>
+
+                <div class="ongoing-orders" id="OngoingCard">
+                    <span class="material-symbols-sharp">hourglass_top</span>
+                    <div class="left">
+                        <h3>Ongoing Orders</h3>
+                        <h1>{{ ongoing_orders }}</h1>
+                    </div>
+                </div>
+
+                <div class="delivery-orders" id="DeliveryCard">
+                    <span class="material-symbols-sharp">local_shipping</span>
+                    <div class="left">
+                        <h3>Delivered Orders</h3>
+                        <h1>{{ delivered_orders }}</h1>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order List -->
+            <div class="order-list" id="orderListSection">
+                <h2>Order Inventory</h2>
+
+                <!-- Search + Filter -->
+                <div class="search-filter-container">
+                    <input type="text" id="orderSearch" placeholder="Search transaction ID or customer...">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">All Orders</button>
+                        <button class="filter-btn" data-filter="inactive">Inactive</button>
+                        <button class="filter-btn" data-filter="ongoing">Ongoing</button>
+                        <button class="filter-btn" data-filter="delivered">Delivered</button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order Id</th>
+                                <th>Products</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="orderMessage" class="order-message" style="display: none;"></div>
+                <div class="see-more-container">
+                    <button id="seeMoreBtn" class="see-more-button" style="display: none;">See More</button>
+                </div>
+            </div>
+            <div class="recent-updates-section">
+                <div class="recent-updates-header">
+                    <h2>Recent Updates</h2>
+                    <a href="{% url 'admin_notice' %}" class="view-all-button">View All</a>
+                </div>
+                <div class="updates">
+                    {% for notice in admin_notices|only_order_updates %}
+                    <div class="update">
+                        {% if notice.from_customer and notice.from_customer.image %}
+                        <img src="{{ notice.from_customer.image.url }}" alt="Customer" />
+                        {% elif notice.from_guest_customer %}
+                        <span class="material-symbols-sharp text-blue-600 text-xl mr-2">person</span>
+                        {% elif notice.is_system %}
+                        <span class="material-symbols-sharp icon">notifications</span>
+                        {% endif %}
+                        <div class="message">
+
+                            <a href="{% if notice.url %}{{ notice.url }}{% else %}#{% endif %}"
+                                data-notice-id="{{ notice.id }}" onclick="markAsReadAndRedirect(event, this)"
+                                class="text-blue-600 hover:underline">
+                                <p><b>{{ notice.notice|safe }}</b></p>
+                                <small class="text-muted">{{ notice.created_at|timesince }} ago</small>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-sm mt-2">No order updates.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="chart-section">
+                <div class="chart-card">
+                    <h2>Most Ordered Products</h2>
+                    <canvas id="orderStatusPieChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h2>Most Ordered Categories</h2>
+                    <canvas id="topordersBarChart"></canvas>
+                </div>
+            </div>
+            <!-- Pass shipping order data from Django -->
+            <script id="orderData" type="application/json">
+            {{ shipping_order_data|safe }}
+        </script>
+
+            <script>
+                // ====== Setup ======
+                const allorders = JSON.parse(document.getElementById('orderData').textContent);
+                const orderTableBody = document.getElementById('orderTableBody');
+                const orderSearchInput = document.getElementById('orderSearch');
+                const filterButtons = document.querySelectorAll('.filter-btn');
+                const seeMoreBtn = document.getElementById('seeMoreBtn');
+                const orderMessage = document.getElementById('orderMessage');
+                const orderListSection = document.getElementById('orderListSection');
+
+                const InactiveCard = document.getElementById('InactiveCard');
+                const OngoingCard = document.getElementById('OngoingCard');
+                const DeliveryCard = document.getElementById('DeliveryCard');
+                const totalOrdersCard = document.getElementById('totalOrdersCard');
+
+                let displayedorders = [];
+                let currentPage = 1;
+                const ordersPerPage = 10;
+                let currentFilter = 'all';
+
+                // ====== Helper Functions ======
+                function formatCurrency(amount) {
+                    return `₦${parseFloat(amount).toFixed(2)}`;
+                }
+
+                function attachOrderRowClickListeners() {
+                    document.querySelectorAll('#orderTableBody tr.order-row').forEach(row => {
+                        row.addEventListener('click', () => {
+                            window.location.href = `/edit_order/${row.dataset.orderId}/`;
+                        });
+                    });
+                }
+
+                function setActiveFilterButton(filterType) {
+                    filterButtons.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.filter === filterType);
+                    });
+                }
+
+                // ====== Display Orders ======
+                function displayOrders(orders) {
+                    orderTableBody.innerHTML = '';
+                    orderMessage.style.display = 'none';
+
+                    const start = 0;
+                    const end = currentPage * ordersPerPage;
+                    const ordersToRender = orders.slice(start, end);
+
+                    if (ordersToRender.length === 0) {
+                        orderMessage.textContent = 'No shipping orders found.';
+                        orderMessage.style.display = 'block';
+                        seeMoreBtn.style.display = 'none';
+                        return;
+                    }
+
+                    ordersToRender.forEach(o => {
+                        let statusClass = '';
+                        if (o.status === 'Delivered') statusClass = 'status-delivered';
+                        else if (o.status === 'Ongoing') statusClass = 'status-ongoing';
+                        else statusClass = 'status-inactive';
+
+                        const row = document.createElement('tr');
+                        row.dataset.orderId = o.id;
+                        row.classList.add('order-row');
+                        row.innerHTML = `
+                        <td>${o.transaction_id}</td>
+                        <td>${o.products_count}</td>
+                        <td>${formatCurrency(o.total_price)}</td>
+                        <td>${o.total_quantity}</td>
+                        <td>${o.customer_name}</td>
+                        <td><span class="status ${statusClass}">${o.status}</span></td>
+                    `;
+                        orderTableBody.appendChild(row);
+                    });
+
+                    seeMoreBtn.style.display = end < orders.length ? 'block' : 'none';
+                    attachOrderRowClickListeners();
+                }
+
+                // ====== Search & Filter ======
+                function applyFiltersAndSearch() {
+                    const searchTerm = orderSearchInput.value.toLowerCase().trim();
+                    let filtered = allorders;
+
+                    if (currentFilter !== 'all') {
+                        filtered = filtered.filter(o => o.status.toLowerCase() === currentFilter);
+                    }
+
+                    if (searchTerm) {
+                        filtered = filtered.filter(o =>
+                            o.transaction_id.toLowerCase().includes(searchTerm) ||
+                            o.customer_name.toLowerCase().includes(searchTerm)
+                        );
+                    }
+
+                    displayedorders = filtered;
+                    currentPage = 1;
+                    displayOrders(displayedorders);
+                }
+
+                // ====== Event Listeners ======
+                orderSearchInput.addEventListener('input', applyFiltersAndSearch);
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        orderSearchInput.value = '';
+                        currentFilter = button.dataset.filter;
+                        setActiveFilterButton(currentFilter);
+                        applyFiltersAndSearch();
+                    });
+                });
+
+                seeMoreBtn.addEventListener('click', () => {
+                    currentPage++;
+                    displayOrders(displayedorders);
+                });
+
+                InactiveCard.addEventListener('click', () => {
+                    currentFilter = 'inactive';
+                    setActiveFilterButton('inactive');
+                    applyFiltersAndSearch();
+                    orderListSection.scrollIntoView({ behavior: 'smooth' });
+                });
+
+                OngoingCard.addEventListener('click', () => {
+                    currentFilter = 'ongoing';
+                    setActiveFilterButton('ongoing');
+                    applyFiltersAndSearch();
+                    orderListSection.scrollIntoView({ behavior: 'smooth' });
+                });
+
+                DeliveryCard.addEventListener('click', () => {
+                    currentFilter = 'delivered';
+                    setActiveFilterButton('delivered');
+                    applyFiltersAndSearch();
+                    orderListSection.scrollIntoView({ behavior: 'smooth' });
+                });
+
+                totalOrdersCard.addEventListener('click', () => {
+                    currentFilter = 'all';
+                    setActiveFilterButton('all');
+                    applyFiltersAndSearch();
+                    orderListSection.scrollIntoView({ behavior: 'smooth' });
+                });
+
+                // ====== Initial Load ======
+                applyFiltersAndSearch();
+            </script>
+            <script>
+                // Function to get the CSRF token from the cookie
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+
+                const csrftoken = getCookie('csrftoken');
+
+                function markAsReadAndRedirect(event, linkElement) {
+                    // Prevent the default link behavior
+                    event.preventDefault();
+
+                    const noticeId = linkElement.getAttribute('data-notice-id');
+                    const targetUrl = linkElement.getAttribute('href');
+
+                    // Check if a valid notice ID exists and the target URL is not just '#'
+                    if (noticeId && targetUrl) {
+                        const readUrl = `{% url 'mark_notice_read' notice_id=0 %}`.replace('0', noticeId);
+
+                        fetch(readUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrftoken
+                            },
+                            body: JSON.stringify({}) // Sending an empty body
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    console.log(`Notice ${noticeId} marked as read.`);
+                                    // Redirect to the original URL after marking as read
+                                    window.location.href = targetUrl;
+                                } else {
+                                    console.error('Failed to mark notice as read:', response.statusText);
+                                    // Redirect anyway, but log the error
+                                    window.location.href = targetUrl;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Network error while marking notice as read:', error);
+                                // Redirect anyway in case of a network error
+                                window.location.href = targetUrl;
+                            });
+                    } else {
+                        // If there's no valid URL, just log a message and prevent redirection
+                        console.log('No valid URL to redirect to.');
+                    }
+                }
+            </script>
+            <script>
+                const pieLabels = {{ pie_labels| safe }};
+                const pieData = {{ pie_data| safe }};
+
+                const barLabels = {{ bar_labels| safe }};
+                const barData = {{ bar_data| safe }};
+
+                // Pie Chart - Most Ordered Products
+                new Chart(document.getElementById('orderStatusPieChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: pieData,
+                            backgroundColor: ['#4CAF50', '#FFC107', '#FF5722', '#2196F3', '#9C27B0'],
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: {
+                                display: true,
+                                text: 'Top 5 Most Ordered Products'
+                            }
+                        }
+                    }
+                });
+
+                // Bar Chart - Most Ordered Categories
+                new Chart(document.getElementById('topordersBarChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: barLabels,
+                        datasets: [{
+                            label: 'Number of Orders',
+                            data: barData,
+                            backgroundColor: '#3F51B5',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Top 5 Most Ordered Categories'
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            </script>
+        </main>
+    </div>
+    {% endblock %}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle with Text</title>
+    <style>
+.rectangle body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    background-color: #f4f4f4;
+}
+
+.rectangle {
+    width: 100vw; /* Full viewport width */
+    background-color: #FF1493;
+    border-radius: 20px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 20px; /* Space above */
+    margin-bottom: 20px; /* Space below */
+}
+
+
+.rectangle .center-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.rectangle .view-all {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #FF1493;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.rectangle .view-all:hover {
+    background-color: #FF1493;
+    color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+    </style>
+</head>
+<body>
+    <!--
+    {% for category in categories %}
+    <div class="rectangle">
+        <span class="center-text">{{ category }}</span>
+        <button class="view-all">View All</button>
+    </div>
+    {% endfor %}
+    -->
+       
+
+    <div class="rectangle">
+        <span class="center-text">{{ category }}</span>
+        <button class="view-all">View All</button>
+    </div>
+
+</body>
+</html>

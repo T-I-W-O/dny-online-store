@@ -1,0 +1,718 @@
+{% extends 'navbar.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; /* White background */
+        }
+
+        .pink-accent {
+            background-color: #ff007f;
+            /* A vibrant pink */
+        }
+
+        .pink-text {
+            color: #ff007f;
+        }
+
+        .border-pink {
+            border-color: #ff007f;
+        }
+
+        /* Removed shadow-pink as we'll use Tailwind's built-in shadow classes */
+
+        /* Custom scrollbar for demo purposes if content overflows */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="bg-black text-white py-4 text-center">
+            <h1 class="text-2xl font-bold">My Profile</h1>
+        </div>
+        <div class="flex flex-col lg:flex-row gap-6">
+            <aside class="w-full lg:w-1/4 bg-white rounded-xl shadow-md p-6 lg:p-8">
+                <nav class="space-y-4">
+                    <a href="#profile-details"
+                        class="flex items-center space-x-3 text-lg font-medium text-gray-700 hover:text-pink-accent active:text-pink-accent transition-colors duration-200">
+                        <i class="fas fa-user"></i>
+                        <span>Profile Details</span>
+                    </a>
+                    <a href="#order-history"
+                        class="flex items-center space-x-3 text-lg font-medium text-gray-700 hover:text-pink-accent transition-colors duration-200">
+                        <i class="fas fa-box"></i>
+                        <span>Order History</span>
+                    </a>
+                    <a href="#shipping-addresses"
+                        class="flex items-center space-x-3 text-lg font-medium text-gray-700 hover:text-pink-accent transition-colors duration-200">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Shipping Addresses</span>
+                    </a>
+                    <a href="#notifications"
+                        class="flex items-center space-x-3 text-lg font-medium text-gray-700 hover:text-pink-accent transition-colors duration-200">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                    </a>
+                    <a href="#account-settings"
+                        class="flex items-center space-x-3 text-lg font-medium text-gray-700 hover:text-pink-accent transition-colors duration-200">
+                        <i class="fas fa-cog"></i>
+                        <span>Account Settings</span>
+                    </a>
+                    {% if request.user.is_authenticated and request.user.customer %}
+                    <a href="{% url 'logout' %}"
+                        class="flex items-center space-x-3 text-lg font-medium text-red-500 hover:text-red-700 transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}"
+                        class="flex items-center space-x-3 text-lg font-medium text-red-500 hover:text-red-700 transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Login</span>
+                    </a>
+
+                    {% endif %}
+                </nav>
+            </aside>
+
+            <div class="w-full lg:w-3/4 bg-white rounded-xl shadow-md p-6 lg:p-8">
+                <section id="profile-details" class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Profile Details</h2>
+                    {% if request.user.is_authenticated and request.user.customer %}
+                    <form id="profile-form" enctype="multipart/form-data"
+                        class="flex flex-col lg:flex-row items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8">
+                        {% csrf_token %}
+                        <div class="flex-shrink-0 mb-4 lg:mb-0 relative">
+                            <img src="{{ customer.image.url }}" alt="Profile Picture"
+                                class="w-28 h-28 rounded-full object-cover border-4 border-gray-200 shadow-md"
+                                id="profile-image">
+                            <button type="button" id="change-image-btn"
+                                class="absolute bottom-0 right-0 bg-gray-700 text-white rounded-full p-2 text-xs opacity-80 hover:opacity-100 transition-opacity duration-200 hidden">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" name="image" id="image-upload-input" class="hidden" accept="image/*">
+                        </div>
+
+                        <div class="flex-grow space-y-4 text-center lg:text-left w-full">
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-1">Full Name</label>
+                                <p class="text-gray-800 text-lg profile-display-field" id="full-name-display">
+                                    {{ customer.first_name }} {{ customer.last_name }}
+                                </p>
+                                <div class="flex gap-2 hidden" id="name-input-fields">
+                                    <input type="text" name="first_name" id="first-name-input"
+                                        value="{{ customer.first_name }}"
+                                        class="w-1/2 border border-gray-300 rounded-lg p-2" required>
+                                    <input type="text" name="last_name" id="last-name-input"
+                                        value="{{ customer.last_name }}"
+                                        class="w-1/2 border border-gray-300 rounded-lg p-2" required>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-1">Email Address</label>
+                                <p class="text-gray-800 text-lg profile-display-field" id="email-display">{{ customer.email }}</p>
+                                <input type="email" name="email" id="email-input" value="{{ customer.email }}"
+                                    class="hidden w-full border border-gray-300 rounded-lg p-2" required>
+                                <span id="email-error" class="text-red-500 text-sm mt-1 hidden"></span>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-1">Phone Number</label>
+                                <p class="text-gray-800 text-lg profile-display-field" id="phone-display">{{ customer.number }}</p>
+                                <input type="tel" name="number" id="phone-input" value="{{ customer.number }}"
+                                    class="hidden w-full border border-gray-300 rounded-lg p-2" required>
+                            </div>
+
+                            <button type="button" id="edit-profile-btn"
+                                class="pink-accent text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200">
+                                Edit Profile
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div
+                        class="flex flex-col lg:flex-row items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8">
+                        <div class="flex-shrink-0 mb-4 lg:mb-0 relative">
+                            <img src="https://placehold.co/120x120/cccccc/ffffff?text=User" alt="Profile Picture"
+                                class="w-28 h-28 rounded-full object-cover border-4 border-gray-200 shadow-md"
+                                id="profile-image">
+                            <button id="change-image-btn"
+                                class="absolute bottom-0 right-0 bg-gray-700 text-white rounded-full p-2 text-xs opacity-80 hover:opacity-100 transition-opacity duration-200 hidden">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" id="image-upload-input" class="hidden" accept="image/*">
+                        </div>
+                        <h1>No user yet</h1>
+                    </div>
+
+                    {% endif %}
+                </section>
+
+                <meta name="csrf-token" content="{{ csrf_token }}">
+                <hr class="border-gray-200 my-8">
+
+                <section id="order-history" class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold text-gray-800">Order History</h2>
+                        <a href="{% url 'track_order' %}" class="pink-text hover:underline text-sm font-medium">View All</a>
+
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Order ID</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Total</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                           <tbody class="divide-y divide-gray-200">
+                    {% for order in order_data %}
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          #{{ order.transaction_id }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {{ order.date }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          ₦{{ order.total }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                          {% if order.status == "Delivered" %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              Delivered
+                            </span>
+                          {% elif order.status == "Ongoing" %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                              Ongoing
+                            </span>
+                          {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                              {{ order.status }}
+                            </span>
+                          {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <a href="{% url 'order_detail' order.shipping_id %}" class="pink-text hover:underline">View</a>
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="5" class="text-center py-4 text-gray-500">No orders found.</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+
+
+                        </table>
+                    </div>
+                </section>
+                <hr class="border-gray-200 my-8">
+
+                <section id="shipping-addresses" class="mb-8 max-w-2xl mx-auto">
+                     <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Shipping Address</h2>
+
+                   {% if latest_saved_shipping %}
+                <div class="address-card border border-gray-300 rounded-lg p-4 shadow-sm relative mb-4" data-id="{{ latest_saved_shipping.id }}">
+                    <div class="view-mode">
+                        <p class="font-medium text-gray-900">{{ latest_saved_shipping.address }}</p>
+                        <p class="text-sm text-gray-600">{{ latest_saved_shipping.town }}, {{ latest_saved_shipping.state }}, {{ latest_saved_shipping.country }}</p>
+                        <p class="text-sm text-gray-600">LGA: {{ latest_saved_shipping.local_government }}</p>
+                        <div class="flex gap-4 mt-2">
+                            <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="delete-btn text-red-600 hover:text-red-800" title="Unsave"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="edit-mode hidden">
+                        <input class="input address w-full mb-2 p-2 border rounded" type="text" value="{{ latest_saved_shipping.address }}">
+                        <input class="input town w-full mb-2 p-2 border rounded" type="text" value="{{ latest_saved_shipping.town }}">
+                        <input class="input state w-full mb-2 p-2 border rounded" type="text" value="{{ latest_saved_shipping.state }}">
+                        <input class="input lga w-full mb-2 p-2 border rounded" type="text" value="{{ latest_saved_shipping.local_government }}">
+                        <div class="flex gap-3">
+                            <button class="update-btn bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Update</button>
+                            <button class="cancel-btn bg-gray-400 text-white px-4 py-1 rounded hover:bg-gray-500">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                    {% else %}
+                        <p class="text-gray-500">No saved shipping addresses yet.</p>
+                    {% endif %}
+</div>
+                </section>
+
+                <hr class="border-gray-200 my-8">
+
+<section id="notifications" class="mb-8">
+     <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold text-gray-800">Notifications</h2>
+                        <a href="{% url 'notification' %}" class="pink-text hover:underline text-sm font-medium">View All</a>
+
+                    </div>
+    <div class="space-y-4">
+        {% for notice in notices %}
+        <a href="{% if notice.url %}{{ notice.url }}{% else %}#{% endif %}" >
+            <div class="flex items-center p-4 rounded-lg border border-gray-200 shadow-sm 
+                        {% if notice.broadcast %}
+                            bg-red-100
+                        {% else %}
+                            bg-gray-50
+                        {% endif %}">
+                <p class="text-gray-800 text-base">
+                    {{ notice.notice }}
+                </p>
+                <span class="text-xs text-gray-500 ml-auto flex-shrink-0">
+                    {{ notice.created_at|timesince }} ago
+                </span>
+            </div>
+            </a>
+        {% empty %}
+            <p class="text-gray-500 text-center py-4">No new notifications.</p>
+        {% endfor %}
+    </div>
+</section>
+
+
+                <hr class="border-gray-200 my-8">
+
+                <section id="account-settings">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Account Settings</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="password" class="block text-gray-600 text-sm font-medium mb-1">Change
+                                Password</label>
+                                {% if request.user.is_authenticated and request.user.customer %}
+                            <button id="open-password-modal"
+                                       class="pink-accent text-white px-6 py-2 rounded-lg mt-4 hover:opacity-90 transition-opacity duration-200">
+                                Update Password
+                            </button>
+                            {% else %}
+                            <button
+                                class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                                Update Password
+                            </button>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center justify-between p-2 rounded-lg border border-gray-200 shadow-sm">
+                            <label for="email-notifications" class="text-gray-700 font-medium cursor-pointer">General Email
+                                Notifications</label>
+                            <input type="checkbox" id="email-notifications" checked
+                                class="form-checkbox h-5 w-5 text-pink-accent rounded focus:ring-pink-accent">
+                        </div>
+                    </div>
+
+
+                </section>
+                <div id="password-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden">
+                    <div class="flex justify-center items-center h-full">
+                        <div class="relative bg-white rounded-lg p-6 w-full max-w-md space-y-4 shadow-xl">
+                            <button id="close-password-modal"
+                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xl">
+                                &times;
+                            </button>
+
+                            <h3 class="text-xl font-semibold text-gray-800">Change Password</h3>
+
+                            <div id="step-1">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Current Password</label>
+                                <input type="password" id="current-password"
+                                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-pink-accent"
+                                    required>
+                                <p id="current-password-error" class="text-red-500 text-sm mt-1 hidden"></p>
+
+                                <div class="mt-2 text-right">
+                                    <a href="{% url 'custom_send_email' %}"
+                                        class="text-sm text-blue-500 hover:underline">
+                                        Forgot Password?
+                                    </a>
+                                </div>
+
+                                <button id="verify-password-btn"
+                                    class="pink-accent text-white px-4 py-2 rounded-lg hover:opacity-90 mt-4">Next</button>
+                            </div>
+
+                            <div id="step-2" class="hidden">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">New Password</label>
+                                <input type="password" id="new-password"
+                                    class="w-full border border-gray-300 rounded-lg p-2 mb-2 focus:outline-none focus:ring-pink-accent">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Confirm Password</label>
+                                <input type="password" id="confirm-password"
+                                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-pink-accent">
+                                <p id="new-password-error" class="text-red-500 text-sm mt-2 hidden"></p>
+
+                                <button id="change-password-btn"
+                                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mt-4">Change
+                                    Password</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simple JavaScript for smooth scrolling to sections (your existing, corrected code)
+        document.querySelectorAll('aside nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        const editBtn = document.getElementById('edit-profile-btn');
+        const fullNameDisplay = document.getElementById('full-name-display');
+        const nameFields = document.getElementById('name-input-fields');
+        const firstNameInput = document.getElementById('first-name-input');
+        const lastNameInput = document.getElementById('last-name-input');
+        const emailDisplay = document.getElementById('email-display');
+        const emailInput = document.getElementById('email-input');
+        const emailError = document.getElementById('email-error');
+        const phoneDisplay = document.getElementById('phone-display');
+        const phoneInput = document.getElementById('phone-input');
+        const imageUploadInput = document.getElementById('image-upload-input');
+        const profileImage = document.getElementById('profile-image');
+        const changeImageBtn = document.getElementById('change-image-btn');
+
+        let isEditing = false;
+
+        editBtn.addEventListener('click', () => {
+            if (isEditing) {
+                if (!firstNameInput.value || !lastNameInput.value || !emailInput.value || !phoneInput.value) {
+                    alert("Please fill in all fields.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('first_name', firstNameInput.value.trim());
+                formData.append('last_name', lastNameInput.value.trim());
+                formData.append('email', emailInput.value.trim());
+                formData.append('number', phoneInput.value.trim());
+                if (imageUploadInput.files.length > 0) {
+                    formData.append('image', imageUploadInput.files[0]);
+                }
+
+                fetch("{% url 'update_profile' %}", {
+                    method: "POST",
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Update display
+                            fullNameDisplay.textContent = `${firstNameInput.value} ${lastNameInput.value}`;
+                            emailDisplay.textContent = emailInput.value;
+                            phoneDisplay.textContent = phoneInput.value;
+                            emailError.classList.add("hidden");
+
+                            // Exit edit mode
+                            nameFields.classList.add("hidden");
+                            emailInput.classList.add("hidden");
+                            phoneInput.classList.add("hidden");
+                            fullNameDisplay.classList.remove("hidden");
+                            emailDisplay.classList.remove("hidden");
+                            phoneDisplay.classList.remove("hidden");
+                            changeImageBtn.classList.add("hidden");
+
+                            editBtn.textContent = "Edit Profile";
+                            editBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            editBtn.classList.add('pink-accent');
+                            isEditing = false;
+                        } else {
+                            emailError.textContent = data.message;
+                            emailError.classList.remove("hidden");
+                            emailInput.classList.add("border-red-500");
+                        }
+                    });
+            } else {
+                // Enter edit mode
+                fullNameDisplay.classList.add("hidden");
+                emailDisplay.classList.add("hidden");
+                phoneDisplay.classList.add("hidden");
+                nameFields.classList.remove("hidden");
+                emailInput.classList.remove("hidden");
+                phoneInput.classList.remove("hidden");
+                changeImageBtn.classList.remove("hidden");
+
+                editBtn.textContent = "Done";
+                editBtn.classList.remove('pink-accent');
+                editBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                isEditing = true;
+            }
+        });
+
+        changeImageBtn.addEventListener('click', () => imageUploadInput.click());
+
+        imageUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = evt => profileImage.src = evt.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+    <script>
+        const openModalBtn = document.getElementById('open-password-modal');
+        const closeModalBtn = document.getElementById('close-password-modal');
+        const modal = document.getElementById('password-modal');
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+
+        const currentPasswordInput = document.getElementById('current-password');
+        const verifyBtn = document.getElementById('verify-password-btn');
+        const currentPasswordError = document.getElementById('current-password-error');
+
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const newPasswordError = document.getElementById('new-password-error');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+
+        function resetModal() {
+            step1.classList.remove('hidden');
+            step2.classList.add('hidden');
+            currentPasswordInput.value = '';
+            newPasswordInput.value = '';
+            confirmPasswordInput.value = '';
+            currentPasswordError.classList.add('hidden');
+            newPasswordError.classList.add('hidden');
+        }
+
+        openModalBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            resetModal();
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            resetModal();
+        });
+
+        verifyBtn.addEventListener('click', () => {
+            fetch("{% url 'verify_current_password' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    current_password: currentPasswordInput.value
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        step1.classList.add('hidden');
+                        step2.classList.remove('hidden');
+                    } else {
+                        currentPasswordError.textContent = data.message;
+                        currentPasswordError.classList.remove('hidden');
+                    }
+                });
+        });
+
+        changePasswordBtn.addEventListener('click', () => {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const hasNumber = /\d/.test(newPassword);
+
+            if (newPassword.length < 8 || !hasNumber) {
+                newPasswordError.textContent = "Password must be at least 8 characters and contain a number.";
+                newPasswordError.classList.remove("hidden");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                newPasswordError.textContent = "Passwords do not match.";
+                newPasswordError.classList.remove("hidden");
+                return;
+            }
+
+            newPasswordError.classList.add("hidden");
+
+            fetch("{% url 'change_password' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    new_password: newPassword
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Password changed successfully!');
+                        modal.classList.add('hidden');
+                        resetModal();
+                    } else {
+                        newPasswordError.textContent = data.message || "Failed to change password.";
+                        newPasswordError.classList.remove("hidden");
+                    }
+                });
+        });
+    </script>
+   <script>
+document.addEventListener("DOMContentLoaded", function () {
+    function getCSRFToken() {
+        let name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            let cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.querySelectorAll(".address-card").forEach(card => {
+        const editBtn = card.querySelector(".edit-btn");
+        const deleteBtn = card.querySelector(".delete-btn");
+        const updateBtn = card.querySelector(".update-btn");
+        const cancelBtn = card.querySelector(".cancel-btn");
+
+        const viewMode = card.querySelector(".view-mode");
+        const editMode = card.querySelector(".edit-mode");
+
+        const id = card.dataset.id;
+
+        editBtn.addEventListener("click", function () {
+            viewMode.classList.add("hidden");
+            editMode.classList.remove("hidden");
+        });
+
+        cancelBtn.addEventListener("click", function () {
+            editMode.classList.add("hidden");
+            viewMode.classList.remove("hidden");
+        });
+
+        updateBtn.addEventListener("click", function () {
+            const address = card.querySelector(".input.address").value;
+            const town = card.querySelector(".input.town").value;
+            const state = card.querySelector(".input.state").value;
+            const lga = card.querySelector(".input.lga").value;
+
+            fetch(`/update-shipping-address/${id}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": getCSRFToken(),
+                    "Accept": "application/json"
+                },
+                body: new URLSearchParams({
+                    address: address,
+                    town: town,
+                    state: state,
+                    local_government: lga
+                })
+            }).then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                    // Update UI content
+                    card.querySelector(".view-mode p:nth-child(1)").textContent = address;
+                    card.querySelector(".view-mode p:nth-child(2)").textContent = `${town}, ${state}, {{ shipping.country }}`;
+                    card.querySelector(".view-mode p:nth-child(3)").textContent = `LGA: ${lga}`;
+                    editMode.classList.add("hidden");
+                    viewMode.classList.remove("hidden");
+                } else {
+                    alert("Update failed.");
+                }
+            }).catch(error => {
+                console.error("Update error", error);
+                alert("AJAX error occurred.");
+            });
+        });
+
+        deleteBtn.addEventListener("click", function () {
+            if (confirm("Are you sure you want to unsave this address?")) {
+                fetch(`/unsave-shipping-address/${id}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCSRFToken(),
+                        "Accept": "application/json"
+                    }
+                }).then(res => res.json())
+                  .then(data => {
+                      if (data.success) {
+                          card.remove();  // Remove from DOM
+                      } else {
+                          alert("Unsave failed.");
+                      }
+                  }).catch(err => {
+                      console.error("Unsave error", err);
+                      alert("AJAX error occurred.");
+                  });
+            }
+        });
+    });
+});
+</script>
+
+</body>
+
+</html>
+{% endblock %}
+

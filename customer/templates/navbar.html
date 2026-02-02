@@ -1,0 +1,657 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/logo.jpg' %}" type="image/gif/jpg">
+    <title>DNY Home</title>
+
+    {# --- 1. Bootstrap CSS (Load First, as it's a global framework) --- #}
+
+    {# --- 2. Boxicons CDN --- #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+
+    {# --- 3. Your Custom Navbar Styles (Load LAST, to override Bootstrap) --- #}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        /* IMPORTANT: Reset Bootstrap's box-sizing on body for consistency if needed, though usually safer within elements */
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* --- Navbar-specific overrides for Bootstrap --- */
+        .navbar .nav {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+
+        .navbar .logo,
+        .navbar .searchbar,
+        .navbar .icons {
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .navbar .icons {
+            gap: 26px !important;
+        }
+
+        .navbar form {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* General styles */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            padding: 10px 10vw;
+        }
+
+        .navbar .logo {
+            gap: 8px;
+        }
+
+        .navbar .logo .logo-img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+        }
+
+        .navbar .logo span {
+            color: #FF1493;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .navbar .searchbar {
+            margin: 0 20px;
+        }
+
+        .profile {
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .navbar .search {
+            display: flex;
+            border: 2px solid #FF1493;
+            border-radius: 8px;
+            overflow: hidden;
+            align-items: center;
+        }
+
+        .navbar .search input {
+            border: none;
+            padding: 10px 16px;
+            width: 100%;
+            max-width: 300px;
+            outline: none;
+            font-size: 14px;
+            font-family: 'Inter';
+        }
+
+        .navbar .search input::placeholder {
+            color: #8B96A5;
+        }
+
+        .navbar .search a,
+        .navbar .search button {
+            background-color: #FF1493;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            border: none !important;
+            border-radius: 0 !important;
+            cursor: pointer;
+        }
+
+        .navbar .search button:hover,
+        .navbar .search a:hover {
+            background-color: #e01080;
+        }
+
+        .clear-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #FF1493;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+
+        .clear-btn:hover {
+            color: #e01080;
+        }
+
+        .navbar .icon {
+            display: flex !important;
+            gap: 4px;
+            flex-direction: column !important;
+            align-items: center !important;
+            color: #8B96A5;
+            cursor: pointer;
+            transition: 0.5s;
+            position: relative; /* Crucial for badge positioning */
+            text-decoration: none;
+        }
+
+        .navbar .icon i {
+            font-size: 22px;
+        }
+
+        .navbar .icon span {
+            transition: 0.5s;
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 15px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #8B96A5;
+        }
+
+        .navbar .icon:hover span,
+        .navbar .icon:hover {
+            color: #FF1493;
+        }
+
+        /* Cart Badge Styling - Main Navbar */
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #FF1493;
+            color: white !important; /* Force white color for the number */
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            box-shadow: 0 0 0 1.5px white;
+            z-index: 1;
+        }
+
+        .navbar .icon .dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 150px;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .navbar .icon:hover .dropdown {
+            display: block;
+        }
+
+        .navbar .icon .dropdown ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .navbar .icon .dropdown li {
+            padding: 8px 12px;
+            font-family: 'Inter';
+            font-weight: 400;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar .icon .dropdown li:hover {
+            background-color: #FF1493;
+            color: white;
+        }
+
+        .hamburger {
+            display: none;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            margin: 4px 0;
+            background-color: #212526;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100vh;
+            background-color: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: left 0.3s ease;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            text-decoration: none;
+            color: #212526;
+            font-weight: bold;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: 0.3s;
+            position: relative; /* Crucial for sidebar badge positioning */
+        }
+
+        .sidebar a i {
+            margin-right: 8px;
+        }
+
+        .sidebar a:hover {
+            background-color: #FF1493;
+            color: white;
+        }
+
+        /* Cart Badge Styling - Sidebar (Power Index style) */
+        .sidebar .cart-badge {
+            position: static; /* Remove absolute positioning */
+            margin-left: 5px; /* Add some space from "My Cart" text */
+            vertical-align: super; /* Make it act like a superscript */
+            transform: translateY(-2px); /* Fine-tune vertical alignment */
+            font-size: 0.7em; /* Slightly smaller than main text */
+            padding: 1px 4px; /* Smaller padding */
+            min-width: unset; /* Remove fixed min-width */
+            height: unset; /* Remove fixed height */
+            display: inline-flex; /* Use inline-flex to keep it in line with text */
+            box-shadow: none; /* Remove box shadow for a cleaner look */
+        }
+
+        .arrow {
+            margin-left: 8px;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+
+        .arrow.up {
+            transform: rotate(180deg);
+        }
+
+        .login-button {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px;
+            background-color: #FF1493;
+            color: white;
+            border: none !important;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .login-button i {
+            font-size: 20px;
+        }
+
+        .login-button:hover {
+            background-color: #e01080;
+        }
+
+        .sidebar .login-button {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .sidebar .login-button a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar .category-dropdown {
+            display: none;
+            margin-left: 20px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar .category-dropdown.active {
+            display: block;
+        }
+
+        .sidebar .category-dropdown a {
+            padding-left: 15px;
+            font-weight: normal;
+        }
+
+        #nav_check:checked~.sidebar {
+            left: 0;
+        }
+
+        /* --- Responsive Design --- */
+        @media only screen and (max-width: 845px) {
+            .navbar .icons {
+                display: none !important; /* Force hide main navbar icons */
+            }
+
+            .hamburger {
+                display: block !important; /* Force show hamburger */
+            }
+
+            .navbar .searchbar {
+                justify-content: center !important;
+            }
+
+            .navbar .search input {
+                max-width: 200px;
+            }
+
+            .navbar .nav {
+                justify-content: space-between !important;
+            }
+        }
+
+        @media only screen and (max-width: 577px) {
+            .navbar .nav {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+
+            .navbar .logo {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 10px;
+                width: 100% !important;
+            }
+
+            .hamburger {
+                display: block !important;
+                position: absolute !important;
+                right: 10vw !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+            }
+
+            .navbar .searchbar {
+                margin-top: 10px !important;
+                width: 100% !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+        }
+
+        @media only screen and (min-width: 846px) {
+            .hamburger,
+            .sidebar {
+                display: none !important; /* Force hide hamburger and sidebar on large screens */
+            }
+
+            #nav_check {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {# --- The entire navbar is wrapped in a dedicated div to control its scope --- #}
+    <div class="navbar">
+        <nav class="nav">
+            <a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">
+                <div class="logo">
+                    <img src="{% static 'images/logo.jpg' %}" alt="Logo" class="logo-img">
+                    <span>DNY</span>
+                </div>
+            </a>
+            <form method="get" action="{% url 'home' %}" class="search-form">
+                <div class="searchbar">
+                    <div class="search">
+                        <input type="text" id="search-input" name="q" placeholder="Search for products..."
+                            value="{{ query|default:'' }}">
+                        <button type="button" id="clear-btn" class="clear-btn">&times;</button>
+                        <button type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+            <div class="icons">
+                <a href="{% url 'home' %}" class="icon">
+                    <i class="bx bx-home"></i>
+                    <span>Home</span>
+                </a>
+                <div class="icon" id="category-icon">
+                    <i class="bx bx-category"></i>
+                    <span>Categories</span>
+                    <div class="dropdown">
+                        <ul class="category-list">
+                            <li><a href="{% url 'category' category_name='Shoe' %}" class="category-link">Shoe</a></li>
+                            <li><a href="{% url 'category' category_name='Cloth' %}" class="category-link">Cloth</a>
+                            </li>
+                            <li><a href="{% url 'category' category_name='Wig' %}" class="category-link">Hair</a></li>
+                            <li><a href="{% url 'category' category_name='Perfume' %}"
+                                    class="category-link">Perfumes</a></li>
+                            <li><a href="{% url 'category' category_name='Bag' %}" class="category-link">Bag</a></li>
+                            <li><a href="{% url 'category' category_name='Others' %}" class="category-link">Others</a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+
+                <a href="{% url 'view_cart' %}" id="navbar-cart-link" class="icon">
+                    <i class='bx bxs-cart-alt'></i>
+                    <span>My Cart</span>
+                    {% if cart_count > 0 %}
+                    <span class="cart-badge">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+
+
+                {% if request.user.is_authenticated and request.user.customer %}
+                <div class="icon">
+                    <a href="{% url 'profile' %}" style="color:inherit; text-decoration: none;">
+                    <div class="profile">
+                        <img src="{{ request.user.customer.image.url }}" alt="user-img">
+                        <span>{{ request.user.customer.username }}</span>
+                    </div>
+                                                                {% if unread_notice_count > 0 %}
+                        <span class="cart-badge">{{ unread_notice_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+                <button class="login-button">
+                    <a href="{% url 'logout' %}" style="color: white; text-decoration: none;">
+                        <i class="bx bxs-log-in"></i>
+                        Logout
+                    </a>
+                </button>
+                {% else %}
+                <div class="icon">
+                    <a href="{% url 'profile' %}" style="color:inherit; text-decoration: none;">
+                    <i class='bx bxs-user'></i>
+                    <span>User</span>
+                    </a>
+                </div>
+                <button class="login-button">
+                    <a href="{% url 'login' %}" style="color: white; text-decoration: none;">
+                        <i class="bx bxs-log-in"></i>
+                        Login
+                    </a>
+                </button>
+                {% endif %}
+            </div>
+            <label for="nav_check" class="hamburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </label>
+
+            <input type="checkbox" id="nav_check" hidden>
+            <div class="sidebar">
+                <a href="{% url 'home' %}" class="sidebar-icon-link">
+                    <i class="bx bx-home"></i>
+                    Home
+                </a>
+                <a href="#" id="sidebar-category">
+                    <i class="bx bx-category"></i>
+                    Categories
+                    <i class="bx bx-chevron-down arrow"></i>
+                </a>
+                <ul class="category-dropdown">
+                    <li><a href="{% url 'category' category_name='Shoe' %}">Shoe</a></li>
+                    <li><a href="{% url 'category' category_name='Cloth' %}">Cloth</a></li>
+                    <li><a href="{% url 'category' category_name='Wig' %}">Hair</a></li>
+                    <li><a href="{% url 'category' category_name='Perfume' %}">Perfumes</a></li>
+                    <li><a href="{% url 'category' category_name='Bag' %}">Bag</a></li>
+                    <li><a href="{% url 'category' category_name='Others' %}">Others</a></li>
+                </ul>
+                <a href="{% url 'view_cart' %}" class="sidebar-icon-link" id="sidebar-cart-link">
+                    <i class='bx bxs-cart-alt'></i>
+                    My Cart
+
+                        {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                        {% endif %}
+
+                </a>
+                {% if request.user.is_authenticated and request.user.customer %}
+                <a href="{% url 'profile' %}" class="sidebar-profile-link">
+                    <div class="profile">
+                        <img src="{{ request.user.customer.image.url }}" alt="user-img">
+                    </div>
+                    {{ request.user.customer.username }}
+                                            {% if unread_notice_count > 0 %}
+                        <span class="cart-badge">{{ unread_notice_count }}</span>
+                        {% endif %}
+                </a>
+                <button class="login-button">
+                    <a href="{% url 'logout' %}">
+                        <i class="bx bxs-log-in"></i>
+                        Logout
+                    </a>
+                </button>
+                {% else %}
+                <a href="{% url 'profile' %}" class="sidebar-icon-link">
+                    <i class='bx bxs-user'></i>
+                    User
+                </a>
+                <button class="login-button">
+                    <a href="{% url 'login' %}">
+                        <i class="bx bxs-log-in"></i>
+                        Login
+                    </a>
+                </button>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+    {% include 'footer.html' %}
+
+    {# --- Bootstrap JS Bundle (Load LAST, after all HTML and custom JS) --- #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    {# --- Your Custom JavaScript --- #}
+    <script>
+        document.getElementById('sidebar-category').addEventListener('click', function (event) {
+            event.preventDefault();
+            const dropdown = document.querySelector('.sidebar .category-dropdown');
+            const arrow = this.querySelector('.arrow');
+            dropdown.classList.toggle('active');
+            arrow.classList.toggle('up');
+        });
+
+        document.querySelector('#category-icon').addEventListener('click', function (event) {
+            event.stopPropagation();
+            const dropdown = this.querySelector('.dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', function (event) {
+            const categoryIcon = document.querySelector('#category-icon');
+            const dropdown = categoryIcon.querySelector('.dropdown');
+            if (dropdown && !categoryIcon.contains(event.target) && dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        const navCheck = document.getElementById('nav_check');
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 845) {
+                navCheck.checked = false;
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById("search-input");
+            const clearBtn = document.getElementById("clear-btn");
+            const searchForm = document.querySelector(".search-form");
+
+            clearBtn.style.display = searchInput.value ? "block" : "none";
+
+            searchInput.addEventListener("input", function () {
+                clearBtn.style.display = this.value ? "block" : "none";
+            });
+
+            clearBtn.addEventListener("click", function () {
+                searchInput.value = "";
+                searchForm.submit(); // Submits the form with an empty query
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>

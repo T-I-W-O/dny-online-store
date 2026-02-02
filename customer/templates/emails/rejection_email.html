@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update on Your DNY Order</title>
+    <style>
+        /* Base styles for better email client compatibility */
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333333;
+            line-height: 1.6;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            width: 100% !important;
+        }
+
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        td, th {
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        a {
+            color: #FF1493; /* Deep pink for links */
+            text-decoration: none;
+        }
+
+        h2, h3 {
+            color: #FF1493; /* Matching link color */
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        /* Container for the email content */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Header section */
+        .header {
+            background-color: #FFCCE5; /* Lighter pink background for header */
+            padding: 25px 20px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .header h1 {
+            color: #FF1493; /* Deep pink text */
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Body content section */
+        .content-body {
+            padding: 20px 30px;
+        }
+
+        /* Section titles */
+        .section-title {
+            border-bottom: 2px solid #e0e0e0; /* Subtle grey line */
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #FF1493; /* Deep pink for section titles */
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Reason for Rejection section */
+        .reason-box {
+            background-color: #FFF0F5; /* Very light pink background */
+            border: 1px solid #FFCCE5; /* Lighter pink border */
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #555555; /* Darker text for readability */
+        }
+        .reason-box strong {
+            color: #FF1493; /* Deep pink for the "Reason for Rejection" title */
+        }
+
+        /* Footer section */
+        .footer {
+            background-color: #f5f5f5; /* Light grey footer */
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #777777;
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                border-radius: 0;
+            }
+            .content-body {
+                padding: 15px 20px !important;
+            }
+            .header {
+                padding: 20px 15px !important;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Important Update About Your DNY Order</h1>
+        </div>
+
+        <!-- Body Content -->
+        <div class="content-body">
+            <p>Hello {{ username }},</p>
+
+            <p>Thank you for shopping with us! This message is about your order **#{{ orders.first.transaction_id }}**.</p>
+
+            <p>After reviewing your order, we're sorry to let you know that we're unable to process it at this time.</p>
+
+            <div class="reason-box">
+                <strong>Reason for Rejection:</strong><br>
+                {{ reason }}
+            </div>
+
+            <p>We're truly sorry for any inconvenience this might cause. If a payment was made for this order, a full refund will be sent back to your original payment method within **[14 business days]**.</p>
+
+            <p>If you have any questions, or if you think there might have been a mistake, please feel free to reach out to our customer support team:</p>
+            <p>
+                📞 <a href="tel:+2347030572996">+234 703 057 2996</a><br>
+                📧 <a href="mailto:dnyhairng@gmail.com">dnyhairng@gmail.com</a>
+            </p>
+
+            <p>Thank you for your understanding. We hope to serve you better in the future!</p>
+
+            <p>Kind regards,<br>
+            The DNY Customer Service Team</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; {{ now.year }} DNY. All rights reserved.</p>
+            
+        </div>
+    </div>
+
+</body>
+</html>
