@@ -3510,8 +3510,4 @@ def customer_detail_view(request, type, id):
         'shipping_orders': shipping_orders_data
     })
 
-def fz(request):
-    return render(request, 'fzmovies.html')
 
-def wonder(request):
-    return render(request, 'wonder.html')
