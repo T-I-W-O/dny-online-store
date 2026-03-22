@@ -339,6 +339,15 @@
             background-color: #e01080;
         }
 
+        /* NEW STYLE FOR RED LOGOUT BUTTON */
+        .logout-button {
+            background-color: #ff4d4d !important;
+        }
+        
+        .logout-button:hover {
+            background-color: #cc0000 !important;
+        }
+
         .sidebar .login-button {
             width: 100%;
             margin-top: 20px;
@@ -501,12 +510,20 @@
                         <img src="{{ request.user.customer.image.url }}" alt="user-img">
                         <span>{{ request.user.customer.username }}</span>
                     </div>
-                                                                {% if unread_notice_count > 0 %}
+                                                                                {% if unread_notice_count > 0 %}
                         <span class="cart-badge">{{ unread_notice_count }}</span>
                         {% endif %}
                     </a>
                 </div>
-                <button class="login-button">
+
+                {% if request.user.groups.all.0.name == "admin" %}
+                <a href="{% url 'shop' %}" class="login-button" style="text-decoration: none;">
+                    <i class="bx bxs-dashboard"></i>
+                    Dashboard
+                </a>
+                {% endif %}
+
+                <button class="login-button logout-button">
                     <a href="{% url 'logout' %}" style="color: white; text-decoration: none;">
                         <i class="bx bxs-log-in"></i>
                         Logout
@@ -571,7 +588,15 @@
                         <span class="cart-badge">{{ unread_notice_count }}</span>
                         {% endif %}
                 </a>
-                <button class="login-button">
+
+                {% if request.user.groups.all.0.name == "admin" %}
+                <a href="{% url 'shop' %}" class="login-button" style="color: white;">
+                    <i class="bx bxs-dashboard"></i>
+                    Dashboard
+                </a>
+                {% endif %}
+
+                <button class="login-button logout-button">
                     <a href="{% url 'logout' %}">
                         <i class="bx bxs-log-in"></i>
                         Logout

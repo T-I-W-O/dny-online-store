@@ -31,18 +31,17 @@ def dictkey(dictionary, key):
 
 @register.filter
 def format_date_range(start_date):
-    end_date = start_date + timedelta(days=14)
-
-    if start_date.year == end_date.year:
-        if start_date.month == end_date.month:
-            # Same month: repeat the month name on both
-            return f"{start_date.strftime('%B %#d')} - {end_date.strftime('%B %#d, %Y')}"
-        else:
-            # Different months, same year
-            return f"{start_date.strftime('%B %#d')} - {end_date.strftime('%B %#d, %Y')}"
-    else:
-        # Different year too
-        return f"{start_date.strftime('%B %#d, %Y')} - {end_date.strftime('%B %#d, %Y')}"
+    if not start_date:
+        return ""
+    
+    # %B is month, %d is day with zero (e.g., "March 05")
+    formatted_date = start_date.strftime('%B %d')
+    
+    # Manually remove the leading zero if it exists (e.g., "March 05" -> "March 5")
+    # We replace " 0" with " " so "March 05" becomes "March 5"
+    clean_date = formatted_date.replace(' 0', ' ')
+    
+    return f"{clean_date} - ??"
 
 @register.filter
 def to(value):

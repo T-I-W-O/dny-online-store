@@ -853,3 +853,351 @@
 
 </html>
 {% endblock %}
+
+
+ 
+       
+
+       
+
+
+
+
+       
+
+        /* Media Queries */
+        @media screen and (max-width: 1200px) {
+            .dashboard-container {
+                width: 94%;
+                grid-template-columns: 1fr;
+            }
+
+            main .product-counts {
+                justify-content: center;
+                /* Center items when they wrap */
+            }
+
+            main .product-counts>div {
+                min-width: 300px;
+                /* Slightly larger min-width for tablets */
+            }
+        }
+
+        /* New styles for the product-list div */
+        .product-list {
+            background-color: var(--clr-white);
+            /* White background */
+            padding: 30px;
+            /* Ample padding around content */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 4px 20px var(--shadow-color);
+            /* More prominent shadow */
+            max-width: 1000px;
+            /* Limit overall width of the card */
+            width: 100%;
+            /* Take full width up to max-width */
+            box-sizing: border-box;
+            /* Include padding in width calculation */
+            margin-top: 2rem;
+            /* Add some space above the product list */
+        }
+
+        .product-list h2 {
+            /* Targeting the h2 inside product-list */
+            color: var(--primary-text);
+            font-weight: 600;
+            margin-top: 0;
+            /* Remove default top margin */
+            margin-bottom: 25px;
+            text-align: center;
+            /* Centralize the text */
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            /* Enables horizontal scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling on iOS */
+            padding-bottom: 5px;
+            /* Add slight padding for scrollbar visibility */
+        }
+
+        /* Custom scrollbar for Webkit browsers */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--light-grey);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--medium-grey);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #adb5bd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            /* Allows for border-radius on cells if needed */
+            border-spacing: 0;
+            /* Remove space between cells */
+            min-width: 700px;
+            /* Ensure sufficient width to trigger scroll on smaller screens */
+        }
+
+        th,
+        td {
+            padding: 14px 20px;
+            /* Increased padding for more breathing room */
+            text-align: left;
+            white-space: nowrap;
+            /* Prevent text wrapping */
+            border-bottom: 1px solid var(--border-color);
+            /* Only bottom border */
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: var(--light-grey);
+            /* Lighter header background */
+            color: var(--secondary-text);
+            /* Softer header text color */
+            font-weight: 600;
+            /* Slightly bolder */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            /* A little spacing for headers */
+            position: sticky;
+            /* Make headers sticky for horizontal scroll */
+            top: 0;
+            z-index: 1;
+            /* Ensure headers are above content when scrolling */
+        }
+
+        td {
+            background-color: var(--clr-white);
+            color: var(--primary-text);
+            font-weight: 400;
+        }
+
+        /* Zebra striping for rows */
+        tbody tr:nth-child(even) td {
+            background-color: var(--clr-white);
+            /* Very subtle lighter shade */
+        }
+
+        /* Hover effect for rows */
+        tbody tr:hover td {
+            background-color: #f5f7f9;
+            /* Subtle hover background */
+            transition: background-color 0.2s ease;
+            /* Smooth transition */
+            cursor: pointer;
+            /* Indicate row is clickable */
+        }
+
+        /* Remove bottom border from cells in the last row */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status specific styling */
+        .status {
+            font-weight: 500;
+            /* Medium weight for status */
+            padding: 4px 8px;
+            border-radius: 5px;
+            /* Rounded corners for status badges */
+            display: inline-block;
+            /* Allows padding and border-radius */
+            min-width: 60px;
+            /* Ensure minimum width for badges */
+            text-align: center;
+        }
+
+        .status-ok {
+            color: var(--ok-color);
+            background-color: #e6ffed;
+            /* Very light green background */
+            border: 1px solid var(--ok-color);
+        }
+
+        .status-low {
+            color: var(--low-color);
+            background-color: #fff9e6;
+            /* Very light orange background */
+            border: 1px solid var(--low-color);
+        }
+
+        .status-out {
+            color: var(--out-color);
+            background-color: #ffe6e6;
+            /* Very light red background */
+            border: 1px solid var(--out-color);
+        }
+
+        /* New styles for search and filter */
+        .search-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-filter-container input[type="text"] {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            min-width: 200px;
+            /* Ensure search bar has a decent minimum width */
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-buttons button {
+            padding: 10px 15px;
+            border: 1px solid var(--clr-primary);
+            border-radius: 5px;
+            background-color: var(--clr-white);
+            color: var(--clr-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-buttons button:hover,
+        .filter-buttons button.active {
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+        }
+
+        .product-message {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: var(--clr-info-dark);
+        }
+
+        .see-more-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .see-more-button {
+            padding: 10px 20px;
+            background-color: var(--clr-primary);
+            color: var(--clr-white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .see-more-button:hover {
+            background-color: var(--clr-primary-variant);
+        }
+
+
+        /* Media Queries */
+        @media screen and (max-width: 768px) {
+            body {
+                margin: 15px;
+            }
+
+            .product-list {
+                padding: 20px;
+                /* Reduce padding on smaller screens */
+            }
+
+            .product-list h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            th,
+            td {
+                padding: 10px 15px;
+                /* Slightly less padding on smaller screens */
+                font-size: 0.85em;
+            }
+
+            .table-container {
+                padding-bottom: 0;
+                /* Adjust padding for scrollbar on small screens if needed */
+            }
+
+            .status {
+                padding: 3px 6px;
+                font-size: 0.8em;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-filter-container input[type="text"] {
+                width: 100%;
+            }
+
+            .filter-buttons {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .filter-buttons button {
+                flex: 1;
+                /* Make buttons fill available space */
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .dashboard-container {
+                width: 100%;
+                padding: 0 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            main .product-counts {
+                flex-direction: column;
+                /* Stack vertically */
+                align-items: center;
+                /* Center items when stacked */
+            }
+
+            main .product-counts>div {
+                width: 100%;
+                /* Full width for mobile */
+                min-width: unset;
+                /* Remove min-width constraint */
+            }
+
+
+            .chart-section {
+                grid-template-columns: 1fr;
+                /* Stack charts vertically */
+            }
+        }

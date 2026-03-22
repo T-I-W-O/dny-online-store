@@ -7,6 +7,32 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.http import HttpResponse
 from django.urls import reverse
 from django.http import Http404
+from django.shortcuts import redirect
+from django.contrib import messages
+
+def profile_complete_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        user = request.user
+
+        if user.is_authenticated:
+
+            # ✅ Check if user is in ADMIN group
+            if user.groups.filter(name='admin').exists():
+
+                customer = getattr(user, 'customer', None)
+
+                if customer and not all([
+                    customer.first_name,
+                    customer.last_name,
+                    customer.number,
+                    customer.email
+                ]):
+                    messages.warning(request, "Complete your profile first.")
+                    return redirect('settings')
+
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 def allowed_users(allowed_roles=[]):
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):

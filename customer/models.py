@@ -7,18 +7,43 @@ from django.core.exceptions import ValidationError
 from cloudinary_storage.storage import MediaCloudinaryStorage
 from cloudinary.models import CloudinaryField
 
+from django.db import models
+from django.contrib.auth import get_user_model
+from cloudinary_storage.storage import MediaCloudinaryStorage
+
+# Set default Cloudinary image public ID
+DEFAULT_PUBLIC_ID = "profilepic_t1u5jx"  # your existing default image in Cloudinary
+
+User = get_user_model()
+
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer')
     username = models.CharField(max_length=100, null=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     number = models.CharField(max_length=15)
-    email = models.EmailField(max_length=100)
-    image = models.ImageField(storage=MediaCloudinaryStorage(), upload_to='profile/', default='default_image', blank=True, null=True)
+    email = models.EmailField(max_length=100, unique=True)
+    image = models.ImageField(
+        storage=MediaCloudinaryStorage(),
+        upload_to='profile/',
+        default=DEFAULT_PUBLIC_ID,  # now correctly points to your Cloudinary image
+        blank=False,
+        null=False
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name}'
+        return f"{self.username}"
+
+    @property
+    def image_url(self):
+        """
+        Returns the full URL of the image. If the image is empty (shouldn't happen), fallback to default.
+        """
+        if self.image:
+            return self.image.url
+        # fallback URL in case image is missing
+        return f"https://res.cloudinary.com/divkaqngt/image/upload/v1755280502/profilepic_t1u5jx.png"
 
 class GuestCustomer(models.Model):
     session_key = models.CharField(max_length=100, unique=True)

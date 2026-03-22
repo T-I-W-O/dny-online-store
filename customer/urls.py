@@ -23,7 +23,8 @@ urlpatterns = [
      path('shipping/save/', views.collect_shipping_info, name='collect_shipping_info'),
     path('create_slides/', views.test, name='test'),
     path('add_product/', views.add_product, name='add_product'),
-    path('test/', views.tests, name='tests'),
+   
+   
     path('notifications/', views.notification_list_view, name='notification-list'),
     path('notifications/create/', views.create_notification_view, name='create-notification'),
     path('slides/delete/<int:slide_id>/', views.delete_slide, name='delete_slide'),
@@ -41,8 +42,7 @@ urlpatterns = [
     path('error/', views.error, name='error'),
     path('email', views.create_order_email, name='email'),
     path('payment/success/', views.payment_success, name='payment_success'),
-
-
+    path('settings/', views.setting, name='settings'),
     path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
     path('profile/', views.profile, name='profile'),
@@ -60,7 +60,7 @@ urlpatterns = [
     path('change-password/', views.change_password, name='change_password'),
     path('carts/', views.view_cart, name='view_cart'),
     path('prepare-payment-ajax/', views.prepare_payment_ajax, name='prepare_payment_ajax'),
-    
+    path('settings/update/', views.update_profile_ajax, name='update_profile_ajax'),
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
      path('shipping/validate/', views.validate_shipping_order, name='validate_shipping_order'),

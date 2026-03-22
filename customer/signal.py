@@ -1,37 +1,117 @@
 # customer/signals.py
-from django.contrib.auth.signals import user_logged_in
-from django.dispatch import receiver
-from django.contrib import messages
-from .models import  *
-from django.db.models.signals import post_save
-from django.db.models import Q
-from django.urls import reverse
 
 import datetime
-from django.dispatch import receiver
-from django.utils import timezone
-from django.contrib.auth.models import Group
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
-from django.db.models.fields.files import FileField
-
-# signals.py
 import sys
-from django.db.models.signals import post_delete
+import os
+
+from decouple import config
+
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
-from django.db.models import ImageField
+from django.db.models import Q, ImageField
+from django.db.models.fields.files import FileField
+from django.db.models.signals import post_save, post_delete, post_migrate
+from django.urls import reverse
+from django.utils import timezone
+
 from cloudinary.models import CloudinaryField
 from cloudinary.uploader import destroy
+import cloudinary.uploader
 
+from .models import *
+
+def debug(msg):
+    print(f"🐞 [DEBUG] {msg}")
+
+@receiver(post_migrate)
+def setup_roles(sender, **kwargs):
+    # Only run once, when your app is migrated
+    if sender.name != 'customer':  # Replace 'customer' with your app name
+        return
+
+    debug("🚀 Starting Superuser & Group setup...")
+    User = get_user_model()
+
+    # 1. Ensure Groups exist
+    admin_group, _ = Group.objects.get_or_create(name='admin')
+    customer_group, _ = Group.objects.get_or_create(name='customer')
+    debug("Groups ensured: admin and customer")
+
+    # Give all permissions to admin group (optional)
+    if not admin_group.permissions.exists():
+        admin_group.permissions.set(Permission.objects.all())
+        debug("Permissions bound to admin group.")
+
+    # 2. Get Superuser credentials from env
+    username = config("DJANGO_SU_USERNAME", default=None)
+    email = config("DJANGO_SU_EMAIL", default=None)
+    password = config("DJANGO_SU_PASSWORD", default=None)
+
+    if not all([username, email, password]):
+        debug("❌ Skipping: Missing DJANGO_SU env variables.")
+        return
+
+    # 3. Create or update Superuser
+    user, created = User.objects.get_or_create(
+        username=username,
+        defaults={'email': email, 'is_staff': True, 'is_superuser': True, 'is_active': True}
+    )
+
+    if created:
+        user.set_password(password)
+        user.save()
+        debug(f"✅ Created NEW superuser: {username}")
+    else:
+        # Sync flags and password if changed
+        needs_save = False
+        if not (user.is_staff and user.is_superuser and user.is_active):
+            user.is_staff = user.is_superuser = user.is_active = True
+            needs_save = True
+        if not user.check_password(password):
+            user.set_password(password)
+            needs_save = True
+        if needs_save:
+            user.save()
+            debug(f"✅ Updated existing superuser: {username}")
+
+    # 4. Assign admin group to superuser only
+    if not user.groups.filter(name='admin').exists():
+        user.groups.add(admin_group)
+        debug(f"✅ Superuser added to admin group")
+
+    # 5. Ensure Customer profile exists for superuser
+    Customer.objects.get_or_create(
+        user=user,
+        defaults={
+            'username': user.username,
+            'email': user.email,
+            
+        }
+    )
+    debug("✅ Admin-Customer profile sync complete.")
 
 @receiver(post_delete)
 def delete_images_on_model_delete(sender, instance, **kwargs):
-    # Avoid running during migrations or fixture loading
+    """
+    Safely deletes Cloudinary files and ImageField files when a model instance is deleted.
+    Handles:
+      - CloudinaryField (with destroy)
+      - ImageField (including CloudinaryStorage)
+      - Windows path normalization
+      - Missing files / HTTP errors
+      - Skips during migrations or loaddata
+    """
+    # Skip during migrations or fixtures
     if 'migrate' in sys.argv or 'loaddata' in sys.argv:
         return
 
     for field in sender._meta.get_fields():
+        # ------------------------------
         # 1) Handle CloudinaryField explicitly
+        # ------------------------------
         if isinstance(field, CloudinaryField):
             file_field = getattr(instance, field.name, None)
             if file_field and getattr(file_field, 'public_id', None):
@@ -39,18 +119,34 @@ def delete_images_on_model_delete(sender, instance, **kwargs):
                     destroy(file_field.public_id, invalidate=True)
                     print(f"✅ Deleted Cloudinary file: {file_field.public_id}")
                 except Exception as e:
-                    print(f"❌ Error deleting Cloudinary file: {e}")
+                    print(f"❌ Error deleting Cloudinary file {file_field.public_id}: {e}")
 
-        # 2) Handle normal ImageField (including ones using CloudinaryStorage)
+        # ------------------------------
+        # 2) Handle normal ImageField
+        # ------------------------------
         elif isinstance(field, ImageField):
             file_field = getattr(instance, field.name, None)
-            if file_field and file_field.name and file_field.storage.exists(file_field.name):
-                try:
-                    file_field.delete(save=False)
-                    print(f"✅ Deleted ImageField file: {file_field.name}")
-                except Exception as e:
-                    print(f"❌ Error deleting ImageField file: {e}")
+            try:
+                if file_field and file_field.name:
+                    # Normalize Windows paths
+                    file_name = file_field.name.replace("\\", "/")
 
+                    # Check existence safely
+                    if hasattr(file_field.storage, 'exists'):
+                        exists = False
+                        try:
+                            exists = file_field.storage.exists(file_name)
+                        except Exception as e:
+                            print(f"⚠️ Warning: could not check existence for {file_name}: {e}")
+
+                        if exists:
+                            try:
+                                file_field.delete(save=False)
+                                print(f"✅ Deleted ImageField file: {file_name}")
+                            except Exception as e:
+                                print(f"❌ Error deleting ImageField file {file_name}: {e}")
+            except Exception as e:
+                print(f"⚠️ Unexpected error handling field {field.name}: {e}")
 
 @receiver(post_save, sender=ShippingOrder)
 def notify_low_stock_cart_users(sender, instance, created, **kwargs):
@@ -125,8 +221,6 @@ def link_guest_orders_to_user(sender, user, request, **kwargs):
 
     messages.success(request, "Welcome back! Your previous guest orders have been linked.")
 
-
-
 @receiver(post_save, sender=Product)
 def notify_finished_or_low_goods(sender, instance, created, **kwargs):
     
@@ -167,3 +261,5 @@ def notify_finished_or_low_goods(sender, instance, created, **kwargs):
                         notice=message,
                         is_system=True
                     )
+
+

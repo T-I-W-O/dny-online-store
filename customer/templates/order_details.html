@@ -371,32 +371,61 @@
 <div class="order-details-container">
     <h1 class="order-title">Order Details</h1>
 
-    <div class="order-info-card">
-        <div class="order-header">
-            <div class="order-id-wrapper">
-                <p class="order-id-text">ORDER <span class="order-id-number">#{{ shipping.id }}</span></p>
-            </div>
-            <div class="order-date-transaction">
-                <p class="order-created-text">Delivery: <span class="order-created-date">{{ shipping.deliverydate|format_date_range }}</span></p>
-                <p class="transaction-id-text">Transaction: {{ orders.first.transaction_id }}</p>
-            </div>
+<div class="order-info-card">
+    <div class="order-header">
+        <div class="order-id-wrapper">
+            <p class="order-id-text">ORDER <span class="order-id-number">#{{ shipping.id }}</span></p>
+            <p style="font-size: 0.75rem; font-weight: 700; margin-top: 4px; color: {% if orders.first.payment_status == 'Paid' %}#10B981{% else %}#EF4444{% endif %};">
+                ORDER PAYMENT STATUS ({{ orders.first.payment_status|upper }})
+            </p>
         </div>
+        <div class="order-date-transaction">
+            <p class="order-created-text">
+                Delivery: 
+                {% if orders.first.status == 'Delivered' %}
+                    <span style="color: #10B981; font-weight: 700;">DELIVERED</span>
+                {% elif orders.first.status == 'Inactive' %}
+                    <span style="color: #EF4444; font-weight: 700;">CANCELLED</span>
+                {% else %}
+                    <span class="order-created-date">{{ shipping.deliverydate|format_date_range }}</span>
+                {% endif %}
+            </p>
+            <p class="transaction-id-text">Transaction: {{ orders.first.transaction_id }}</p>
+        </div>
+    </div>
 
+    {% if orders.first.status == 'Inactive' %}
+        <div style="text-align: center; padding: 20px; border: 2px dashed #EF4444; border-radius: 8px; margin-top: 10px;">
+            <h2 style="color: #EF4444; font-weight: 800; margin: 0;">ORDER CANCELLED</h2>
+        </div>
+    {% else %}
         <div class="progress-bar-container">
-            <div class="progress-step-item" data-step="0">
+            <div class="progress-step-item">
                 <div class="progress-circle completed"><i class="fas fa-check"></i></div>
             </div>
-            <div class="progress-line-segment completed"></div>
-            <div class="progress-step-item" data-step="1">
-                <div class="progress-circle completed"><i class="fas fa-check"></i></div>
+            
+            <div class="progress-line-segment {% if orders.first.payment_status == 'Paid' %}completed{% else %}incomplete{% endif %}"></div>
+
+            <div class="progress-step-item">
+                <div class="progress-circle {% if orders.first.payment_status == 'Paid' %}completed{% endif %}">
+                    {% if orders.first.payment_status == 'Paid' %}<i class="fas fa-check"></i>{% endif %}
+                </div>
             </div>
-            <div class="progress-line-segment completed"></div>
-            <div class="progress-step-item" data-step="2">
-                <div class="progress-circle completed"><i class="fas fa-check"></i></div>
+
+            <div class="progress-line-segment {% if orders.first.payment_status == 'Paid' %}completed{% else %}incomplete{% endif %}"></div>
+
+            <div class="progress-step-item">
+                <div class="progress-circle {% if orders.first.payment_status == 'Paid' %}completed{% endif %}">
+                    {% if orders.first.payment_status == 'Paid' %}<i class="fas fa-check"></i>{% endif %}
+                </div>
             </div>
-            <div class="progress-line-segment incomplete"></div>
-            <div class="progress-step-item" data-step="3">
-                <div class="progress-circle"></div>
+
+            <div class="progress-line-segment {% if orders.first.status == 'Delivered' %}completed{% else %}incomplete{% endif %}"></div>
+
+            <div class="progress-step-item">
+                <div class="progress-circle {% if orders.first.status == 'Delivered' %}completed{% endif %}">
+                    {% if orders.first.status == 'Delivered' %}<i class="fas fa-check"></i>{% endif %}
+                </div>
             </div>
         </div>
 
@@ -405,20 +434,22 @@
                 <i class="fas fa-clipboard-list"></i>
                 <span>Order Processed</span>
             </div>
-            <div class="status-item">
+            <div class="status-item {% if orders.first.payment_status != 'Paid' %}incomplete{% endif %}">
                 <i class="fas fa-truck"></i>
                 <span>Order Shipped</span>
             </div>
-            <div class="status-item">
+            <div class="status-item {% if orders.first.payment_status != 'Paid' %}incomplete{% endif %}">
                 <i class="fas fa-route"></i>
                 <span>Order En Route</span>
             </div>
-            <div class="status-item incomplete">
+            <div class="status-item {% if orders.first.status != 'Delivered' %}incomplete{% endif %}">
                 <i class="fas fa-home"></i>
                 <span>Order Arrival</span>
             </div>
         </div>
-    </div>
+    {% endif %}
+</div>
+
 
     <div class="section-divider">
         <h2 class="section-title">Products in this Order</h2>

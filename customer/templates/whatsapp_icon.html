@@ -145,7 +145,19 @@
             const closeChatboxBtn = document.getElementById('close-chatbox');
             const whatsappInput = document.getElementById('whatsapp-input');
             const sendWhatsappBtn = document.getElementById('send-whatsapp');
-            const whatsappNumber = '+2347037588397';
+
+            const rawNumber = "{{ admin.number }}";
+            const cleaned = rawNumber.replace(/\D/g, '');
+
+            let whatsappNumber;
+
+            if (cleaned.startsWith('0')) {
+                whatsappNumber = '+234' + cleaned.substring(1);
+            } else if (cleaned.startsWith('234')) {
+                whatsappNumber = '+' + cleaned;
+            } else {
+                whatsappNumber = '+234' + cleaned;
+            }
 
             // Function to format the time as HH:MM AM/PM
             function formatTime(date) {

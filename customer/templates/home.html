@@ -391,7 +391,9 @@
     <a href="?page={{ products.paginator.num_pages }}" class="pagination-button"><i class="fa-solid fa-angles-right"></i></a>
 </div>
     {% include 'pricerange.html' %}
+    {% if admin.number %}
     {% include 'whatsapp_icon.html' %}
+    {% endif %}
 <script>
     // Store product images globally accessible by their product ID
     const allProductImagesData = {};

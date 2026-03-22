@@ -1,106 +1,57 @@
 import json
 import random
-import datetime
-import json
 import logging
+import string
+import datetime # Keep the module for general use
+from datetime import datetime, timedelta # Specifically import the class for strptime
+from decimal import Decimal
+from collections import defaultdict
+from smtplib import SMTPException
+
+# Django imports
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import EmailMultiAlternatives, BadHeaderError
-from django.template.loader import render_to_string
-from django.core.exceptions import ImproperlyConfigured
-from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
-import json
-from .models import Coupon
-from smtplib import SMTPException
+from django.core.mail import EmailMultiAlternatives, send_mail, BadHeaderError
+from django.template.loader import render_to_string
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.utils.dateparse import parse_date
-from django.utils.timezone import make_aware, is_naive
+from django.utils.timezone import make_aware, is_naive, now
 from django.utils import timezone
-from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.forms import inlineformset_factory
-from .models import Product, ProductImage, ProductSize, ProductColor, Color
-from .forms import ProductEditForm, ProductImageEditForm
-from .decorators import allowed_users
-from .forms import *
-from datetime import datetime  # preferred
-from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import check_password
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import json
-from django.db.models import Prefetch
-from collections import defaultdict
-from django.shortcuts import render, redirect
-from django.core.exceptions import ValidationError
-
-from django.contrib import messages
-from django.db import transaction
-from django.contrib.auth.models import User # Assuming User model is from django.contrib.auth.models
-from django.db.models import Sum
-from django.db.models import Avg, Count, Case, When, Value, IntegerField, Q
-from django.contrib.auth.models import Group, AnonymousUser
-import string
-from smtplib import SMTPException
-from django.utils.timesince import timesince
-from django.utils.timezone import now
-from django.http import JsonResponse, HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from django.utils.decorators import method_decorator
-from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, logout, login as auth_login
-from django.contrib.auth.models import User, Group, AnonymousUser
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.db.models import Count, Q, Case, When, Value, IntegerField
+from django.db.models import (
+    Sum, Avg, Count, Case, When, Value, IntegerField, Q, F, Prefetch
+)
 from django.core.paginator import Paginator
-from django.views.decorators.http import require_POST
-from django.core.mail import send_mail, BadHeaderError, EmailMultiAlternatives
-from django.core.exceptions import ImproperlyConfigured
-from django.contrib.auth.tokens import default_token_generator
+from django.utils.timesince import timesince
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from django.template.loader import render_to_string
 from django.urls import reverse
-from django.shortcuts import render
-from django.utils import timezone
-from .models import Activities, Customer, GuestCustomer, Coupon # Make sure to import Coupon
-import json # You might need this for consistency, though not strictly for this view
-from django.shortcuts import render
-from django.utils import timezone
-from decimal import Decimal
-import json
-from .decorators import *
+from django.utils.decorators import method_decorator
+
+from django.contrib.auth import authenticate, logout, login as auth_login
+from django.contrib.auth.models import User, Group, AnonymousUser
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.tokens import default_token_generator
+
+# App specific imports
+from .models import (
+    Coupon, Product, ProductImage, ProductSize, ProductColor, Color,
+    Activities, Customer, GuestCustomer, Visitor, Order, Notice, ShippingOrder
+)
+from .forms import ProductEditForm, ProductImageEditForm
 from .forms import *
-from .models import * # Be specific here if possible, e.g., Comment, CommentVote, Customer, PasswordResetCode, etc.
+from .decorators import allowed_users
+from .decorators import *
+from .models import * # --- Functions and Views ---
 
 
-
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.db.models import Sum
-from django.shortcuts import render
-from .models import Visitor, Order, Customer, Notice, GuestCustomer
-from django.contrib.auth.models import Group
-
-
-from django.db.models import Sum
-from django.utils import timezone
-from datetime import datetime, timedelta
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.shortcuts import render
-from django.db.models import Sum
-from django.contrib.auth.models import Group
-from .models import Order, Visitor, Customer, Notice
-from .decorators import allowed_users  # adjust if needed
-
+from datetime import datetime, timedelta  
 def get_week_range(year, week):
     """Returns the start (Monday) and end (next Monday) of the ISO week."""
     start_of_week = datetime.strptime(f'{year}-W{week}-1', "%G-W%V-%u")  # Monday
@@ -109,6 +60,7 @@ def get_week_range(year, week):
     return start_of_week, end_of_week
 
 @allowed_users(allowed_roles=['admin'])
+@profile_complete_required
 def shop(request):
     # Parse selected week from GET param or use current week
     week_param = request.GET.get('week')  # Format: '2025-W29'
@@ -212,7 +164,6 @@ def shop(request):
 
     return render(request, 'shop.html', context)
 
-
 def custom_send_email(request):
     if request.method == 'POST':
         email = request.POST.get('to_email')
@@ -245,7 +196,7 @@ def custom_send_email(request):
             email_obj = EmailMultiAlternatives(
                 subject='Password Recovery Code',
                 body=text_content,
-                from_email='tiwoadex@gmail.com',
+                from_email=settings.EMAIL_HOST_USER,
                 to=[email]
             )
             email_obj.attach_alternative(html_content, "text/html")
@@ -265,7 +216,6 @@ def custom_send_email(request):
             return render(request, 'email_form.html', {'error': f'Unexpected error: {str(e)}'})
 
     return render(request, 'email_form.html')
-
 
 def verify_code(request, pk):  # Accept user ID from URL
     try:
@@ -294,7 +244,6 @@ def verify_code(request, pk):  # Accept user ID from URL
     # Initial GET request (page load)
     return render(request, 'verify_code.html', {'user': user})
 
-
 def reset_password(request, pk, code):
     try:
         user = User.objects.get(pk=pk)
@@ -318,7 +267,6 @@ def reset_password(request, pk, code):
         form = ResetPasswordForm()
 
     return render(request, 'reset_password.html', {'form': form})
-
 
 def landingpage(request):
     return render(request, 'landingpage.html')
@@ -402,13 +350,8 @@ def product(request, pk):
 
     return render(request, 'description.html', context)
 
-
-
 def error(request):
     return render(request, 'error404.html')
-
-
-
 
 def register(request):
     if request.method == 'POST':
@@ -463,7 +406,6 @@ def register(request):
 
     return render(request, 'register.html', {'form': form})
 
-
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get('username')
@@ -508,13 +450,9 @@ def login_view(request):
 
     return render(request, 'login.html')
 
-
 def logoutpage(request):
     logout(request)
     return redirect('login')
-
-
-
 
 def home(request):
     now = timezone.now()
@@ -528,6 +466,17 @@ def home(request):
 
     customer = None
     guest_customer = None
+    
+    # Separate logic to find the Admin Customer profile
+    admin = None
+    try:
+        # Get the first user who belongs to the 'admin' group
+        admin_user = User.objects.filter(groups__name='admin').first()
+        if admin_user:
+            # Get the Customer profile associated with that specific admin user
+            admin = Customer.objects.filter(user=admin_user).first()
+    except:
+        admin = None
 
     session_key = request.session.session_key
     if not session_key:
@@ -612,6 +561,7 @@ def home(request):
         'min_price': min_price if min_price else 0,
         'max_price': max_price if max_price else 5000000,
         'customer': customer,
+        'admin': admin,  # Passing the specific admin customer profile
         'broadcast_notices': broadcast_notices,
         'personal_notices': personal_notices,
     }
@@ -629,14 +579,13 @@ def mark_notice_read(request, notice_id):
             return HttpResponse("Not found", status=404)
     return HttpResponse("Invalid request", status=400)
 
-
 @csrf_exempt  # Optional if you're using the {% csrf_token %} and sending it via JS
 def resend_otp_email(request, pk):
     if request.method == "POST":
         try:
             user = User.objects.get(pk=pk)
             to_email = user.email
-            from_email = 'tiwoadex@gmail.com'
+            from_email = settings.EMAIL_HOST_USER
             subject = 'Password Recovery Code'
             code = str(random.randint(10000, 99999))
 
@@ -659,10 +608,6 @@ def resend_otp_email(request, pk):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
-
-
-
-
 
 def order_confirm(request):
     session_key = request.session.session_key
@@ -809,9 +754,6 @@ def order_confirm(request):
 
     return render(request, 'order_confirm.html', context)
 
-
-
-
 def create_order_email(request):
     current_year = timezone.now().year
     customer = None
@@ -919,7 +861,7 @@ def create_order_email(request):
 
     # ✉️ Send email
     subject = 'Your Order Confirmation'
-    from_email = 'tiwoadex@gmail.com'
+    from_email = settings.EMAIL_HOST_USER
 
     context = {
         'customer': customer,
@@ -970,8 +912,6 @@ Your Store Team
         print(f"❌ Unexpected error: {e}")
 
     return redirect('order_confirm')
-
-
 
 def category_view(request, category_name):
     customer = None
@@ -1028,14 +968,6 @@ def category_view(request, category_name):
         'customer': customer
     }
     return render(request, 'categories.html', context)
-
-
-
-from .models import Notice  # Make sure this is imported
-from django.db.models import Sum
-
-from django.db.models import Sum
-from .models import Customer, GuestCustomer, ShippingOrder, Notice
 
 def profile(request):
     shipping_orders = []
@@ -1100,8 +1032,6 @@ def profile(request):
         'notices': notices,
     })
 
-
-
 @csrf_exempt
 def update_profile(request):
     if request.method == "POST":
@@ -1138,7 +1068,6 @@ def update_profile(request):
 
         return JsonResponse({"status": "error", "message": "Invalid request format."})
 
-
 @login_required
 @csrf_exempt
 def verify_current_password(request):
@@ -1163,14 +1092,6 @@ def change_password(request):
         user.save()
 
         return JsonResponse({"status": "success"})
-
-
-
-
-
-
-
-
 
 @csrf_exempt
 def add_to_cart(request, product_id):
@@ -1283,12 +1204,6 @@ def add_to_cart(request, product_id):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
 
-
-
-
-
-
-
 @csrf_exempt
 def remove_from_cart(request, activity_id):
     if request.method != 'POST':
@@ -1323,7 +1238,6 @@ def remove_from_cart(request, activity_id):
             pass
 
     return JsonResponse({'success': False, 'message': 'Unauthorized'}, status=403)
-
 
 def view_cart(request):
     session_key = request.session.session_key
@@ -1409,14 +1323,9 @@ def view_cart(request):
         "applied_coupon": json.dumps(applied_coupon_data) if applied_coupon_data else 'null'
     })
 
-
-
 def generate_transaction_id():
     random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
     return f"TXN-{random_part}"
-
-
-
 
 def checkout(request):
     if request.method != "POST":
@@ -1514,9 +1423,6 @@ def checkout(request):
 
     return JsonResponse({"success": True, "redirect_url": reverse('prepare_payment')})
 
-
-
-
 def validate_shipping_order(request):
     """
     Handles AJAX validation for the shipping form.
@@ -1569,6 +1475,7 @@ def validate_shipping_order(request):
     # For non-AJAX requests or wrong method
     return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
 
+from django.conf import settings  # Ensure it looks EXACTLY like this
 def prepare_payment_ajax(request):
     """
     Handles an AJAX request to prepare payment details.
@@ -1693,7 +1600,6 @@ def prepare_payment(request):
         "coupon_display": discount_label,
     })
 
-
 def collect_shipping_info(request):
     """
     Handles AJAX request to save shipping info to the session.
@@ -1737,8 +1643,6 @@ def collect_shipping_info(request):
         return JsonResponse({'success': True, 'message': 'Shipping information saved successfully.'})
 
     return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
-
-
 
 def payment_success(request):
     # Get the shipping data from the session
@@ -1922,8 +1826,6 @@ def payment_success(request):
     del request.session['shipping_data']
     return redirect('email')
 
-
-
 @csrf_exempt
 def create_comment_ajax(request):
     if request.method != 'POST':
@@ -1986,9 +1888,6 @@ def create_comment_ajax(request):
         'rating': rating,
     })
 
-
-
-
 @csrf_exempt
 def delete_comment(request):
     if request.method == "POST":
@@ -2015,7 +1914,6 @@ def delete_comment(request):
         except Comment.DoesNotExist:
             return JsonResponse({"success": False, "message": "Comment not found"})
     return JsonResponse({"success": False, "message": "Invalid request"})
-
 
 @csrf_exempt
 def ajax_create_reply(request):
@@ -2076,8 +1974,6 @@ def ajax_create_reply(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
 
-
-
 @require_POST
 def delete_reply(request):
     reply_id = request.POST.get('reply_id')
@@ -2087,7 +1983,6 @@ def delete_reply(request):
         return JsonResponse({'success': True})
     except Reply.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Reply not found'})
-
 
 @csrf_exempt
 def update_shipping_address(request, id):
@@ -2115,8 +2010,6 @@ def unsave_shipping_address(request, id):
         except ShippingOrder.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Shipping address not found.'})
     return JsonResponse({'success': False, 'error': 'Invalid method'})
-
-
 
 def apply_coupon(request):
     if request.method == 'POST':
@@ -2164,8 +2057,6 @@ def remove_coupon(request):
     if 'applied_coupon' in request.session:
         del request.session['applied_coupon']
     return JsonResponse({'success': True})
-
-
 
 def track_order(request):
     customer = None
@@ -2216,7 +2107,6 @@ def track_order(request):
 
     return render(request, 'track_order.html', context)
 
-
 def order_detail(request, shipping_id):
     shipping = get_object_or_404(
         ShippingOrder.objects.prefetch_related(
@@ -2255,8 +2145,6 @@ def order_detail(request, shipping_id):
     }
     return render(request, 'order_details.html', context)
 
-
-
 def notification(request):
     customer = None
     guest_customer = None
@@ -2294,11 +2182,8 @@ def notification(request):
         'customer': customer,
         'guest_customer': guest_customer,
     })
-
-
-
-
 @allowed_users(allowed_roles=['admin'])
+@profile_complete_required
 def products(request):
     today = timezone.now().date()
     start_of_week = today - timedelta(days=today.weekday())  # Monday
@@ -2389,8 +2274,7 @@ def products(request):
 
     return render(request, 'product.html', context)
 
-
-
+@profile_complete_required
 def customer(request):
     customer_count = Customer.objects.count()
     guest_customer_count = GuestCustomer.objects.count()
@@ -2436,7 +2320,6 @@ def customer(request):
         'customer_count': customer_count,
         'guest_customer_count': guest_customer_count,
     })
-
 
 # This is a new helper function that we'll use for the API endpoint
 def get_customer_data_json(request):
@@ -2487,18 +2370,8 @@ def get_customer_data_json(request):
     return JsonResponse({'customers': data})
 
 
-
-
-def tests(request):
-    # Get admin users and their notices
-
-    return render(request, 'test.html')
-
-
-
-
-
 @allowed_users(allowed_roles=['admin'])
+@profile_complete_required
 def admin_notice(request):
     customer = request.user.customer
     Notice.objects.filter(broadcast=True, expiry__lt=timezone.now()).delete()
@@ -2514,7 +2387,6 @@ def admin_notice(request):
         'normal_notifications': normal_notifications,
     }
     return render(request, 'admin-notice.html',context)
-
 
 @require_POST
 @csrf_exempt  # Only use this for testing; better to use CSRF token in production
@@ -2532,8 +2404,8 @@ def mark_notice_as_read(request):
         return JsonResponse({"success": False, "error": "Notice not found"}, status=404)
 
 
-
 @allowed_users(allowed_roles=['admin'])
+@profile_complete_required
 def add_product(request):
     if request.method == 'POST':
         product_form = ProductForm(request.POST)
@@ -2644,9 +2516,6 @@ def add_product(request):
         'categories': Product.CATEGORY_CHOICES,
     })
 
-
-
-
 @allowed_users(allowed_roles=['admin'])
 @login_required
 def delete_product(request, pk):
@@ -2654,9 +2523,6 @@ def delete_product(request, pk):
     product.delete()
     messages.success(request, f"Product '{product.name}' has been deleted successfully.")
     return redirect('admin-products')  # Replace with your actual product list URL name
-
-
-
 
 logger = logging.getLogger(__name__)
 
@@ -2815,7 +2681,6 @@ def edit_product(request, pk):
     }
     return render(request, 'edit_product.html', context)
 
-
 @allowed_users(allowed_roles=['admin']) # Re-add if you have this
 def test(request):
     if request.method == 'POST':
@@ -2847,9 +2712,6 @@ def test(request):
 
     return render(request, 'shop.html',{'slides':slides})
 
-
-
-
 @csrf_exempt  # Only if you're not sending CSRF token with DELETE — can be avoided with JS token
 def delete_slide(request, slide_id):
     if request.method == 'POST':
@@ -2861,8 +2723,8 @@ def delete_slide(request, slide_id):
             return JsonResponse({'success': False, 'error': 'Slide not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-
 @allowed_users(allowed_roles=['admin'])
+@profile_complete_required
 def orders(request):
     # Get admin users and their notices
     admin_group = Group.objects.get(name='admin')
@@ -3007,8 +2869,6 @@ def edit_order(request, shipping_id):
 
     return render(request, 'edit_order.html', context)
 
-
-
 @require_POST
 @csrf_exempt
 def update_order_status(request, shipping_id):
@@ -3121,7 +2981,7 @@ Customer Service Team
 """
 
     subject = f"Update on Your Order – {orders.first().transaction_id if orders.exists() else 'Order'}"
-    from_email = "tiwoadex@gmail.com"
+    from_email = settings.EMAIL_HOST_USER
 
     try:
         email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
@@ -3140,7 +3000,6 @@ Customer Service Team
     if "inactive_reason" in request.session:
         del request.session["inactive_reason"]
         request.session.modified = True
-
 
 def delivery_email(request, shipping_order):
     """
@@ -3206,7 +3065,7 @@ Customer Service Team
 """
 
     subject = f"Your Order [{orders.first().transaction_id if orders.exists() else 'Order'}] Has Been Delivered"
-    from_email = "tiwoadex@gmail.com"
+    from_email = settings.EMAIL_HOST_USER
 
     try:
         email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
@@ -3215,8 +3074,6 @@ Customer Service Team
         print(f"✅ Delivery email sent to {to_email}")
     except Exception as e:
         print(f"❌ Failed to send delivery email: {e}")
-
-
 
 def notification_list_view(request):
     # ✅ 1. Delete expired broadcast notifications
@@ -3235,9 +3092,6 @@ def notification_list_view(request):
     ]
 
     return JsonResponse({'notifications': data})
-
-
-
 
 @csrf_exempt
 def create_notification_view(request):
@@ -3278,8 +3132,6 @@ def create_notification_view(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-
 @csrf_exempt
 def delete_notification_view(request, notice_id):
     if request.method == 'DELETE':
@@ -3290,11 +3142,6 @@ def delete_notification_view(request, notice_id):
         except Notice.DoesNotExist:
             return JsonResponse({'error': 'Notification not found.'}, status=404)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
-
-
-
-from django.utils import timezone
-from django.http import JsonResponse
 
 def get_all_coupons(request):
     if request.method == "GET":
@@ -3338,9 +3185,6 @@ def get_all_coupons(request):
 
         return JsonResponse({'coupons': data})
 
-
-
-
 @csrf_exempt
 def delete_coupon(request, coupon_id):
     if request.method == "DELETE":
@@ -3350,9 +3194,6 @@ def delete_coupon(request, coupon_id):
             return JsonResponse({'success': True})
         except Coupon.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Coupon not found'}, status=404)
-
-
-
 
 @csrf_exempt
 @require_POST
@@ -3416,7 +3257,6 @@ def create_coupon_ajax(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-
 @csrf_exempt
 @require_POST
 def send_coupon_email(request):
@@ -3474,11 +3314,6 @@ def send_coupon_email(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'Unexpected error: {str(e)}'}, status=500)
 
-
-from django.db.models import Sum, F, Count
-from django.shortcuts import get_object_or_404, render
-from .models import Customer, GuestCustomer, ShippingOrder
-
 def customer_detail_view(request, type, id):
     if type == 'customer':
         person = get_object_or_404(Customer, id=id)
@@ -3510,4 +3345,70 @@ def customer_detail_view(request, type, id):
         'shipping_orders': shipping_orders_data
     })
 
+@login_required
+@require_POST
+def update_profile_ajax(request):
+    try:
+        customer = request.user.customer
+        user = request.user  # Access the linked User object
+        
+        # 1. Check current state BEFORE updating to see if profile was incomplete
+        was_incomplete = not all([customer.first_name, customer.last_name, customer.number])
 
+        # 2. Get data from request
+        first_name = request.POST.get('firstName', '').strip()
+        last_name = request.POST.get('lastName', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        image = request.FILES.get('image')
+
+        # 3. Validation: Check if empty
+        if not all([first_name, last_name, email, phone]):
+            return JsonResponse({'status': 'error', 'message': 'Please fill all required fields.'}, status=400)
+
+        # 4. Validation: Check if email exists (excluding current user)
+        if Customer.objects.filter(email=email).exclude(id=customer.id).exists():
+            return JsonResponse({'status': 'error', 'message': 'This email is already in use by another account.'}, status=400)
+
+        # 5. Save Changes to BOTH Customer and User models
+        # Update Customer Profile
+        customer.first_name = first_name
+        customer.last_name = last_name
+        customer.email = email
+        customer.number = phone
+        
+        if image:
+            customer.image = image
+            
+        customer.save()
+
+        # Update the Auth User model so they stay in sync
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.save()
+
+        # 6. Determine the message based on the previous state
+        if was_incomplete:
+            success_message = "Profile completed! You can now navigate the page."
+        else:
+            success_message = "Profile successfully updated."
+
+        return JsonResponse({
+            'status': 'success', 
+            'message': success_message,
+            'image_url': customer.image.url
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@allowed_users(allowed_roles=['admin'])
+def setting(request):
+    try:
+        customer = request.user.customer
+    except Customer.DoesNotExist:
+        customer = None
+        
+    context = {'customer': customer}
+    return render(request, 'admin_profile.html', context)
