@@ -20,7 +20,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('secret/', admin.site.urls),
     path('', include('customer.urls')),
 
     #path('accounts/', include('allauth.urls')),  # Add this line for allauth
