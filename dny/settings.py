@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'customer.middleware.Handle404Middleware',
+    'customer.middleware.LocalhostAdminMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -89,23 +90,22 @@ WSGI_APPLICATION = 'dny.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-#postgresql://dny_user:9WMPtLabgK911Zo01dqrukIFyx6yTeyA@dpg-d2fp2s3uibrs738j6oe0-a.frankfurt-postgres.render.com/dny
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+import os
+from pathlib import Path
 
-database_url = os.getenv('DATABASE_URL')
-DATABASES['default'] = dj_database_url.parse(database_url)
-"""
+# ... other settings ...
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'postgres'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '6543'),
+        'OPTIONS': {
+            'target_session_attrs': 'read-write',
+        },
     }
 }
 
