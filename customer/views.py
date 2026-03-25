@@ -3412,3 +3412,4 @@ def setting(request):
         
     context = {'customer': customer}
     return render(request, 'admin_profile.html', context)
+
