@@ -72,23 +72,73 @@ pip install -r requirements.txt
 
 3. **Create a `.env` file and add the following:**
 ```env
-PAYSTACK_SECRET_KEY=
-PAYSTACK_PUBLIC_KEY=
-EMAIL_HOST_USER=
-EMAIL_HOST_PASSWORD=
+# =========================
+# DJANGO CORE SETTINGS
+# =========================
+
+# Secret key for Django (keep this private, never commit real value)
 SECRET_KEY=
 
-CLOUD_NAME=
-API_KEY=
-API_SECRET=
-
+# Debug mode (True for development, False for production)
 DEBUG=
+
+# Allowed hosts (comma-separated domains, e.g. yoursite.com, .onrender.com)
 ALLOWED_HOSTS=
+
+
+# =========================
+# DATABASE (SUPABASE)
+# =========================
+
+# Full database URL (optional if using individual fields below)
 DATABASE_URL=
 
+# Supabase PostgreSQL database credentials
+DB_NAME=        # Default is usually 'postgres'
+DB_USER=        # Format: postgres.<project_ref>
+DB_PASSWORD=    # Your Supabase database password
+DB_HOST=        # e.g. aws-1-eu-west-1.pooler.supabase.com
+DB_PORT=        # Usually 6543 for pooler
+
+
+# =========================
+# DJANGO SUPERUSER (AUTO CREATE)
+# =========================
+
+# These are used to automatically create a superuser on deploy if none exists
 DJANGO_SU_USERNAME=
 DJANGO_SU_EMAIL=
 DJANGO_SU_PASSWORD=
+
+
+# =========================
+# PAYSTACK (PAYMENTS)
+# =========================
+
+# Paystack API keys for handling payments
+PAYSTACK_PUBLIC_KEY=
+PAYSTACK_SECRET_KEY=
+
+
+# =========================
+# EMAIL CONFIGURATION
+# =========================
+
+# Email address used to send emails (e.g. Gmail or SMTP provider)
+EMAIL_HOST_USER=
+
+# Email password or app password (never use your real password directly)
+EMAIL_HOST_PASSWORD=
+
+
+# =========================
+# CLOUDINARY (MEDIA STORAGE)
+# =========================
+
+# Cloudinary credentials for image/media uploads
+CLOUD_NAME=
+API_KEY=
+API_SECRET=
 ```
 
 4. **Run migrations:**
@@ -108,6 +158,7 @@ python manage.py runserver
 ## 🔐 Notes
 
 * Admin route has been customized from `/admin` to `/secret` for added security.
+* Supabase (PostgreSQL) is used as the production database.
 * Cloudinary is used for media storage (already included in requirements).
 * Paystack integration is in **Test Mode** (no real transactions).
 
