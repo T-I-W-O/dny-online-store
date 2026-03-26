@@ -2,6 +2,8 @@
 
 DNY is a full-featured e-commerce platform built with **Django**, designed for both customer shopping experiences and powerful administrative control. It combines an interactive storefront with real-time business insights for managing products, customers, and sales.
 
+## 🚀 Live Demo
+[Click here to view](https://dny-dqye.onrender.com/)
 ---
 
 ## 🌟 Advanced Features
