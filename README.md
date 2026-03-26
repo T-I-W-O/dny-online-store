@@ -51,7 +51,7 @@ DNY is a full-featured e-commerce platform built with **Django**, designed for b
 
 * **Backend:** Django (Python)
 * **Frontend:** HTML5, CSS3, JavaScript
-* **Database:** SQLite / PostgreSQL
+* **Database:** SQLite (development) /Supabase PostgreSQL (production)
 * **Media Storage:** Cloudinary
 * **Payments:** Paystack (Test Mode)
 
