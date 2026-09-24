@@ -1,0 +1,1 @@
+web: gunicorn tyla.wsgi
