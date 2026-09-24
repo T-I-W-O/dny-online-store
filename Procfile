@@ -1,1 +1,1 @@
-web: gunicorn tyla.wsgi
+web: gunicorn dny.wsgi
