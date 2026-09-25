@@ -88,6 +88,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dny.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://dny-online-store-production.up.railway.app",
+]
+
 
 # Database
 import os
