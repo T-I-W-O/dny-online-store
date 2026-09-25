@@ -761,158 +761,153 @@ from django.utils import timezone
 # (Make sure to import SMTPException and ImproperlyConfigured if you need them, 
 # or a broad Exception catch will handle everything gracefully)
 
+from django.db import transaction
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def create_order_email(request):
-  current_year = timezone.now().year
-  customer = None
-  guest_customer = None
-  session_key = request.session.session_key
+    current_year = timezone.now().year
+    customer = None
+    guest_customer = None
+    session_key = request.session.session_key
 
-  # 🔍 Identify the user
-  if request.user.is_authenticated:
+    # 1. Identify the user
+    if request.user.is_authenticated:
+        try:
+            customer = request.user.customer
+        except Customer.DoesNotExist:
+            customer = None
+    else:
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+        guest_customer = GuestCustomer.objects.filter(session_key=session_key).first()
+
+    if not customer and not guest_customer:
+        logger.warning("No customer or guest_customer resolved for this request.")
+        return redirect("order_confirm")
+
+    # 2. Find latest ongoing order
+    latest_transaction = (
+        Order.objects.filter(
+            customer=customer, status="Ongoing"
+        ) if customer else Order.objects.filter(
+            guest_customer=guest_customer, status="Ongoing"
+        )
+    ).order_by("-date", "-id").values("transaction_id").first()
+
+    if not latest_transaction:
+        logger.info("No ongoing order found.")
+        return redirect("order_confirm")
+
+    transaction_id = latest_transaction["transaction_id"]
+
+    # --- PART 1: Calculation + saving (must succeed) ---
     try:
-      customer = request.user.customer
-      latest_transaction = (
-          Order.objects.filter(customer=customer, status="Ongoing")
-          .order_by("-date", "-id")
-          .values("transaction_id")
-          .first()
-      )
-    except Customer.DoesNotExist:
-      latest_transaction = None
-  else:
-    if not session_key:
-      request.session.create()
-      session_key = request.session.session_key
+        with transaction.atomic():
+            main_images = Prefetch(
+                "product__images",
+                queryset=ProductImage.objects.filter(type="Main"),
+                to_attr="main_images",
+            )
 
+            orders = (
+                Order.objects.filter(
+                    transaction_id=transaction_id,
+                    status="Ongoing",
+                    customer=customer if customer else None,
+                    guest_customer=guest_customer if guest_customer else None,
+                )
+                .select_related("product")
+                .prefetch_related("details__size", "details__colors", main_images)
+            )
+
+            order_details = OrderDetail.objects.filter(order__in=orders).prefetch_related(
+                "colors", "size"
+            )
+
+            shipping = (
+                ShippingOrder.objects.filter(
+                    orders__in=orders,
+                    customer=customer if customer else None,
+                    guest_customer=guest_customer if guest_customer else None,
+                )
+                .distinct()
+                .first()
+            )
+
+            if not shipping:
+                logger.warning("No shipping info found for transaction %s", transaction_id)
+                return redirect("order_confirm")
+
+            total_quantity = orders.aggregate(total=Sum("quantity"))["total"] or 0
+            total_price = orders.aggregate(total=Sum("total_price"))["total"] or 0
+
+            to_email = (
+                shipping.email
+                or (customer.user.email if customer else guest_customer.email)
+                or "noemail@unknown.com"
+            )
+            username = (
+                customer.user.username if customer else guest_customer.first_name or "Guest"
+            )
+
+            # Coupon logic — part of the atomic save
+            applied_coupon = request.session.get("applied_coupon")
+            coupon_obj = None
+
+            if applied_coupon:
+                coupon_code = applied_coupon.get("code")
+                try:
+                    coupon_obj = Coupon.objects.get(code__iexact=coupon_code, is_active=True)
+
+                    if customer and not coupon_obj.used_by_customer.filter(id=customer.id).exists():
+                        coupon_obj.used_by_customer.add(customer)
+                    elif guest_customer and not coupon_obj.used_by_guest.filter(id=guest_customer.id).exists():
+                        coupon_obj.used_by_guest.add(guest_customer)
+
+                    if not coupon_obj.one_time_use:
+                        coupon_obj.one_time_use = True
+                        coupon_obj.is_active = False
+                        coupon_obj.save()
+
+                    shipping.coupon = coupon_obj
+                    shipping.save()
+                    logger.info("Coupon '%s' marked and linked.", coupon_code)
+
+                except Coupon.DoesNotExist:
+                    logger.warning("Applied coupon '%s' does not exist.", coupon_code)
+
+                request.session.pop("applied_coupon", None)
+                request.session.modified = True
+
+    except Exception:
+        # If ANYTHING in this block fails, we log it loudly and re-raise.
+        # This part must not fail silently — it's real data/money logic.
+        logger.exception("Order calculation/save failed for transaction %s", transaction_id)
+        raise
+
+    # --- PART 2: Email (optional, silent on failure) ---
     try:
-      guest_customer = GuestCustomer.objects.get(session_key=session_key)
-      latest_transaction = (
-          Order.objects.filter(guest_customer=guest_customer, status="Ongoing")
-          .order_by("-date", "-id")
-          .values("transaction_id")
-          .first()
-      )
-    except GuestCustomer.DoesNotExist:
-      latest_transaction = None
+        subject = "Your Order Confirmation"
+        from_email = settings.EMAIL_HOST_USER
 
-  if not latest_transaction:
-    print("❌ No ongoing order found.")
-    return redirect("order_confirm")
+        context = {
+            "customer": customer,
+            "guest_customer": guest_customer,
+            "orders": orders,
+            "order_details": order_details,
+            "shipping": shipping,
+            "total_quantity": total_quantity,
+            "total_price": total_price,
+            "applied_coupon": applied_coupon,
+            "now": current_year,
+        }
 
-  transaction_id = latest_transaction["transaction_id"]
-
-  # 🔄 Prefetch related items
-  main_images = Prefetch(
-      "product__images",
-      queryset=ProductImage.objects.filter(type="Main"),
-      to_attr="main_images",
-  )
-
-  orders = (
-      Order.objects.filter(
-          transaction_id=transaction_id,
-          status="Ongoing",
-          customer=customer if customer else None,
-          guest_customer=guest_customer if guest_customer else None,
-      )
-      .select_related("product")
-      .prefetch_related("details__size", "details__colors", main_images)
-  )
-
-  order_details = OrderDetail.objects.filter(order__in=orders).prefetch_related(
-      "colors", "size"
-  )
-
-  # 📦 Get shipping info
-  shipping = (
-      ShippingOrder.objects.filter(
-          orders__in=orders,
-          customer=customer if customer else None,
-          guest_customer=guest_customer if guest_customer else None,
-      )
-      .distinct()
-      .first()
-  )
-
-  total_quantity = orders.aggregate(total=Sum("quantity"))["total"] or 0
-  total_price = orders.aggregate(total=Sum("total_price"))["total"] or 0
-
-  to_email = (
-      shipping.email
-      or (customer.user.email if customer else guest_customer.email)
-      or "noemail@unknown.com"
-  )
-
-  username = (
-      customer.user.username if customer else guest_customer.first_name or "Guest"
-  )
-
-  # 🎟 Handle applied coupon (if any)
-  applied_coupon = request.session.get("applied_coupon")
-  coupon_obj = None
-
-  if applied_coupon:
-    coupon_code = applied_coupon.get("code")
-
-    try:
-      coupon_obj = Coupon.objects.get(
-          code__iexact=coupon_code, is_active=True
-      )
-
-      # 🧷 Link to customer or guest
-      if customer and not coupon_obj.used_by_customer.filter(
-          id=customer.id
-      ).exists():
-        coupon_obj.used_by_customer.add(customer)
-      elif guest_customer and not coupon_obj.used_by_guest.filter(
-          id=guest_customer.id
-      ).exists():
-        coupon_obj.used_by_guest.add(guest_customer)
-
-      # ✅ Mark as used for one-time use coupons
-      if not coupon_obj.one_time_use:
-        coupon_obj.one_time_use = True
-        coupon_obj.is_active = False
-        coupon_obj.save()
-
-      # 🔗 Link to shipping model
-      if shipping:
-        shipping.coupon = coupon_obj
-        shipping.save()
-        print(f"✅ Coupon linked to shipping order: {shipping.id}")
-
-      print(f"✅ Coupon '{coupon_code}' marked and linked.")
-
-    except Coupon.DoesNotExist:
-      print("❌ Applied coupon does not exist.")
-
-    # 🧹 Clear session
-    if "applied_coupon" in request.session:
-      del request.session["applied_coupon"]
-      request.session.modified = True
-      print("🧹 Coupon removed from session.")
-
-  # ✉️ Safe Email Block (Will not crash app if SMTP fails or is blocked)
-  try:
-    subject = "Your Order Confirmation"
-    from_email = settings.EMAIL_HOST_USER
-
-    context = {
-        "customer": customer,
-        "guest_customer": guest_customer,
-        "orders": orders,
-        "order_details": order_details,
-        "shipping": shipping,
-        "total_quantity": total_quantity,
-        "total_price": total_price,
-        "applied_coupon": applied_coupon,
-        "now": current_year,
-    }
-
-    html_content = render_to_string("emails/order_summary.html", context)
-
-    text_content = f"""
+        html_content = render_to_string("emails/order_summary.html", context)
+        text_content = f"""
 Hello {username},
 
 Thank you for shopping with us!
@@ -931,18 +926,16 @@ WhatsApp: {shipping.whatsapp_number}
 Regards,
 Your Store Team
 """
+        email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        logger.info("Confirmation email sent to %s", to_email)
 
-    email = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
-    email.attach_alternative(html_content, "text/html")
-    email.send()
-    print("✅ Email sent to", to_email)
+    except Exception as e:
+        # Truly silent — email is a nice-to-have, never blocks the user
+        logger.warning("Email sending skipped: %s", e)
 
-  except Exception as e:
-    # This catches SMTP timeouts, blocked ports, bad configs, etc., 
-    # logs it to your console, and lets the app keep running normally!
-    print(f"⚠️ Email sending skipped due to error: {e}")
-
-  return redirect("order_confirm")
+    return redirect("order_confirm")
 
 def category_view(request, category_name):
     customer = None
